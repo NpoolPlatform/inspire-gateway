@@ -3,13 +3,17 @@ module github.com/NpoolPlatform/inspire-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/api-manager v0.0.0-20220328101926-8907b2f76c6d
+	github.com/NpoolPlatform/api-manager v0.0.0-20220421114434-bf0e069b0c83
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220731094035-802b43a60712
+	github.com/NpoolPlatform/archivement-manager v0.0.0-20220731085731-1078bd4e3119
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20220722111225-08c2156ac8bf
-	github.com/NpoolPlatform/message v0.0.0-20220730055627-e76876c3baed
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20220731081104-068d6648f1fb
+	github.com/NpoolPlatform/libent-cruder v0.0.0-20220729123015-41e5340448dd
+	github.com/NpoolPlatform/message v0.0.0-20220731095414-65f006a70c4d
+	github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
-	github.com/shopspring/decimal v1.3.1
 	github.com/streadway/amqp v1.0.0
 	github.com/stretchr/testify v1.7.1
 	github.com/urfave/cli/v2 v2.4.0
@@ -20,6 +24,7 @@ require (
 )
 
 require (
+	github.com/NpoolPlatform/appuser-manager v0.0.0-20220730162912-a271958d30d9 // indirect
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
 	github.com/armon/go-metrics v0.3.10 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -27,14 +32,13 @@ require (
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/common-nighthawk/go-figure v0.0.0-20210622060536-734e95fb86be // indirect
 	github.com/coocood/freecache v1.0.1 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.1 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fatih/color v1.13.0 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/go-chassis/go-archaius v1.5.3 // indirect
 	github.com/go-chassis/openlog v1.1.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 // indirect
 	github.com/hashicorp/consul/api v1.12.0 // indirect
@@ -76,11 +80,11 @@ require (
 	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f // indirect
-	google.golang.org/genproto v0.0.0-20220407144326-9054f6ed7bac // indirect
+	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 replace google.golang.org/grpc => github.com/grpc/grpc-go v1.41.0
