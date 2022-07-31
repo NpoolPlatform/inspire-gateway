@@ -37,6 +37,9 @@ func GetCoinArchivements(
 	if err != nil {
 		return nil, 0, err
 	}
+	if len(invitations) == 0 {
+		return []*npool.CoinArchivement{}, n, nil
+	}
 
 	ivMap := map[string]*inspirepb.Invitation{}
 	for _, iv := range invitations {
