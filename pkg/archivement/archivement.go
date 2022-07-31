@@ -85,6 +85,21 @@ func GetCoinArchivements(
 		userMap[user.ID] = user
 	}
 
+	percents := []*inspirepb.Percent{}
+	iofs := int32(0)
+
+	for {
+		p, _, err := inspirecli.GetActivePercents(ctx, appID, uids, iofs, limit)
+		if err != nil {
+			return nil, 0, err
+		}
+		if len(p) == 0 {
+			break
+		}
+		percents = append(percents, p...)
+		iofs += limit
+	}
+
 	// 5 Merge info
 	archivements = []*npool.CoinArchivement{}
 	for _, general := range generals {
@@ -101,6 +116,14 @@ func GetCoinArchivements(
 		iv, ok := ivMap[general.UserID]
 		if !ok {
 			return nil, 0, fmt.Errorf("invalid invitee")
+		}
+
+		userPercent := uint32(0)
+		for _, percent := range percents {
+			if general.UserID == percent.UserID && general.CoinTypeID == percent.CoinTypeID {
+				userPercent = percent.Percent
+				break
+			}
 		}
 
 		archivements = append(archivements, &npool.CoinArchivement{
@@ -124,7 +147,7 @@ func GetCoinArchivements(
 			TotalCommission: general.TotalCommission,
 			SelfCommission:  general.SelfCommission,
 
-			CurPercent: 10,
+			CurPercent: userPercent,
 		})
 	}
 
