@@ -51,6 +51,30 @@ func GetCoinArchivements(
 		uids = append(uids, iv.InviteeID)
 	}
 
+	inviteesMap := map[string]uint32{}
+	inviteesOfs := int32(0)
+
+	for {
+		ivs, _, err := inspirecli.GetInvitees(ctx, appID, uids, inviteesOfs, limit)
+		if err != nil {
+			return nil, 0, err
+		}
+		if len(ivs) == 0 {
+			break
+		}
+
+		for _, iv := range ivs {
+			invitees, ok := inviteesMap[iv.InviterID]
+			if !ok {
+				inviteesMap[iv.InviterID] = 1
+				continue
+			}
+			inviteesMap[iv.InviterID] = invitees + 1
+		}
+
+		inviteesOfs += limit
+	}
+
 	// 2 Get all users's archivement
 	generals, _, err := archivementgeneralmgrcli.GetGenerals(ctx, &archivementgeneralmgrpb.Conds{
 		AppID: &commonpb.StringVal{
@@ -137,6 +161,8 @@ func GetCoinArchivements(
 			FirstName:    user.FirstName,
 			LastName:     user.LastName,
 			Kol:          iv.Kol,
+
+			TotalInvitees: inviteesMap[user.ID],
 
 			CoinTypeID: coin.ID,
 			CoinName:   coin.Name,
