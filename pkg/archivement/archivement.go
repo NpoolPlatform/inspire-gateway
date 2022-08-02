@@ -15,6 +15,9 @@ import (
 
 	coininfocli "github.com/NpoolPlatform/sphinx-coininfo/pkg/client"
 
+	goodscli "github.com/NpoolPlatform/cloud-hashing-goods/pkg/client"
+	goodspb "github.com/NpoolPlatform/message/npool/cloud-hashing-goods"
+
 	coininfopb "github.com/NpoolPlatform/message/npool/coininfo"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/archivement"
 
@@ -127,6 +130,16 @@ func GetCoinArchivements(
 		iofs += limit
 	}
 
+	goods, err := goodscli.GetGoods(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	goodMap := map[string]*goodspb.GoodInfo{}
+	for _, good := range goods {
+		goodMap[good.ID] = good
+	}
+
 	// 5 Merge info
 	archivements := map[string]*npool.GetCoinArchivementsResponse_Archivement{}
 
@@ -160,15 +173,28 @@ func GetCoinArchivements(
 			return nil, 0, fmt.Errorf("invalid coin")
 		}
 
-		userPercent := uint32(0)
-		for _, percent := range percents {
-			if general.UserID == percent.UserID && general.CoinTypeID == percent.CoinTypeID {
-				userPercent = percent.Percent
-				break
+		var good *goodspb.GoodInfo
+		var percent *inspirepb.Percent
+
+		for _, p := range percents {
+			good, ok = goodMap[percent.GoodID]
+			if !ok {
+				continue
+			}
+
+			if percent == nil {
+				percent = p
+				continue
+			}
+
+			if general.UserID == p.UserID &&
+				general.CoinTypeID == p.CoinTypeID &&
+				percent.Percent < p.Percent {
+				percent = p
 			}
 		}
 
-		archivement.Archivements = append(archivement.Archivements, &npool.CoinArchivement{
+		arch := &npool.CoinArchivement{
 			CoinTypeID:      coin.ID,
 			CoinName:        coin.Name,
 			CoinLogo:        coin.Logo,
@@ -179,9 +205,17 @@ func GetCoinArchivements(
 			SelfAmount:      general.SelfAmount,
 			TotalCommission: general.TotalCommission,
 			SelfCommission:  general.SelfCommission,
+		}
+		if percent != nil {
+			arch.CurPercent = percent.Percent
+			arch.CurGoodID = percent.GoodID
+		}
 
-			CurPercent: userPercent,
-		})
+		if good != nil {
+			arch.CurGoodName = good.Title
+		}
+
+		archivement.Archivements = append(archivement.Archivements, arch)
 	}
 
 	for _, ar := range archivements {

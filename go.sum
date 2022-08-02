@@ -76,6 +76,7 @@ github.com/Masterminds/semver v1.4.2/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF0
 github.com/Masterminds/semver v1.5.0/go.mod h1:MB6lktGJrhw8PrUyiEoblNEGEQ+RzHPF078ddwwvV3Y=
 github.com/Masterminds/sprig v2.15.0+incompatible/go.mod h1:y6hNFY5UBTIWBxnzTeuNhlNS5hqE0NB0E6fgfo2Br3o=
 github.com/Masterminds/sprig v2.22.0+incompatible/go.mod h1:y6hNFY5UBTIWBxnzTeuNhlNS5hqE0NB0E6fgfo2Br3o=
+github.com/NpoolPlatform/api-manager v0.0.0-20220205130236-69d286e72dba/go.mod h1:ubnvHuhc0o6drhdYrT+nM5DXZW/yEesObWky6oRsHoQ=
 github.com/NpoolPlatform/api-manager v0.0.0-20220328101926-8907b2f76c6d/go.mod h1:ubnvHuhc0o6drhdYrT+nM5DXZW/yEesObWky6oRsHoQ=
 github.com/NpoolPlatform/api-manager v0.0.0-20220421114434-bf0e069b0c83 h1:eCBDqxMZ80eHjjFVX7M9UwMq8mOqRvkkuvQco4WAHaE=
 github.com/NpoolPlatform/api-manager v0.0.0-20220421114434-bf0e069b0c83/go.mod h1:Z7h/p6Dsv0WaS2Ig3esHVtoIcv1xC9vXVIs2PK6kM8o=
@@ -85,6 +86,8 @@ github.com/NpoolPlatform/appuser-middleware v0.0.0-20220731094035-802b43a60712 h
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20220731094035-802b43a60712/go.mod h1:XRqm5v5qtqQmJPrDRrcI8ElD+Wmg3vsg63TvRPkMr2o=
 github.com/NpoolPlatform/archivement-manager v0.0.0-20220731085731-1078bd4e3119 h1:ujVcm4MgnxSSBYRP1oZAPjoezSEAaZ8+w2jTbUdU2Pc=
 github.com/NpoolPlatform/archivement-manager v0.0.0-20220731085731-1078bd4e3119/go.mod h1:wL3uldVcnJACpjqhg3PuSmu9Pdi3WF66Ln09PLRjD5w=
+github.com/NpoolPlatform/cloud-hashing-goods v0.0.0-20220725094415-a027a03521e7 h1:7w+Ydg4Vbzi++9Hn9EkmaU8TKuUcXzI056r9eeHoBKU=
+github.com/NpoolPlatform/cloud-hashing-goods v0.0.0-20220725094415-a027a03521e7/go.mod h1:aFvLR1M7HtXB2A0hyC7q83/H8WPv9jJaw30XrhSKNFI=
 github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220724104912-5495b0c02d63/go.mod h1:9BYfVsnbQEJrwOYpJgE0ycq/bONhkO1nfJ8YGFCxZT8=
 github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220731100543-621262acb09b/go.mod h1:4519S5ig7MPIZC+UBoSjgxeeyBn60eBlkRDJYXZIKxo=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20220120091626-4e8035637592/go.mod h1:JqrktA7gNQe/Uprnr6DCs5UCFpheCZ30lDd0OkyRtC4=
@@ -102,14 +105,15 @@ github.com/NpoolPlatform/message v0.0.0-20220120075427-38182760a780/go.mod h1:tn
 github.com/NpoolPlatform/message v0.0.0-20220121040326-31d316062cdc/go.mod h1:tnsf7zHQ5Mv2uG0ezOwCfm/bxluiRW10DeuIl4SjG4Y=
 github.com/NpoolPlatform/message v0.0.0-20220501030927-34f296682c0c/go.mod h1:i/F/sQWjQk44RGvfgEB0zH0oAK/0qLvgJ1AsJDZQDkk=
 github.com/NpoolPlatform/message v0.0.0-20220620031140-a61ca066621f/go.mod h1:VWuStqZaa5i8scdETxGvBh5CJzebGWw1dxTE0EUqRXk=
+github.com/NpoolPlatform/message v0.0.0-20220625051417-5636a3cd779e/go.mod h1:+GlL8noQ1F4Dm7u5Qox5L3Wz2WGoZox4vPxAd5XBAVA=
 github.com/NpoolPlatform/message v0.0.0-20220727114611-5f9d88a0c326/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
 github.com/NpoolPlatform/message v0.0.0-20220729113348-e36a325f4eef/go.mod h1:ndxP8JIUJaaVe8DUdo1FCMsyPEhSy2dDZgSV6LI6a30=
 github.com/NpoolPlatform/message v0.0.0-20220731082357-95a1f030535b/go.mod h1:0Bw1zi5k5D9H7cD9tGPOHemU3YCq1nVeP9bjwZmcpf0=
 github.com/NpoolPlatform/message v0.0.0-20220731093849-a3238e16fc11/go.mod h1:0Bw1zi5k5D9H7cD9tGPOHemU3YCq1nVeP9bjwZmcpf0=
 github.com/NpoolPlatform/message v0.0.0-20220731100406-865f9e21f806/go.mod h1:0Bw1zi5k5D9H7cD9tGPOHemU3YCq1nVeP9bjwZmcpf0=
 github.com/NpoolPlatform/message v0.0.0-20220731105016-3d5e689291e8/go.mod h1:0Bw1zi5k5D9H7cD9tGPOHemU3YCq1nVeP9bjwZmcpf0=
-github.com/NpoolPlatform/message v0.0.0-20220802022626-54d6ac0f5f50 h1:WmVKVzSeRBA2jjuvs3aoCUejY+eYcCdZ537/M77GWl4=
-github.com/NpoolPlatform/message v0.0.0-20220802022626-54d6ac0f5f50/go.mod h1:0Bw1zi5k5D9H7cD9tGPOHemU3YCq1nVeP9bjwZmcpf0=
+github.com/NpoolPlatform/message v0.0.0-20220802030139-14419cf18ab6 h1:dKa3hB8pC6Xb2kJsRSAeiJJO+dhmQVUii/lnlpNJoPI=
+github.com/NpoolPlatform/message v0.0.0-20220802030139-14419cf18ab6/go.mod h1:0Bw1zi5k5D9H7cD9tGPOHemU3YCq1nVeP9bjwZmcpf0=
 github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c h1:Gll6yDpSSfr6RPHdDRD7/XPGdfOOZu57D641JQAkx3I=
 github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c/go.mod h1:6x2MevuQNEWnB/uJl8REgHUH2F+mBadmMtexHDO1/NA=
 github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE=
@@ -341,6 +345,7 @@ github.com/grpc-ecosystem/grpc-gateway/v2 v2.8.0/go.mod h1:/fckq3NE+vGiJsd4fDt4g
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0 h1:ESEyqQqXXFIcImj/BE8oKEX37Zsuceb2cZI+EL/zNCY=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0/go.mod h1:XnLCLFp3tjoZJszVKjfpyAK6J8sYIcQXWQxmqLWF21I=
 github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts v1.1.1/go.mod h1:eirF820XKj2zKB4hFfdsOqlAVq45EpWH2WzR2WxBua4=
+github.com/grpc-ecosystem/protoc-gen-grpc-gateway-ts v1.1.2/go.mod h1:GEU+m9J2s3Mx7Asvl+4P4NNaqQtO0HHtxPLH9jUfuIs=
 github.com/grpc/grpc-go v1.41.0 h1:mgY4oFjHTV35T076OO8kzb6RYhHR27FFHuka4hP10kA=
 github.com/grpc/grpc-go v1.41.0/go.mod h1:U3l9uK9J0sini8mHphKoXyaqDA/8VyGnDee1zzIUK6k=
 github.com/hashicorp/consul/api v1.10.1/go.mod h1:XjsvQN+RJGWI2TWy1/kqaE16HrR2J/FWgkYjdZQsX9M=
