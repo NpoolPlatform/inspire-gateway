@@ -145,9 +145,14 @@ func GetCoinArchivements(
 			return nil, 0, fmt.Errorf("invalid user")
 		}
 
-		iv, ok := ivMap[user.ID]
-		if !ok {
-			return nil, 0, fmt.Errorf("invalid invitee")
+		kol := true
+
+		if userID != userID {
+			iv, ok := ivMap[user.ID]
+			if !ok {
+				return nil, 0, fmt.Errorf("invalid invitee")
+			}
+			kol = iv.Kol
 		}
 
 		archivements[user.ID] = &npool.GetCoinArchivementsResponse_Archivement{
@@ -157,7 +162,7 @@ func GetCoinArchivements(
 			PhoneNO:       user.PhoneNO,
 			FirstName:     user.FirstName,
 			LastName:      user.LastName,
-			Kol:           iv.Kol,
+			Kol:           kol,
 			TotalInvitees: inviteesMap[user.ID],
 		}
 	}
