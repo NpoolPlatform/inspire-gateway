@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+
 	usercli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	userpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
@@ -39,9 +41,6 @@ func GetCoinArchivements(
 	invitations, n, err := inspirecli.GetInvitees(ctx, appID, []string{userID}, offset, limit)
 	if err != nil {
 		return nil, 0, err
-	}
-	if len(invitations) == 0 {
-		return []*npool.GetCoinArchivementsResponse_Archivement{}, n, nil
 	}
 
 	ivMap := map[string]*inspirepb.Invitation{}
@@ -110,6 +109,8 @@ func GetCoinArchivements(
 		return nil, 0, err
 	}
 
+	logger.Sugar().Infow("GetCoinArchivements", "users", users)
+
 	userMap := map[string]*userpb.User{}
 	for _, user := range users {
 		userMap[user.ID] = user
@@ -142,30 +143,33 @@ func GetCoinArchivements(
 
 	// 5 Merge info
 	archivements := map[string]*npool.GetCoinArchivementsResponse_Archivement{}
-
-	for _, general := range generals {
-		user, ok := userMap[general.UserID]
+	for _, user := range users {
+		user, ok := userMap[user.ID]
 		if !ok {
 			return nil, 0, fmt.Errorf("invalid user")
 		}
 
-		iv, ok := ivMap[general.UserID]
+		iv, ok := ivMap[user.ID]
 		if !ok {
 			return nil, 0, fmt.Errorf("invalid invitee")
 		}
 
+		archivements[user.ID] = &npool.GetCoinArchivementsResponse_Archivement{
+			UserID:        user.ID,
+			Username:      user.Username,
+			EmailAddress:  user.EmailAddress,
+			PhoneNO:       user.PhoneNO,
+			FirstName:     user.FirstName,
+			LastName:      user.LastName,
+			Kol:           iv.Kol,
+			TotalInvitees: inviteesMap[user.ID],
+		}
+	}
+
+	for _, general := range generals {
 		archivement, ok := archivements[general.UserID]
 		if !ok {
-			archivement = &npool.GetCoinArchivementsResponse_Archivement{
-				UserID:        user.ID,
-				Username:      user.Username,
-				EmailAddress:  user.EmailAddress,
-				PhoneNO:       user.PhoneNO,
-				FirstName:     user.FirstName,
-				LastName:      user.LastName,
-				Kol:           iv.Kol,
-				TotalInvitees: inviteesMap[user.ID],
-			}
+			return nil, 0, fmt.Errorf("invalid general user")
 		}
 
 		coin, ok := coinMap[general.CoinTypeID]
@@ -216,6 +220,7 @@ func GetCoinArchivements(
 		}
 
 		archivement.Archivements = append(archivement.Archivements, arch)
+		archivements[general.UserID] = archivement
 	}
 
 	for _, ar := range archivements {
