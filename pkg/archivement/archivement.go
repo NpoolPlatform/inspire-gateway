@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-
 	usercli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	userpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
@@ -108,8 +106,6 @@ func GetCoinArchivements(
 	if err != nil {
 		return nil, 0, err
 	}
-
-	logger.Sugar().Infow("GetCoinArchivements", "users", users)
 
 	userMap := map[string]*userpb.User{}
 	for _, user := range users {
