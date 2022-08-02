@@ -26,7 +26,7 @@ import (
 func GetCoinArchivements(
 	ctx context.Context, appID, userID string, offset, limit int32,
 ) (
-	archivements []*npool.CoinArchivement, total uint32, err error,
+	infos []*npool.GetCoinArchivementsResponse_Archivement, total uint32, err error,
 ) {
 	if limit == 0 {
 		limit = 1000
@@ -38,7 +38,7 @@ func GetCoinArchivements(
 		return nil, 0, err
 	}
 	if len(invitations) == 0 {
-		return []*npool.CoinArchivement{}, n, nil
+		return []*npool.GetCoinArchivementsResponse_Archivement{}, n, nil
 	}
 
 	ivMap := map[string]*inspirepb.Invitation{}
@@ -128,21 +128,36 @@ func GetCoinArchivements(
 	}
 
 	// 5 Merge info
-	archivements = []*npool.CoinArchivement{}
+	archivements := map[string]*npool.GetCoinArchivementsResponse_Archivement{}
+
 	for _, general := range generals {
 		user, ok := userMap[general.UserID]
 		if !ok {
 			return nil, 0, fmt.Errorf("invalid user")
 		}
 
-		coin, ok := coinMap[general.CoinTypeID]
-		if !ok {
-			return nil, 0, fmt.Errorf("invalid coin")
-		}
-
 		iv, ok := ivMap[general.UserID]
 		if !ok {
 			return nil, 0, fmt.Errorf("invalid invitee")
+		}
+
+		archivement, ok := archivements[general.UserID]
+		if !ok {
+			archivement = &npool.GetCoinArchivementsResponse_Archivement{
+				UserID:        user.ID,
+				Username:      user.Username,
+				EmailAddress:  user.EmailAddress,
+				PhoneNO:       user.PhoneNO,
+				FirstName:     user.FirstName,
+				LastName:      user.LastName,
+				Kol:           iv.Kol,
+				TotalInvitees: inviteesMap[user.ID],
+			}
+		}
+
+		coin, ok := coinMap[general.CoinTypeID]
+		if !ok {
+			return nil, 0, fmt.Errorf("invalid coin")
 		}
 
 		userPercent := uint32(0)
@@ -153,22 +168,11 @@ func GetCoinArchivements(
 			}
 		}
 
-		archivements = append(archivements, &npool.CoinArchivement{
-			UserID:       user.ID,
-			Username:     user.Username,
-			EmailAddress: user.EmailAddress,
-			PhoneNO:      user.PhoneNO,
-			FirstName:    user.FirstName,
-			LastName:     user.LastName,
-			Kol:          iv.Kol,
-
-			TotalInvitees: inviteesMap[user.ID],
-
-			CoinTypeID: coin.ID,
-			CoinName:   coin.Name,
-			CoinLogo:   coin.Logo,
-			CoinUnit:   coin.Unit,
-
+		archivement.Archivements = append(archivement.Archivements, &npool.CoinArchivement{
+			CoinTypeID:      coin.ID,
+			CoinName:        coin.Name,
+			CoinLogo:        coin.Logo,
+			CoinUnit:        coin.Unit,
 			TotalUnits:      general.TotalUnits,
 			SelfUnits:       general.SelfUnits,
 			TotalAmount:     general.TotalAmount,
@@ -180,5 +184,9 @@ func GetCoinArchivements(
 		})
 	}
 
-	return archivements, n, nil
+	for _, ar := range archivements {
+		infos = append(infos, ar)
+	}
+
+	return infos, n, nil
 }
