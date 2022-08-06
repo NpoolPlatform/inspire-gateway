@@ -7,6 +7,7 @@ import (
 
 	"github.com/NpoolPlatform/inspire-gateway/api/archivement"
 	"github.com/NpoolPlatform/inspire-gateway/api/commission"
+	"github.com/NpoolPlatform/inspire-gateway/api/reconciliation"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -20,6 +21,7 @@ func Register(server grpc.ServiceRegistrar) {
 	inspire.RegisterGatewayServer(server, &Server{})
 	archivement.Register(server)
 	commission.Register(server)
+	reconciliation.Register(server)
 }
 
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
@@ -30,6 +32,9 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 		return err
 	}
 	if err := commission.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := reconciliation.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	return nil
