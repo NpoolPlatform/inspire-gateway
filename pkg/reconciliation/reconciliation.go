@@ -32,5 +32,7 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 		}
 
 		offset += int32(len(orders))
+		// Only mock, so just return
+		return nil
 	}
 }
