@@ -164,6 +164,8 @@ func GetCoinArchivements(
 			LastName:      user.LastName,
 			Kol:           kol,
 			TotalInvitees: inviteesMap[user.ID],
+			CreatedAt:     user.CreatedAt,
+			InvitedAt:     ivMap[user.ID].CreatedAt,
 		}
 	}
 
