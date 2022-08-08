@@ -24,7 +24,7 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 		}
 
 		for _, order := range orders {
-			if err := commission.CalculateCommission(ctx, order.ID); err != nil {
+			if err := commission.CalculateCommission(ctx, order.ID, false); err != nil {
 				return err
 			}
 			if err := archivement.CalculateArchivement(ctx, order.ID); err != nil {
