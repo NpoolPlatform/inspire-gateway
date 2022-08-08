@@ -11,7 +11,7 @@ require (
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20220807091054-871fc936ff5e
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20220731105254-927765a3f6b1
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20220801075201-cab5db8b6290
-	github.com/NpoolPlatform/message v0.0.0-20220807174528-a8ac0f4f956f
+	github.com/NpoolPlatform/message v0.0.0-20220808065953-cd8e801ee640
 	github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c
 	github.com/NpoolPlatform/staker-manager v0.0.0-20220808065355-636423592107
 	github.com/go-resty/resty/v2 v2.7.0

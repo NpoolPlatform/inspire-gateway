@@ -218,6 +218,7 @@ func GetCoinArchivements(
 
 		if good != nil {
 			arch.CurGoodName = good.Title
+			arch.CurGoodUnit = good.Unit
 		}
 
 		archivement.Archivements = append(archivement.Archivements, arch)
