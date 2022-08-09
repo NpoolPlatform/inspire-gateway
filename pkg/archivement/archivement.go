@@ -154,6 +154,11 @@ func GetCoinArchivements(
 			kol = iv.Kol
 		}
 
+		invitedAt := uint32(0)
+		if iv, ok := ivMap[user.ID]; ok {
+			invitedAt = iv.CreatedAt
+		}
+
 		archivements[user.ID] = &npool.GetCoinArchivementsResponse_Archivement{
 			UserID:        user.ID,
 			Username:      user.Username,
@@ -164,7 +169,7 @@ func GetCoinArchivements(
 			Kol:           kol,
 			TotalInvitees: inviteesMap[user.ID],
 			CreatedAt:     user.CreatedAt,
-			InvitedAt:     ivMap[user.ID].CreatedAt,
+			InvitedAt:     invitedAt,
 		}
 	}
 
