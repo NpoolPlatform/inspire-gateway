@@ -66,8 +66,8 @@ github.com/NpoolPlatform/api-manager v0.0.0-20220421114434-bf0e069b0c83/go.mod h
 github.com/NpoolPlatform/appuser-manager v0.0.0-20220801034839-5e771cf37b25 h1:0yrpkV4oJlXj8QWb6niJEBKny4+2Y3jxq8ch61IHK+s=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20220802041613-42430f45e199 h1:V7eDuYj43T94Vzu3fnFhdqCn9GXd7Z4TpiKu2TrDW8w=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20220802041613-42430f45e199/go.mod h1:I3cC76oWfL46xpA11zVVJp8Vi3/BSVtp3rYJvZHi+Io=
-github.com/NpoolPlatform/archivement-manager v0.0.0-20220801035550-1b55a6b8d4bf h1:YksW/JB3YTJievP/od/VwQhevhSuO8p84xaU+zc6HJk=
-github.com/NpoolPlatform/archivement-manager v0.0.0-20220801035550-1b55a6b8d4bf/go.mod h1:i8s2/kAmiB+HzWmQaBOCfUrGZztZD77ZJL9SOD6MePA=
+github.com/NpoolPlatform/archivement-manager v0.0.0-20220809082551-91141c850aca h1:fodZaPrQUd1sX64uJhyQXi+xZsVyAFfZ99NuEyAYroY=
+github.com/NpoolPlatform/archivement-manager v0.0.0-20220809082551-91141c850aca/go.mod h1:i8s2/kAmiB+HzWmQaBOCfUrGZztZD77ZJL9SOD6MePA=
 github.com/NpoolPlatform/cloud-hashing-goods v0.0.0-20220725094415-a027a03521e7 h1:7w+Ydg4Vbzi++9Hn9EkmaU8TKuUcXzI056r9eeHoBKU=
 github.com/NpoolPlatform/cloud-hashing-goods v0.0.0-20220725094415-a027a03521e7/go.mod h1:aFvLR1M7HtXB2A0hyC7q83/H8WPv9jJaw30XrhSKNFI=
 github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220731100543-621262acb09b h1:guANkUH5JA/Yf4WXmW8JacCncM0YqMvUzdwZ8EJ7ZD4=

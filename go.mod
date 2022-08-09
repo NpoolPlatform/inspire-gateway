@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220421114434-bf0e069b0c83
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220802041613-42430f45e199
-	github.com/NpoolPlatform/archivement-manager v0.0.0-20220801035550-1b55a6b8d4bf
+	github.com/NpoolPlatform/archivement-manager v0.0.0-20220809082551-91141c850aca
 	github.com/NpoolPlatform/cloud-hashing-goods v0.0.0-20220725094415-a027a03521e7
 	github.com/NpoolPlatform/cloud-hashing-order v0.0.0-20220806140253-35d26a3ce111
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20220726144547-41aefeaea336

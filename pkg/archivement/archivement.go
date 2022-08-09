@@ -3,7 +3,6 @@ package archivement
 import (
 	"context"
 	"fmt"
-
 	usercli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	userpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
@@ -182,11 +181,6 @@ func GetCoinArchivements(
 		var percent *inspirepb.Percent
 
 		for _, p := range percents {
-			good, ok = goodMap[percent.GoodID]
-			if !ok {
-				continue
-			}
-
 			if percent == nil {
 				percent = p
 				continue
@@ -214,6 +208,11 @@ func GetCoinArchivements(
 		if percent != nil {
 			arch.CurPercent = percent.Percent
 			arch.CurGoodID = percent.GoodID
+			good, ok = goodMap[percent.GoodID]
+			if !ok {
+				continue
+			}
+
 		}
 
 		if good != nil {
