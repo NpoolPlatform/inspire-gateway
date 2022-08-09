@@ -9,6 +9,7 @@ import (
 	ordercli "github.com/NpoolPlatform/cloud-hashing-order/pkg/client"
 )
 
+// nolint
 func UpdateArchivement(ctx context.Context, appID, userID string) error {
 	offset := int32(0)
 	limit := int32(1000) //nolint // Mock variable now
@@ -23,7 +24,7 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 		}
 
 		for _, order := range orders {
-			if err := commission.CalculateCommission(ctx, order.ID); err != nil {
+			if err := commission.CalculateCommission(ctx, order.ID, false); err != nil {
 				return err
 			}
 			if err := archivement.CalculateArchivement(ctx, order.ID); err != nil {
@@ -32,5 +33,7 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 		}
 
 		offset += int32(len(orders))
+		// Only mock, so just return
+		return nil
 	}
 }

@@ -163,6 +163,8 @@ func GetCoinArchivements(
 			LastName:      user.LastName,
 			Kol:           kol,
 			TotalInvitees: inviteesMap[user.ID],
+			CreatedAt:     user.CreatedAt,
+			InvitedAt:     ivMap[user.ID].CreatedAt,
 		}
 	}
 
@@ -217,6 +219,7 @@ func GetCoinArchivements(
 
 		if good != nil {
 			arch.CurGoodName = good.Title
+			arch.CurGoodUnit = good.Unit
 		}
 
 		archivement.Archivements = append(archivement.Archivements, arch)
