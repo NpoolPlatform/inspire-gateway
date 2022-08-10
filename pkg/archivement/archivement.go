@@ -146,17 +146,14 @@ func GetCoinArchivements(
 		}
 
 		kol := true
+		invitedAt := uint32(0)
 
-		if userID != userID {
+		if userID != user.ID {
 			iv, ok := ivMap[user.ID]
 			if !ok {
 				return nil, 0, fmt.Errorf("invalid invitee")
 			}
 			kol = iv.Kol
-		}
-
-		invitedAt := uint32(0)
-		if iv, ok := ivMap[user.ID]; ok {
 			invitedAt = iv.CreatedAt
 		}
 
@@ -189,14 +186,11 @@ func GetCoinArchivements(
 		var percent *inspirepb.Percent
 
 		for _, p := range percents {
-			if percent == nil {
-				percent = p
+			if general.UserID != p.UserID || general.CoinTypeID == p.CoinTypeID {
 				continue
 			}
 
-			if general.UserID == p.UserID &&
-				general.CoinTypeID == p.CoinTypeID &&
-				percent.Percent < p.Percent {
+			if percent == nil || percent.Percent < p.Percent {
 				percent = p
 			}
 		}
