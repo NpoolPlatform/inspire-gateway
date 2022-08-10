@@ -171,6 +171,9 @@ func GetCoinArchivements(
 		}
 	}
 
+	archCoinMap := map[string]*coininfopb.CoinInfo{}
+	archGoodMap := map[string]*goodspb.GoodInfo{}
+
 	for _, general := range generals {
 		archivement, ok := archivements[general.UserID]
 		if !ok {
@@ -214,7 +217,6 @@ func GetCoinArchivements(
 			if !ok {
 				continue
 			}
-
 		}
 
 		if good != nil {
@@ -224,6 +226,37 @@ func GetCoinArchivements(
 
 		archivement.Archivements = append(archivement.Archivements, arch)
 		archivements[general.UserID] = archivement
+
+		archCoinMap[general.CoinTypeID] = coin
+		if good != nil || archGoodMap[general.CoinTypeID] == nil {
+			archGoodMap[general.CoinTypeID] = good
+		}
+	}
+
+	for _, archivement := range archivements {
+	nextCoin:
+		for coinTypeID, coin := range archCoinMap {
+			for _, iarch := range archivement.Archivements {
+				if iarch.CoinTypeID == coinTypeID {
+					continue nextCoin
+				}
+			}
+
+			arch := &npool.CoinArchivement{
+				CoinTypeID: coin.ID,
+				CoinName:   coin.Name,
+				CoinLogo:   coin.Logo,
+				CoinUnit:   coin.Unit,
+			}
+
+			good := archGoodMap[coinTypeID]
+			if good != nil {
+				arch.CurGoodName = good.Title
+				arch.CurGoodUnit = good.Unit
+			}
+
+			archivement.Archivements = append(archivement.Archivements, arch)
+		}
 	}
 
 	for _, ar := range archivements {
