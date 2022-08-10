@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/shopspring/decimal"
+
 	usercli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	userpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
@@ -243,10 +245,14 @@ func GetCoinArchivements(
 			}
 
 			arch := &npool.CoinArchivement{
-				CoinTypeID: coin.ID,
-				CoinName:   coin.Name,
-				CoinLogo:   coin.Logo,
-				CoinUnit:   coin.Unit,
+				CoinTypeID:      coin.ID,
+				CoinName:        coin.Name,
+				CoinLogo:        coin.Logo,
+				CoinUnit:        coin.Unit,
+				TotalAmount:     decimal.NewFromInt(0).String(),
+				SelfAmount:      decimal.NewFromInt(0).String(),
+				TotalCommission: decimal.NewFromInt(0).String(),
+				SelfCommission:  decimal.NewFromInt(0).String(),
 			}
 
 			good := archGoodMap[coinTypeID]
