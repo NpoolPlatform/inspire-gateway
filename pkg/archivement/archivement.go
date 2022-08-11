@@ -25,6 +25,8 @@ import (
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
+
+	"github.com/google/uuid"
 )
 
 // nolint
@@ -114,6 +116,16 @@ func GetCoinArchivements(
 		userMap[user.ID] = user
 	}
 
+	goods, err := goodscli.GetGoods(ctx)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	goodMap := map[string]*goodspb.GoodInfo{}
+	for _, good := range goods {
+		goodMap[good.ID] = good
+	}
+
 	percents := []*inspirepb.Percent{}
 	iofs := int32(0)
 
@@ -129,14 +141,15 @@ func GetCoinArchivements(
 		iofs += limit
 	}
 
-	goods, err := goodscli.GetGoods(ctx)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	goodMap := map[string]*goodspb.GoodInfo{}
-	for _, good := range goods {
-		goodMap[good.ID] = good
+	for _, p := range percents {
+		good, ok := goodMap[p.GoodID]
+		if !ok {
+			return nil, 0, fmt.Errorf("invalid good")
+		}
+		invalidID := uuid.UUID{}.String()
+		if p.CoinTypeID == "" || p.CoinTypeID == invalidID {
+			p.CoinTypeID = good.CoinInfoID
+		}
 	}
 
 	// 5 Merge info
