@@ -257,6 +257,7 @@ func GetCoinArchivements(
 
 			good := archGoodMap[coinTypeID]
 			if good != nil {
+				arch.CurGoodID = good.ID
 				arch.CurGoodName = good.Title
 				arch.CurGoodUnit = good.Unit
 			}
