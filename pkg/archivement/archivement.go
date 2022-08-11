@@ -191,7 +191,7 @@ func GetCoinArchivements(
 		var percent *inspirepb.Percent
 
 		for _, p := range percents {
-			if general.UserID != p.UserID || general.CoinTypeID == p.CoinTypeID {
+			if general.UserID != p.UserID || general.CoinTypeID != p.CoinTypeID {
 				continue
 			}
 
@@ -255,11 +255,26 @@ func GetCoinArchivements(
 				SelfCommission:  decimal.NewFromInt(0).String(),
 			}
 
+			var percent *inspirepb.Percent
+
+			for _, p := range percents {
+				if archivement.UserID != p.UserID || coin.ID != p.CoinTypeID {
+					continue
+				}
+
+				if percent == nil || percent.Percent < p.Percent {
+					percent = p
+				}
+			}
+
 			good := archGoodMap[coinTypeID]
 			if good != nil {
 				arch.CurGoodID = good.ID
 				arch.CurGoodName = good.Title
 				arch.CurGoodUnit = good.Unit
+			}
+			if percent != nil {
+				arch.CurPercent = percent.Percent
 			}
 
 			archivement.Archivements = append(archivement.Archivements, arch)
