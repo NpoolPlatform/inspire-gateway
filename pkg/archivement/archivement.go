@@ -304,7 +304,11 @@ func GetGoodArchivements(
 			if ar.GoodID != detail.GoodID {
 				continue
 			}
-			ar.SuperiorCommission += detail.Commission
+
+			amount, _ := decimal.NewFromString(detail.Commission)
+			src, _ := decimal.NewFromString(ar.SuperiorCommission)
+
+			ar.SuperiorCommission = amount.Add(src).String()
 			break
 		}
 	}
