@@ -30,10 +30,10 @@ import (
 )
 
 // nolint
-func GetCoinArchivements(
+func GetGoodArchivements(
 	ctx context.Context, appID, userID string, offset, limit int32,
 ) (
-	infos []*npool.GetCoinArchivementsResponse_Archivement, total uint32, err error,
+	infos []*npool.GetGoodArchivementsResponse_UserArchivement, total uint32, err error,
 ) {
 	if limit == 0 {
 		limit = 1000
@@ -153,7 +153,7 @@ func GetCoinArchivements(
 	}
 
 	// 5 Merge info
-	archivements := map[string]*npool.GetCoinArchivementsResponse_Archivement{}
+	archivements := map[string]*npool.GetGoodArchivementsResponse_UserArchivement{}
 	for _, user := range users {
 		user, ok := userMap[user.ID]
 		if !ok {
@@ -172,7 +172,7 @@ func GetCoinArchivements(
 			invitedAt = iv.CreatedAt
 		}
 
-		archivements[user.ID] = &npool.GetCoinArchivementsResponse_Archivement{
+		archivements[user.ID] = &npool.GetGoodArchivementsResponse_UserArchivement{
 			UserID:        user.ID,
 			Username:      user.Username,
 			EmailAddress:  user.EmailAddress,
@@ -214,7 +214,7 @@ func GetCoinArchivements(
 			break
 		}
 
-		arch := &npool.CoinArchivement{
+		arch := &npool.GoodArchivement{
 			GoodID:            general.GoodID,
 			GoodName:          good.Title,
 			GoodUnit:          good.Unit,
@@ -258,7 +258,7 @@ func GetCoinArchivements(
 
 			coin := coinMap[good.CoinInfoID]
 
-			arch := &npool.CoinArchivement{
+			arch := &npool.GoodArchivement{
 				GoodID:            goodID,
 				GoodName:          good.Title,
 				GoodUnit:          good.Unit,

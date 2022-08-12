@@ -15,29 +15,29 @@ import (
 	"github.com/google/uuid"
 )
 
-func (s *Server) GetCoinArchivements(
-	ctx context.Context, in *npool.GetCoinArchivementsRequest,
+func (s *Server) GetGoodArchivements(
+	ctx context.Context, in *npool.GetGoodArchivementsRequest,
 ) (
-	*npool.GetCoinArchivementsResponse, error,
+	*npool.GetGoodArchivementsResponse, error,
 ) {
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
-		logger.Sugar().Errorw("GetCoinArchivements", "AppID", in.GetAppID(), "error", err)
-		return &npool.GetCoinArchivementsResponse{}, status.Error(codes.Internal, "AppID is invalid")
+		logger.Sugar().Errorw("GetGoodArchivements", "AppID", in.GetAppID(), "error", err)
+		return &npool.GetGoodArchivementsResponse{}, status.Error(codes.Internal, "AppID is invalid")
 	}
 
 	if _, err := uuid.Parse(in.GetUserID()); err != nil {
-		logger.Sugar().Errorw("GetCoinArchivements", "UserID", in.GetUserID(), "error", err)
-		return &npool.GetCoinArchivementsResponse{}, status.Error(codes.Internal, "UserID is invalid")
+		logger.Sugar().Errorw("GetGoodArchivements", "UserID", in.GetUserID(), "error", err)
+		return &npool.GetGoodArchivementsResponse{}, status.Error(codes.Internal, "UserID is invalid")
 	}
 
-	infos, total, err := archivement1.GetCoinArchivements(ctx,
+	infos, total, err := archivement1.GetGoodArchivements(ctx,
 		in.GetAppID(), in.GetUserID(), in.GetOffset(), in.GetLimit())
 	if err != nil {
-		logger.Sugar().Errorw("GetCoinArchivements", "AppID", in.GetAppID(), "UserID", in.GetUserID(), "error", err)
-		return &npool.GetCoinArchivementsResponse{}, status.Error(codes.Internal, "fail get coin archivements")
+		logger.Sugar().Errorw("GetGoodArchivements", "AppID", in.GetAppID(), "UserID", in.GetUserID(), "error", err)
+		return &npool.GetGoodArchivementsResponse{}, status.Error(codes.Internal, "fail get coin archivements")
 	}
 
-	return &npool.GetCoinArchivementsResponse{
+	return &npool.GetGoodArchivementsResponse{
 		Archivements: infos,
 		Total:        total,
 	}, nil
