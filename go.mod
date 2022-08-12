@@ -13,7 +13,7 @@ require (
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20220801075201-cab5db8b6290
 	github.com/NpoolPlatform/message v0.0.0-20220810073217-a25d0782903c
 	github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c
-	github.com/NpoolPlatform/staker-manager v0.0.0-20220812034636-a9e741a90d7c
+	github.com/NpoolPlatform/staker-manager v0.0.0-20220812040525-2c5271dd8ce2
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0

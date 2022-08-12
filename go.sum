@@ -92,8 +92,8 @@ github.com/NpoolPlatform/message v0.0.0-20220810073217-a25d0782903c h1:FRPOeT87y
 github.com/NpoolPlatform/message v0.0.0-20220810073217-a25d0782903c/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
 github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c h1:Gll6yDpSSfr6RPHdDRD7/XPGdfOOZu57D641JQAkx3I=
 github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c/go.mod h1:6x2MevuQNEWnB/uJl8REgHUH2F+mBadmMtexHDO1/NA=
-github.com/NpoolPlatform/staker-manager v0.0.0-20220812034636-a9e741a90d7c h1:5s0pwuQ7YXWmYgjQ2SMSDup7ql2CEbqjV0SysbVo5Bk=
-github.com/NpoolPlatform/staker-manager v0.0.0-20220812034636-a9e741a90d7c/go.mod h1:ShYkNS642o+e/oGUSqj9fnIfaacWhiH60wB3nkpN45A=
+github.com/NpoolPlatform/staker-manager v0.0.0-20220812040525-2c5271dd8ce2 h1:NiWHNHebhWcWphf2hDuSl3PdsUJUukoJr/OplIo2flg=
+github.com/NpoolPlatform/staker-manager v0.0.0-20220812040525-2c5271dd8ce2/go.mod h1:ShYkNS642o+e/oGUSqj9fnIfaacWhiH60wB3nkpN45A=
 github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/Shonminh/apollo-client v0.4.0 h1:AXGp4wOahrEKjheMXehgsG9B8dEfLQHttRLHeEefvus=
