@@ -3,6 +3,8 @@ package reconciliation
 import (
 	"context"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+
 	archivement "github.com/NpoolPlatform/staker-manager/pkg/archivement"
 	commission "github.com/NpoolPlatform/staker-manager/pkg/commission"
 
@@ -25,10 +27,11 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 
 		for _, order := range orders {
 			if err := commission.CalculateCommission(ctx, order.ID, false); err != nil {
-				return err
+				logger.Sugar().Warnw("UpdateArchivement", "OrderID", order.ID, "error", err)
+				continue
 			}
 			if err := archivement.CalculateArchivement(ctx, order.ID); err != nil {
-				return err
+				logger.Sugar().Warnw("UpdateArchivement", "OrderID", order.ID, "error", err)
 			}
 		}
 
