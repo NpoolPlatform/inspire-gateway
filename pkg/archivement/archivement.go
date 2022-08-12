@@ -9,7 +9,9 @@ import (
 	usercli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	userpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
+	archivementdetailmgrcli "github.com/NpoolPlatform/archivement-manager/pkg/client/detail"
 	archivementgeneralmgrcli "github.com/NpoolPlatform/archivement-manager/pkg/client/general"
+	archivementdetailmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/archivement/detail"
 	archivementgeneralmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/archivement/general"
 
 	inspirecli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation"
@@ -274,6 +276,36 @@ func GetGoodArchivements(
 			}
 
 			archivement.Archivements = append(archivement.Archivements, arch)
+		}
+	}
+
+	// 6 Get my details for invitees' contribution
+	details, _, err := archivementdetailmgrcli.GetDetails(ctx, &archivementdetailmgrpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+		UserID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: userID,
+		},
+	}, 0, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for _, detail := range details {
+		arch, ok := archivements[detail.DirectContributorID]
+		if !ok {
+			continue
+		}
+
+		for _, ar := range arch.Archivements {
+			if ar.GoodID != detail.GoodID {
+				continue
+			}
+			ar.SuperiorCommission += detail.Commission
+			break
 		}
 	}
 

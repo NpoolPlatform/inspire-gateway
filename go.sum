@@ -66,8 +66,8 @@ github.com/NpoolPlatform/api-manager v0.0.0-20220421114434-bf0e069b0c83/go.mod h
 github.com/NpoolPlatform/appuser-manager v0.0.0-20220801034839-5e771cf37b25 h1:0yrpkV4oJlXj8QWb6niJEBKny4+2Y3jxq8ch61IHK+s=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20220802041613-42430f45e199 h1:V7eDuYj43T94Vzu3fnFhdqCn9GXd7Z4TpiKu2TrDW8w=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20220802041613-42430f45e199/go.mod h1:I3cC76oWfL46xpA11zVVJp8Vi3/BSVtp3rYJvZHi+Io=
-github.com/NpoolPlatform/archivement-manager v0.0.0-20220809082551-91141c850aca h1:fodZaPrQUd1sX64uJhyQXi+xZsVyAFfZ99NuEyAYroY=
-github.com/NpoolPlatform/archivement-manager v0.0.0-20220809082551-91141c850aca/go.mod h1:i8s2/kAmiB+HzWmQaBOCfUrGZztZD77ZJL9SOD6MePA=
+github.com/NpoolPlatform/archivement-manager v0.0.0-20220812100336-b7a3648ba3a8 h1:qeuyQwPftTSvKgHcRGt51/v3WESefxfvmx7kFzKgdTI=
+github.com/NpoolPlatform/archivement-manager v0.0.0-20220812100336-b7a3648ba3a8/go.mod h1:sVBfvSvtGUXevf+NuyjBKrRiE2UC67dQHnQFT/18TuY=
 github.com/NpoolPlatform/archivement-middleware v0.0.0-20220807175132-f1ff67770787 h1:CmaJoUMwzKhaJ0aZ7ZJ0iu8lrih7P0X5x4MR//h04ls=
 github.com/NpoolPlatform/archivement-middleware v0.0.0-20220807175132-f1ff67770787/go.mod h1:l8Ak6JRZ/zYOa+7+VuUPb+qqkZHVq4hvoJ/LW4dQis0=
 github.com/NpoolPlatform/cloud-hashing-goods v0.0.0-20220725094415-a027a03521e7 h1:7w+Ydg4Vbzi++9Hn9EkmaU8TKuUcXzI056r9eeHoBKU=
@@ -88,12 +88,12 @@ github.com/NpoolPlatform/libent-cruder v0.0.0-20220801075201-cab5db8b6290 h1:yMI
 github.com/NpoolPlatform/libent-cruder v0.0.0-20220801075201-cab5db8b6290/go.mod h1:zvvqlRwbOdTUauPQ9dFDhDuxa91ILV0CQfVdPBZj+eA=
 github.com/NpoolPlatform/message v0.0.0-20220120075427-38182760a780/go.mod h1:tnsf7zHQ5Mv2uG0ezOwCfm/bxluiRW10DeuIl4SjG4Y=
 github.com/NpoolPlatform/message v0.0.0-20220121040326-31d316062cdc/go.mod h1:tnsf7zHQ5Mv2uG0ezOwCfm/bxluiRW10DeuIl4SjG4Y=
-github.com/NpoolPlatform/message v0.0.0-20220812052850-ee3c6e2dd4dc h1:/EdAJK77wIMOffWy1ClSrUwDr2er6PfbovSrtVXXqf4=
-github.com/NpoolPlatform/message v0.0.0-20220812052850-ee3c6e2dd4dc/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
+github.com/NpoolPlatform/message v0.0.0-20220812100206-67b8140ad838 h1:z5lj4WJaYR304FtHVM5Bgsnl9dJQT46HueYoJLBLwWE=
+github.com/NpoolPlatform/message v0.0.0-20220812100206-67b8140ad838/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
 github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c h1:Gll6yDpSSfr6RPHdDRD7/XPGdfOOZu57D641JQAkx3I=
 github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c/go.mod h1:6x2MevuQNEWnB/uJl8REgHUH2F+mBadmMtexHDO1/NA=
-github.com/NpoolPlatform/staker-manager v0.0.0-20220812041949-44fdc27d9ff9 h1:FBFqrrs0i9S/ZwINQn8jRqPwfQO7byFTPGWffp+RlsU=
-github.com/NpoolPlatform/staker-manager v0.0.0-20220812041949-44fdc27d9ff9/go.mod h1:ShYkNS642o+e/oGUSqj9fnIfaacWhiH60wB3nkpN45A=
+github.com/NpoolPlatform/staker-manager v0.0.0-20220812090309-2928e09c91b6 h1:0tDD9B71tf8fpYDzJuTtv5FdsmL/REgHErqM9wJutck=
+github.com/NpoolPlatform/staker-manager v0.0.0-20220812090309-2928e09c91b6/go.mod h1:ShYkNS642o+e/oGUSqj9fnIfaacWhiH60wB3nkpN45A=
 github.com/OneOfOne/xxhash v1.2.2 h1:KMrpdQIwFcEqXDklaen+P1axHaj9BSKzvpUUfnHldSE=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/Shonminh/apollo-client v0.4.0 h1:AXGp4wOahrEKjheMXehgsG9B8dEfLQHttRLHeEefvus=
