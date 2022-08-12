@@ -186,7 +186,6 @@ func GetCoinArchivements(
 		}
 	}
 
-	archCoinMap := map[string]*coininfopb.CoinInfo{}
 	archGoodMap := map[string]*goodspb.GoodInfo{}
 
 	for _, general := range generals {
@@ -200,94 +199,78 @@ func GetCoinArchivements(
 			return nil, 0, fmt.Errorf("invalid coin")
 		}
 
-		var good *goodspb.GoodInfo
-		var percent *inspirepb.Percent
+		good, ok := goodMap[general.GoodID]
+		if !ok {
+			return nil, 0, fmt.Errorf("invalid good")
+		}
+
+		percent := uint32(0)
 
 		for _, p := range percents {
-			if general.UserID != p.UserID || general.CoinTypeID != p.CoinTypeID {
+			if general.UserID != p.UserID || general.GoodID != p.GoodID {
 				continue
 			}
-
-			if percent == nil || percent.Percent < p.Percent {
-				percent = p
-			}
+			percent = p.Percent
+			break
 		}
 
 		arch := &npool.CoinArchivement{
-			CoinTypeID:      coin.ID,
-			CoinName:        coin.Name,
-			CoinLogo:        coin.Logo,
-			CoinUnit:        coin.Unit,
-			TotalUnits:      general.TotalUnits,
-			SelfUnits:       general.SelfUnits,
-			TotalAmount:     general.TotalAmount,
-			SelfAmount:      general.SelfAmount,
-			TotalCommission: general.TotalCommission,
-			SelfCommission:  general.SelfCommission,
-		}
-		if percent != nil {
-			arch.CurPercent = percent.Percent
-			arch.CurGoodID = percent.GoodID
-			good, ok = goodMap[percent.GoodID]
-			if !ok {
-				continue
-			}
-		}
-
-		if good != nil {
-			arch.CurGoodName = good.Title
-			arch.CurGoodUnit = good.Unit
+			GoodID:            general.GoodID,
+			GoodName:          good.Title,
+			GoodUnit:          good.Unit,
+			CommissionPercent: percent,
+			CoinTypeID:        coin.ID,
+			CoinName:          coin.Name,
+			CoinLogo:          coin.Logo,
+			CoinUnit:          coin.Unit,
+			TotalUnits:        general.TotalUnits,
+			SelfUnits:         general.SelfUnits,
+			TotalAmount:       general.TotalAmount,
+			SelfAmount:        general.SelfAmount,
+			TotalCommission:   general.TotalCommission,
+			SelfCommission:    general.SelfCommission,
 		}
 
 		archivement.Archivements = append(archivement.Archivements, arch)
 		archivements[general.UserID] = archivement
 
-		archCoinMap[general.CoinTypeID] = coin
-		if good != nil || archGoodMap[general.CoinTypeID] == nil {
-			archGoodMap[general.CoinTypeID] = good
-		}
+		archGoodMap[general.GoodID] = good
 	}
 
 	for _, archivement := range archivements {
 	nextCoin:
-		for coinTypeID, coin := range archCoinMap {
+		for goodID, good := range archGoodMap {
 			for _, iarch := range archivement.Archivements {
-				if iarch.CoinTypeID == coinTypeID {
+				if iarch.GoodID == goodID {
 					continue nextCoin
 				}
 			}
 
-			arch := &npool.CoinArchivement{
-				CoinTypeID:      coin.ID,
-				CoinName:        coin.Name,
-				CoinLogo:        coin.Logo,
-				CoinUnit:        coin.Unit,
-				TotalAmount:     decimal.NewFromInt(0).String(),
-				SelfAmount:      decimal.NewFromInt(0).String(),
-				TotalCommission: decimal.NewFromInt(0).String(),
-				SelfCommission:  decimal.NewFromInt(0).String(),
-			}
-
-			var percent *inspirepb.Percent
+			percent := uint32(0)
 
 			for _, p := range percents {
-				if archivement.UserID != p.UserID || coin.ID != p.CoinTypeID {
+				if archivement.UserID != p.UserID || goodID != p.GoodID {
 					continue
 				}
-
-				if percent == nil || percent.Percent < p.Percent {
-					percent = p
-				}
+				percent = p.Percent
+				break
 			}
 
-			good := archGoodMap[coinTypeID]
-			if good != nil {
-				arch.CurGoodID = good.ID
-				arch.CurGoodName = good.Title
-				arch.CurGoodUnit = good.Unit
-			}
-			if percent != nil {
-				arch.CurPercent = percent.Percent
+			coin := coinMap[good.CoinInfoID]
+
+			arch := &npool.CoinArchivement{
+				GoodID:            goodID,
+				GoodName:          good.Title,
+				GoodUnit:          good.Unit,
+				CommissionPercent: percent,
+				CoinTypeID:        coin.ID,
+				CoinName:          coin.Name,
+				CoinLogo:          coin.Logo,
+				CoinUnit:          coin.Unit,
+				TotalAmount:       decimal.NewFromInt(0).String(),
+				SelfAmount:        decimal.NewFromInt(0).String(),
+				TotalCommission:   decimal.NewFromInt(0).String(),
+				SelfCommission:    decimal.NewFromInt(0).String(),
 			}
 
 			archivement.Archivements = append(archivement.Archivements, arch)
