@@ -42,3 +42,38 @@ func (s *Server) GetGoodArchivements(
 		Total:        total,
 	}, nil
 }
+
+func (s *Server) GetUserGoodArchivements(
+	ctx context.Context, in *npool.GetUserGoodArchivementsRequest,
+) (
+	*npool.GetUserGoodArchivementsResponse, error,
+) {
+	if _, err := uuid.Parse(in.GetAppID()); err != nil {
+		logger.Sugar().Errorw("GetUserGoodArchivements", "AppID", in.GetAppID(), "error", err)
+		return &npool.GetUserGoodArchivementsResponse{}, status.Error(codes.Internal, "AppID is invalid")
+	}
+
+	if len(in.GetUserIDs()) == 0 {
+		logger.Sugar().Errorw("GetUserGoodArchivements", "UserIDs", in.GetUserIDs(), "error", "UserIDs is invalid")
+		return &npool.GetUserGoodArchivementsResponse{}, status.Error(codes.Internal, "UserIDs is invalid")
+	}
+
+	for _, user := range in.GetUserIDs() {
+		if _, err := uuid.Parse(user); err != nil {
+			logger.Sugar().Errorw("GetUserGoodArchivements", "UserID", user, "error", err)
+			return &npool.GetUserGoodArchivementsResponse{}, status.Error(codes.Internal, "UserIDs is invalid")
+		}
+	}
+
+	infos, total, err := archivement1.GetUserGoodArchivements(ctx,
+		in.GetAppID(), in.GetUserIDs(), in.GetOffset(), in.GetLimit())
+	if err != nil {
+		logger.Sugar().Errorw("GetUserGoodArchivements", "AppID", in.GetAppID(), "UserIDs", in.GetUserIDs(), "error", err)
+		return &npool.GetUserGoodArchivementsResponse{}, status.Error(codes.Internal, "fail get coin archivements")
+	}
+
+	return &npool.GetUserGoodArchivementsResponse{
+		Archivements: infos,
+		Total:        total,
+	}, nil
+}

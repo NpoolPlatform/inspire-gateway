@@ -31,18 +31,17 @@ import (
 	"github.com/google/uuid"
 )
 
-// nolint
 func GetGoodArchivements(
 	ctx context.Context, appID, userID string, offset, limit int32,
 ) (
-	infos []*npool.GetGoodArchivementsResponse_UserArchivement, total uint32, err error,
+	infos []*npool.UserArchivement, total uint32, err error,
 ) {
 	if limit == 0 {
 		limit = 1000
 	}
 
 	// 1 Get all layered users
-	invitations, n, err := inspirecli.GetInvitees(ctx, appID, []string{userID}, offset, limit)
+	invitations, _, err := inspirecli.GetInvitees(ctx, appID, []string{userID}, offset, limit)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -57,6 +56,41 @@ func GetGoodArchivements(
 		uids = append(uids, iv.InviteeID)
 	}
 
+	return getUserArchivements(ctx, appID, userID, uids, ivMap, offset, limit)
+}
+
+func GetUserGoodArchivements(
+	ctx context.Context, appID string, userIDs []string, offset, limit int32,
+) (
+	infos []*npool.UserArchivement, total uint32, err error,
+) {
+	if limit == 0 {
+		limit = 1000
+	}
+
+	// 1 Get all layered users
+	invitations, _, err := inspirecli.GetInviters(ctx, appID, userIDs, offset, limit)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	ivMap := map[string]*inspirepb.Invitation{}
+	for _, iv := range invitations {
+		ivMap[iv.InviteeID] = iv
+	}
+
+	return getUserArchivements(ctx, appID, uuid.UUID{}.String(), userIDs, ivMap, offset, limit)
+}
+
+// nolint
+func getUserArchivements(
+	ctx context.Context,
+	appID, userID string, uids []string,
+	ivMap map[string]*inspirepb.Invitation,
+	offset, limit int32,
+) (
+	infos []*npool.UserArchivement, total uint32, err error,
+) {
 	inviteesMap := map[string]uint32{}
 	inviteesOfs := int32(0)
 
@@ -155,7 +189,7 @@ func GetGoodArchivements(
 	}
 
 	// 5 Merge info
-	archivements := map[string]*npool.GetGoodArchivementsResponse_UserArchivement{}
+	archivements := map[string]*npool.UserArchivement{}
 	for _, user := range users {
 		user, ok := userMap[user.ID]
 		if !ok {
@@ -174,7 +208,7 @@ func GetGoodArchivements(
 			invitedAt = iv.CreatedAt
 		}
 
-		archivements[user.ID] = &npool.GetGoodArchivementsResponse_UserArchivement{
+		archivements[user.ID] = &npool.UserArchivement{
 			UserID:        user.ID,
 			Username:      user.Username,
 			EmailAddress:  user.EmailAddress,
