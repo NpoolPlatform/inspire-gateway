@@ -3,15 +3,15 @@ module github.com/NpoolPlatform/inspire-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/api-manager v0.0.0-20220421114434-bf0e069b0c83
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220802041613-42430f45e199
-	github.com/NpoolPlatform/archivement-manager v0.0.0-20220812100336-b7a3648ba3a8
+	github.com/NpoolPlatform/api-manager v0.0.0-20220714064853-e3bf392e2c17
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220813042624-b76499b6435d
+	github.com/NpoolPlatform/archivement-manager v0.0.0-20220813044453-cdf182df2744
 	github.com/NpoolPlatform/cloud-hashing-goods v0.0.0-20220725094415-a027a03521e7
 	github.com/NpoolPlatform/cloud-hashing-order v0.0.0-20220806140253-35d26a3ce111
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20220807091054-871fc936ff5e
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20220812032117-44ecffa2bb95
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20220731105254-927765a3f6b1
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20220801075201-cab5db8b6290
-	github.com/NpoolPlatform/message v0.0.0-20220812100206-67b8140ad838
+	github.com/NpoolPlatform/message v0.0.0-20220813040740-adfb180ecd8f
 	github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c
 	github.com/NpoolPlatform/staker-manager v0.0.0-20220812090309-2928e09c91b6
 	github.com/go-resty/resty/v2 v2.7.0
@@ -28,7 +28,7 @@ require (
 )
 
 require (
-	github.com/NpoolPlatform/archivement-middleware v0.0.0-20220807175132-f1ff67770787 // indirect
+	github.com/NpoolPlatform/archivement-middleware v0.0.0-20220813044652-0851d37de47c // indirect
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220731100543-621262acb09b // indirect
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20220805144824-993d6ac7ae8b // indirect
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
@@ -89,8 +89,8 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
-	golang.org/x/net v0.0.0-20220418201149-a630d4f3e7a2 // indirect
-	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f // indirect
 	google.golang.org/genproto v0.0.0-20220519153652-3a47de7e79bd // indirect

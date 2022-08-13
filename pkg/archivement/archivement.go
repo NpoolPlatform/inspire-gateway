@@ -108,7 +108,7 @@ func GetGoodArchivements(
 	}
 
 	// 4 Get all users
-	users, err := usercli.GetManyUsers(ctx, uids)
+	users, n, err := usercli.GetManyUsers(ctx, uids)
 	if err != nil {
 		return nil, 0, err
 	}
