@@ -196,14 +196,11 @@ func getUserArchivements(
 			return nil, 0, fmt.Errorf("invalid user")
 		}
 
-		kol := true
+		kol := user.ID == userID
 		invitedAt := uint32(0)
 
-		if userID != user.ID {
-			iv, ok := ivMap[user.ID]
-			if !ok {
-				return nil, 0, fmt.Errorf("invalid invitee")
-			}
+		iv, ok := ivMap[user.ID]
+		if ok {
 			kol = iv.Kol
 			invitedAt = iv.CreatedAt
 		}
