@@ -45,9 +45,6 @@ func GetGoodArchivements(
 	if err != nil {
 		return nil, 0, err
 	}
-	if len(invitations) == 0 {
-		return []*npool.UserArchivement{}, 0, nil
-	}
 
 	ivMap := map[string]*inspirepb.Invitation{}
 	for _, iv := range invitations {
@@ -75,9 +72,6 @@ func GetUserGoodArchivements(
 	invitations, _, err := inspirecli.GetInviters(ctx, appID, userIDs, offset, limit)
 	if err != nil {
 		return nil, 0, err
-	}
-	if len(invitations) == 0 {
-		return []*npool.UserArchivement{}, 0, nil
 	}
 
 	ivMap := map[string]*inspirepb.Invitation{}
@@ -202,14 +196,11 @@ func getUserArchivements(
 			return nil, 0, fmt.Errorf("invalid user")
 		}
 
-		kol := true
+		kol := user.ID == userID
 		invitedAt := uint32(0)
 
-		if userID != user.ID {
-			iv, ok := ivMap[user.ID]
-			if !ok {
-				return nil, 0, fmt.Errorf("invalid invitee")
-			}
+		iv, ok := ivMap[user.ID]
+		if ok {
 			kol = iv.Kol
 			invitedAt = iv.CreatedAt
 		}
