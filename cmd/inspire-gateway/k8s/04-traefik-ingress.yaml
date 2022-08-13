@@ -57,6 +57,9 @@ spec:
     - host: api.npool.top
       http: &http_rules
         paths:
+          ######
+          # Enable to all users
+          ######
           - path: /api/inspire/v1/get/goodarchivements
             backend:
               serviceName: inspire-gateway
@@ -65,6 +68,9 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          #######
+          # Only enable to app admin
+          #######
           - path: /api/inspire/v1/update/archivement
             backend:
               serviceName: inspire-gateway
