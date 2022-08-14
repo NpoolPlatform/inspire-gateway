@@ -181,11 +181,14 @@ func getUserArchivements(
 	}
 
 	for _, p := range percents {
+		invalidID := uuid.UUID{}.String()
+		if p.GoodID == "" || p.GoodID == invalidID {
+			continue
+		}
 		good, ok := goodMap[p.GoodID]
 		if !ok {
-			return nil, 0, fmt.Errorf("invalid good")
+			return nil, 0, fmt.Errorf("invalid good: %v", p)
 		}
-		invalidID := uuid.UUID{}.String()
 		if p.CoinTypeID == "" || p.CoinTypeID == invalidID {
 			p.CoinTypeID = good.CoinInfoID
 		}
@@ -196,7 +199,7 @@ func getUserArchivements(
 	for _, user := range users {
 		user, ok := userMap[user.ID]
 		if !ok {
-			return nil, 0, fmt.Errorf("invalid user")
+			return nil, 0, fmt.Errorf("invalid user: %v", user.ID)
 		}
 
 		kol := user.ID == userID
@@ -237,7 +240,7 @@ func getUserArchivements(
 
 		good, ok := goodMap[general.GoodID]
 		if !ok {
-			return nil, 0, fmt.Errorf("invalid good")
+			return nil, 0, fmt.Errorf("invalid good: %v", general)
 		}
 
 		percent := uint32(0)
