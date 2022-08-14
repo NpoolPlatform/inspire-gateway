@@ -73,6 +73,9 @@ func GetUserGoodArchivements(
 	if err != nil {
 		return nil, 0, err
 	}
+	if len(invitations) == 0 {
+		return []*npool.UserArchivement{}, 0, nil
+	}
 
 	ivMap := map[string]*inspirepb.Invitation{}
 	for _, iv := range invitations {
