@@ -85,8 +85,8 @@ github.com/NpoolPlatform/cloud-hashing-order v0.0.0-20220806140253-35d26a3ce111/
 github.com/NpoolPlatform/go-service-framework v0.0.0-20220120091626-4e8035637592/go.mod h1:JqrktA7gNQe/Uprnr6DCs5UCFpheCZ30lDd0OkyRtC4=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20220812032117-44ecffa2bb95 h1:cl2ZgENyBBE3khUz+kWFINRElXRO5pqlN+7r0uSSCl4=
 github.com/NpoolPlatform/go-service-framework v0.0.0-20220812032117-44ecffa2bb95/go.mod h1:QPI3Fu/AU5iUOUnf9EictZP1lqPQdPcVLqveIB2HovI=
-github.com/NpoolPlatform/inspire-middleware v0.0.0-20220813083512-da688b0b4dd3 h1:7WOaa+h7YFfhChfyJgIhTg6TG6U0Oc8XgjAXPw1T4sU=
-github.com/NpoolPlatform/inspire-middleware v0.0.0-20220813083512-da688b0b4dd3/go.mod h1:8H7fkewEV58y1WsLGsPfjJq8XvOk39uTjHVQfwl++Wg=
+github.com/NpoolPlatform/inspire-middleware v0.0.0-20220814111033-63a255756870 h1:jYabaceJoykZFE9cpNyQscOyUQiaL1XgLejAE0l3HO0=
+github.com/NpoolPlatform/inspire-middleware v0.0.0-20220814111033-63a255756870/go.mod h1:18loEzohn/fhjsuP38ps5mZljEsDuyQa8ChH9wXbPZs=
 github.com/NpoolPlatform/ledger-manager v0.0.0-20220809080712-e4586fdefec7 h1:K+B902DDhcK+k7EO6reKMmnZfvqUQGQoUGMiXQD4YcA=
 github.com/NpoolPlatform/ledger-middleware v0.0.0-20220805144824-993d6ac7ae8b h1:bBBu4lLteCdxfVgL5tR/U13xpX+dVgQ9xF2LanOyC6c=
 github.com/NpoolPlatform/ledger-middleware v0.0.0-20220805144824-993d6ac7ae8b/go.mod h1:TooZtC4RLb0s9V11THMp+fGqZdTBpdMdycTreQ7/PLs=
@@ -96,8 +96,8 @@ github.com/NpoolPlatform/libent-cruder v0.0.0-20220801075201-cab5db8b6290/go.mod
 github.com/NpoolPlatform/message v0.0.0-20220120075427-38182760a780/go.mod h1:tnsf7zHQ5Mv2uG0ezOwCfm/bxluiRW10DeuIl4SjG4Y=
 github.com/NpoolPlatform/message v0.0.0-20220501030927-34f296682c0c/go.mod h1:i/F/sQWjQk44RGvfgEB0zH0oAK/0qLvgJ1AsJDZQDkk=
 github.com/NpoolPlatform/message v0.0.0-20220530011435-281c2b6aedd4/go.mod h1:3Enb49K3JrhlSwA+6bcsBuTdTzVxVKhdkllDGgv0n3M=
-github.com/NpoolPlatform/message v0.0.0-20220813082125-6790723393ad h1:YB0Wh1M3ai4giIFrZbPwlUAGZh54DnW4uIITAnWoOJs=
-github.com/NpoolPlatform/message v0.0.0-20220813082125-6790723393ad/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
+github.com/NpoolPlatform/message v0.0.0-20220814110530-45254e5b80f7 h1:rTlPimVXYDBGphSuxuj22tUMrcXFrlbRl9secMTX04U=
+github.com/NpoolPlatform/message v0.0.0-20220814110530-45254e5b80f7/go.mod h1:8YXp4MghMHLZ9bBdQQyfjcRtLI2RbEHAQoNCejT2nZU=
 github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c h1:Gll6yDpSSfr6RPHdDRD7/XPGdfOOZu57D641JQAkx3I=
 github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c/go.mod h1:6x2MevuQNEWnB/uJl8REgHUH2F+mBadmMtexHDO1/NA=
 github.com/NpoolPlatform/staker-manager v0.0.0-20220813133254-1f668ab52300 h1:WZH1yUcwtdx7LCXCAWk1py10hOSVAlwWZFLrvF9Y9lo=

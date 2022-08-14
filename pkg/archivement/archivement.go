@@ -166,7 +166,7 @@ func getUserArchivements(
 	iofs := int32(0)
 
 	for {
-		p, _, err := inspirecli.GetActivePercents(ctx, appID, uids, iofs, limit)
+		p, _, err := inspirecli.GetPercents(ctx, appID, uids, true, iofs, limit)
 		if err != nil {
 			return nil, 0, err
 		}
