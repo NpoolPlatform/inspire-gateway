@@ -69,12 +69,14 @@ func GetUserGoodArchivements(
 	}
 
 	// 1 Get all layered users
-	invitations, _, err := inspirecli.GetInviters(ctx, appID, userIDs, offset, limit)
+	invitations, total, err := inspirecli.GetInviters(ctx, appID, userIDs, offset, limit)
 	if err != nil {
 		return nil, 0, err
 	}
-	if len(invitations) == 0 {
-		return []*npool.UserArchivement{}, 0, nil
+	if uint32(offset) > total {
+		if len(invitations) == 0 {
+			return []*npool.UserArchivement{}, 0, nil
+		}
 	}
 
 	ivMap := map[string]*inspirepb.Invitation{}
