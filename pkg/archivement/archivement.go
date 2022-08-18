@@ -99,6 +99,10 @@ func getUserArchivements(
 	inviteesMap := map[string]uint32{}
 	inviteesOfs := int32(0)
 
+	if limit == 0 {
+		limit = 1000
+	}
+
 	for {
 		ivs, _, err := inspirecli.GetInvitees(ctx, appID, uids, inviteesOfs, limit)
 		if err != nil {
