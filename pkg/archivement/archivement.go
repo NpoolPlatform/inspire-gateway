@@ -314,18 +314,30 @@ func getUserArchivements(
 	}
 
 	// 6 Get my details for invitees' contribution
-	details, _, err := archivementdetailmgrcli.GetDetails(ctx, &archivementdetailmgrpb.Conds{
-		AppID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: appID,
-		},
-		UserID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: userID,
-		},
-	}, 0, limit)
-	if err != nil {
-		return nil, 0, err
+	details := []*archivementdetailmgrpb.Detail{}
+	detailOfs := int32(0)
+
+	for {
+		ds, _, err := archivementdetailmgrcli.GetDetails(ctx, &archivementdetailmgrpb.Conds{
+			AppID: &commonpb.StringVal{
+				Op:    cruder.EQ,
+				Value: appID,
+			},
+			UserID: &commonpb.StringVal{
+				Op:    cruder.EQ,
+				Value: userID,
+			},
+		}, detailOfs, limit)
+		if err != nil {
+			return nil, 0, err
+		}
+		if len(ds) == 0 {
+			break
+		}
+
+		details = append(details, ds...)
+
+		detailOfs += limit
 	}
 
 	for _, detail := range details {
