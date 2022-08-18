@@ -28,6 +28,8 @@ import (
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
 
+	uuid1 "github.com/NpoolPlatform/go-service-framework/pkg/const/uuid"
+
 	"github.com/google/uuid"
 )
 
@@ -187,23 +189,22 @@ func getUserArchivements(
 	}
 
 	for _, p := range percents {
-		invalidID := uuid.UUID{}.String()
-		if p.GoodID == "" || p.GoodID == invalidID {
+		if p.GoodID == "" || p.GoodID == uuid1.InvalidUUIDStr {
 			continue
 		}
 		good, ok := goodMap[p.GoodID]
 		if !ok {
 			return nil, 0, fmt.Errorf("invalid good: %v", p)
 		}
-		if p.CoinTypeID == "" || p.CoinTypeID == invalidID {
+		if p.CoinTypeID == "" || p.CoinTypeID == uuid1.InvalidUUIDStr {
 			p.CoinTypeID = good.CoinInfoID
 		}
 	}
 
 	// 5 Merge info
 	archivements := map[string]*npool.UserArchivement{}
-	for _, user := range users {
-		user, ok := userMap[user.ID]
+	for _, percent := range percents {
+		user, ok := userMap[percent.UserID]
 		if !ok {
 			return nil, 0, fmt.Errorf("invalid user: %v", user.ID)
 		}
