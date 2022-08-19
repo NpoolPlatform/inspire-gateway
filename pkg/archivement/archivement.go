@@ -188,6 +188,8 @@ func getUserArchivements(
 		iofs += limit
 	}
 
+	archGoodMap := map[string]*goodspb.GoodInfo{}
+
 	for _, p := range percents {
 		if p.GoodID == "" || p.GoodID == uuid1.InvalidUUIDStr {
 			continue
@@ -199,16 +201,13 @@ func getUserArchivements(
 		if p.CoinTypeID == "" || p.CoinTypeID == uuid1.InvalidUUIDStr {
 			p.CoinTypeID = good.CoinInfoID
 		}
+
+		archGoodMap[p.GoodID] = good
 	}
 
 	// 5 Merge info
 	archivements := map[string]*npool.UserArchivement{}
-	for _, percent := range percents {
-		user, ok := userMap[percent.UserID]
-		if !ok {
-			return nil, 0, fmt.Errorf("invalid user: %v", user.ID)
-		}
-
+	for _, user := range users {
 		kol := user.ID == userID
 		invitedAt := uint32(0)
 
@@ -231,8 +230,6 @@ func getUserArchivements(
 			InvitedAt:     invitedAt,
 		}
 	}
-
-	archGoodMap := map[string]*goodspb.GoodInfo{}
 
 	for _, general := range generals {
 		archivement, ok := archivements[general.UserID]
@@ -279,8 +276,6 @@ func getUserArchivements(
 
 		archivement.Archivements = append(archivement.Archivements, arch)
 		archivements[general.UserID] = archivement
-
-		archGoodMap[general.GoodID] = good
 	}
 
 	for _, archivement := range archivements {
