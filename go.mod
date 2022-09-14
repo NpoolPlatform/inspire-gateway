@@ -5,15 +5,15 @@ go 1.17
 require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220826022307-d72866fe3ec0
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220813042624-b76499b6435d
-	github.com/NpoolPlatform/archivement-manager v0.0.0-20220813044453-cdf182df2744
+	github.com/NpoolPlatform/archivement-manager v0.0.0-20220907024948-5cd4bd739c46
 	github.com/NpoolPlatform/cloud-hashing-goods v0.0.0-20220725094415-a027a03521e7
 	github.com/NpoolPlatform/cloud-hashing-order v0.0.0-20220806140253-35d26a3ce111
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20220818105452-9457611ae070
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20220821134401-7c9bc2f219f1
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20220814111033-63a255756870
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20220801075201-cab5db8b6290
-	github.com/NpoolPlatform/message v0.0.0-20220819134247-1dc75c85fe43
+	github.com/NpoolPlatform/message v0.0.0-20220906063625-92673b512c74
 	github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220723055305-aa741e03817c
-	github.com/NpoolPlatform/staker-manager v0.0.0-20220814083309-3eea24f805c3
+	github.com/NpoolPlatform/staker-manager v0.0.0-20220914095923-7f0e5f08dfcc
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
@@ -22,14 +22,14 @@ require (
 	github.com/urfave/cli/v2 v2.5.0
 	go.opentelemetry.io/otel v1.8.0
 	go.opentelemetry.io/otel/trace v1.8.0
-	google.golang.org/grpc v1.48.0
+	google.golang.org/grpc v1.49.0
 	google.golang.org/protobuf v1.28.0
 )
 
 require (
 	ariga.io/atlas v0.5.1-0.20220717122844-8593d7eb1a8e // indirect
 	entgo.io/ent v0.11.2 // indirect
-	github.com/NpoolPlatform/archivement-middleware v0.0.0-20220813044652-0851d37de47c // indirect
+	github.com/NpoolPlatform/archivement-middleware v0.0.0-20220906111241-8ea73a1a10e3 // indirect
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220731100543-621262acb09b // indirect
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20220805144824-993d6ac7ae8b // indirect
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
