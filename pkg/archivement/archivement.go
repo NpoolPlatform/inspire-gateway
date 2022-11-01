@@ -19,8 +19,8 @@ import (
 
 	coininfocli "github.com/NpoolPlatform/sphinx-coininfo/pkg/client"
 
-	goodscli "github.com/NpoolPlatform/cloud-hashing-goods/pkg/client"
-	goodspb "github.com/NpoolPlatform/message/npool/cloud-hashing-goods"
+	goodscli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
+	goodspb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
 
 	coininfopb "github.com/NpoolPlatform/message/npool/coininfo"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/archivement"
@@ -163,12 +163,12 @@ func getUserArchivements(
 		userMap[user.ID] = user
 	}
 
-	goods, err := goodscli.GetGoods(ctx)
+	goods, _, err := goodscli.GetGoods(ctx, nil, 0, 0)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	goodMap := map[string]*goodspb.GoodInfo{}
+	goodMap := map[string]*goodspb.Good{}
 	for _, good := range goods {
 		goodMap[good.ID] = good
 	}
@@ -188,7 +188,7 @@ func getUserArchivements(
 		iofs += limit
 	}
 
-	archGoodMap := map[string]*goodspb.GoodInfo{}
+	archGoodMap := map[string]*goodspb.Good{}
 
 	for _, p := range percents {
 		if p.GoodID == "" || p.GoodID == uuid1.InvalidUUIDStr {
@@ -199,7 +199,7 @@ func getUserArchivements(
 			return nil, 0, fmt.Errorf("invalid good: %v", p)
 		}
 		if p.CoinTypeID == "" || p.CoinTypeID == uuid1.InvalidUUIDStr {
-			p.CoinTypeID = good.CoinInfoID
+			p.CoinTypeID = good.CoinTypeID
 		}
 
 		archGoodMap[p.GoodID] = good
@@ -297,7 +297,7 @@ func getUserArchivements(
 				break
 			}
 
-			coin := coinMap[good.CoinInfoID]
+			coin := coinMap[good.CoinTypeID]
 
 			arch := &npool.GoodArchivement{
 				GoodID:            goodID,
