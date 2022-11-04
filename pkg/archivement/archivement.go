@@ -163,9 +163,19 @@ func getUserArchivements(
 		userMap[user.ID] = user
 	}
 
-	goods, _, err := goodscli.GetGoods(ctx, nil, 0, 0)
-	if err != nil {
-		return nil, 0, err
+	goods := []*goodspb.Good{}
+	ofs := int32(0)
+
+	for {
+		gds, _, err := goodscli.GetGoods(ctx, nil, ofs, limit)
+		if err != nil {
+			return nil, 0, err
+		}
+		if len(gds) == 0 {
+			break
+		}
+		goods = append(goods, gds...)
+		ofs += limit
 	}
 
 	goodMap := map[string]*goodspb.Good{}
