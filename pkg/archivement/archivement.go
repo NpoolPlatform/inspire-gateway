@@ -23,7 +23,7 @@ import (
 
 	goodspb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
 
-	goodsmgepb "github.com/NpoolPlatform/message/npool/good/mgr/v1/good"
+	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/good"
 
 	coininfopb "github.com/NpoolPlatform/message/npool/coininfo"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/archivement"
@@ -191,7 +191,7 @@ func getUserArchivements(
 		goodIDs = append(goodIDs, val.GetGoodID())
 	}
 
-	goods, _, err := goodscli.GetGoods(ctx, &goodsmgepb.Conds{
+	goods, _, err := goodscli.GetGoods(ctx, &goodmgrpb.Conds{
 		IDs: &commonpb.StringSliceVal{
 			Op:    cruder.IN,
 			Value: goodIDs,
