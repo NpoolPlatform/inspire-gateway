@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	goodscli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
+
 	"github.com/shopspring/decimal"
 
 	usercli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
@@ -19,8 +21,9 @@ import (
 
 	coininfocli "github.com/NpoolPlatform/sphinx-coininfo/pkg/client"
 
-	goodscli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
 	goodspb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
+
+	goodsmgepb "github.com/NpoolPlatform/message/npool/good/mgr/v1/good"
 
 	coininfopb "github.com/NpoolPlatform/message/npool/coininfo"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/archivement"
@@ -163,26 +166,6 @@ func getUserArchivements(
 		userMap[user.ID] = user
 	}
 
-	goods := []*goodspb.Good{}
-	ofs := int32(0)
-
-	for {
-		gds, _, err := goodscli.GetGoods(ctx, nil, ofs, limit)
-		if err != nil {
-			return nil, 0, err
-		}
-		if len(gds) == 0 {
-			break
-		}
-		goods = append(goods, gds...)
-		ofs += limit
-	}
-
-	goodMap := map[string]*goodspb.Good{}
-	for _, good := range goods {
-		goodMap[good.ID] = good
-	}
-
 	percents := []*inspirepb.Percent{}
 	iofs := int32(0)
 
@@ -196,6 +179,31 @@ func getUserArchivements(
 		}
 		percents = append(percents, p...)
 		iofs += limit
+	}
+
+	goodIDs := []string{}
+
+	for _, val := range percents {
+		goodIDs = append(goodIDs, val.GetGoodID())
+	}
+
+	for _, val := range generals {
+		goodIDs = append(goodIDs, val.GetGoodID())
+	}
+
+	goods, _, err := goodscli.GetGoods(ctx, &goodsmgepb.Conds{
+		IDs: &commonpb.StringSliceVal{
+			Op:    cruder.IN,
+			Value: goodIDs,
+		},
+	}, 0, int32(len(goodIDs)))
+	if err != nil {
+		return nil, 0, err
+	}
+
+	goodMap := map[string]*goodspb.Good{}
+	for _, good := range goods {
+		goodMap[good.ID] = good
 	}
 
 	archGoodMap := map[string]*goodspb.Good{}

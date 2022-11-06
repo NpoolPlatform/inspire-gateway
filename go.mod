@@ -6,14 +6,14 @@ require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220930035751-2b8a48b8df04
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220830145114-e7d2cde1cc9c
 	github.com/NpoolPlatform/archivement-manager v0.0.0-20220930041014-e6102ea848ec
-	github.com/NpoolPlatform/cloud-hashing-order v0.0.0-20220930040614-3c93174334ee
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20221015040432-cd676d323379
+	github.com/NpoolPlatform/cloud-hashing-order v0.0.0-20221101065506-ed1fa1f491e8
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20221102072657-7fcc5e6f1012
 	github.com/NpoolPlatform/good-middleware v0.0.0-20221101014034-837ff83fd534
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20220828055038-8f46c152722b
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20220917044452-f7da753a3ebc
 	github.com/NpoolPlatform/message v0.0.0-20221031081057-b46ab48df6de
 	github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220930040119-1eb8b2e73e3f
-	github.com/NpoolPlatform/staker-manager v0.0.0-20220914095923-7f0e5f08dfcc
+	github.com/NpoolPlatform/staker-manager v0.0.0-20221106084255-cdbb5e8f1971
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.12.0
@@ -30,7 +30,6 @@ require (
 	ariga.io/atlas v0.7.2-0.20220927111110-867ee0cca56a // indirect
 	entgo.io/ent v0.11.3 // indirect
 	github.com/NpoolPlatform/archivement-middleware v0.0.0-20220906111241-8ea73a1a10e3 // indirect
-	github.com/NpoolPlatform/cloud-hashing-goods v0.0.0-20220725094415-a027a03521e7 // indirect
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20220731100543-621262acb09b // indirect
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20220805144824-993d6ac7ae8b // indirect
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
