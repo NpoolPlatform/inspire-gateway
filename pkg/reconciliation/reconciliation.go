@@ -3,12 +3,17 @@ package reconciliation
 import (
 	"context"
 
+	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	archivement "github.com/NpoolPlatform/staker-manager/pkg/archivement"
 	commission "github.com/NpoolPlatform/staker-manager/pkg/commission"
 
-	ordercli "github.com/NpoolPlatform/cloud-hashing-order/pkg/client"
+	ordermgrpb "github.com/NpoolPlatform/message/npool/order/mgr/v1/order"
+	ordercli "github.com/NpoolPlatform/order-middleware/pkg/client/order"
+
+	"github.com/NpoolPlatform/message/npool"
 )
 
 // nolint
@@ -17,7 +22,16 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 	limit := int32(1000) //nolint // Mock variable now
 
 	for {
-		orders, err := ordercli.GetUserOrders(ctx, appID, userID, offset, limit)
+		orders, _, err := ordercli.GetOrders(ctx, &ordermgrpb.Conds{
+			AppID: &npool.StringVal{
+				Op:    cruder.EQ,
+				Value: appID,
+			},
+			UserID: &npool.StringVal{
+				Op:    cruder.EQ,
+				Value: userID,
+			},
+		}, offset, limit)
 		if err != nil {
 			return err
 		}
