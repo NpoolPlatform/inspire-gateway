@@ -10,8 +10,8 @@ require (
 	github.com/NpoolPlatform/good-middleware v0.0.0-20221109024849-724709e2093e
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20220828055038-8f46c152722b
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20221115080350-2f698840a2ae
-	github.com/NpoolPlatform/order-middleware v0.0.0-20221115041916-abe84b9e5273
+	github.com/NpoolPlatform/message v0.0.0-20221117083318-f2150fb0c377
+	github.com/NpoolPlatform/order-middleware v0.0.0-20221117090447-f989baeeee3c
 	github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220930040119-1eb8b2e73e3f
 	github.com/NpoolPlatform/staker-manager v0.0.0-20221115085811-ef42d742ddcf
 	github.com/go-resty/resty/v2 v2.7.0

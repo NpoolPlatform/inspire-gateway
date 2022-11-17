@@ -10,7 +10,7 @@ import (
 	archivement "github.com/NpoolPlatform/staker-manager/pkg/archivement"
 	commission "github.com/NpoolPlatform/staker-manager/pkg/commission"
 
-	ordermgrpb "github.com/NpoolPlatform/message/npool/order/mgr/v1/order"
+	ordermwpb "github.com/NpoolPlatform/message/npool/order/mw/v1/order"
 	ordercli "github.com/NpoolPlatform/order-middleware/pkg/client/order"
 
 	"github.com/NpoolPlatform/message/npool"
@@ -22,7 +22,7 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 	limit := int32(1000) //nolint // Mock variable now
 
 	for {
-		orders, _, err := ordercli.GetOrders(ctx, &ordermgrpb.Conds{
+		orders, _, err := ordercli.GetOrders(ctx, &ordermwpb.Conds{
 			AppID: &npool.StringVal{
 				Op:    cruder.EQ,
 				Value: appID,
