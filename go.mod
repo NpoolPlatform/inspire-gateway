@@ -6,14 +6,14 @@ require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220930035751-2b8a48b8df04
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220830145114-e7d2cde1cc9c
 	github.com/NpoolPlatform/archivement-manager v0.0.0-20220930041014-e6102ea848ec
-	github.com/NpoolPlatform/cloud-hashing-order v0.0.0-20221101065506-ed1fa1f491e8
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20221102072657-7fcc5e6f1012
 	github.com/NpoolPlatform/good-middleware v0.0.0-20221109024849-724709e2093e
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20220828055038-8f46c152722b
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20221109022611-ca37512e0c04
+	github.com/NpoolPlatform/message v0.0.0-20221130022700-6ea25e8422fd
+	github.com/NpoolPlatform/order-middleware v0.0.0-20221130031001-7cbeedee9966
 	github.com/NpoolPlatform/sphinx-coininfo v0.0.0-20220930040119-1eb8b2e73e3f
-	github.com/NpoolPlatform/staker-manager v0.0.0-20221106084255-cdbb5e8f1971
+	github.com/NpoolPlatform/staker-manager v0.0.0-20221115085811-ef42d742ddcf
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.12.0
