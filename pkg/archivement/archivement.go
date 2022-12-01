@@ -2,7 +2,8 @@ package archivement
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	goodscli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
 
@@ -214,7 +215,8 @@ func getUserArchivements(
 		}
 		good, ok := goodMap[p.GoodID]
 		if !ok {
-			return nil, 0, fmt.Errorf("invalid good: %v", p)
+			logger.Sugar().Warn("good not exist continue")
+			continue
 		}
 		if p.CoinTypeID == "" || p.CoinTypeID == uuid1.InvalidUUIDStr {
 			p.CoinTypeID = good.CoinTypeID
@@ -252,17 +254,20 @@ func getUserArchivements(
 	for _, general := range generals {
 		archivement, ok := archivements[general.UserID]
 		if !ok {
-			return nil, 0, fmt.Errorf("invalid general user")
+			logger.Sugar().Warn("user not exist continue")
+			continue
 		}
 
 		coin, ok := coinMap[general.CoinTypeID]
 		if !ok {
-			return nil, 0, fmt.Errorf("invalid coin")
+			logger.Sugar().Warn("coin not exist continue")
+			continue
 		}
 
 		good, ok := goodMap[general.GoodID]
 		if !ok {
-			return nil, 0, fmt.Errorf("invalid good: %v", general)
+			logger.Sugar().Warn("good not exist continue")
+			continue
 		}
 
 		percent := uint32(0)
