@@ -20,13 +20,13 @@ import (
 	inspirecli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation"
 	inspirepb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/inspire/invitation"
 
-	coininfocli "github.com/NpoolPlatform/sphinx-coininfo/pkg/client"
+	coininfocli "github.com/NpoolPlatform/chain-middleware/pkg/client/coin"
 
 	goodspb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
 
 	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/good"
 
-	coininfopb "github.com/NpoolPlatform/message/npool/coininfo"
+	coininfopb "github.com/NpoolPlatform/message/npool/chain/mw/v1/coin"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/archivement"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -146,12 +146,22 @@ func getUserArchivements(
 	}
 
 	// 3 Get coin infos
-	coins, err := coininfocli.GetCoinInfos(ctx, cruder.NewFilterConds())
-	if err != nil {
-		return nil, 0, err
+	ofs := 0
+	lim := 1000
+	coins := []*coininfopb.Coin{}
+	for {
+		coinInfos, _, err := coininfocli.GetCoins(ctx, nil, int32(ofs), int32(lim))
+		if err != nil {
+			return nil, 0, err
+		}
+		if len(coinInfos) == 0 {
+			break
+		}
+		coins = append(coins, coinInfos...)
+		ofs += lim
 	}
 
-	coinMap := map[string]*coininfopb.CoinInfo{}
+	coinMap := map[string]*coininfopb.Coin{}
 	for _, coin := range coins {
 		coinMap[coin.ID] = coin
 	}
