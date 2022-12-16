@@ -6,13 +6,13 @@ require (
 	github.com/NpoolPlatform/api-manager v0.0.0-20220930035751-2b8a48b8df04
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20220830145114-e7d2cde1cc9c
 	github.com/NpoolPlatform/archivement-manager v0.0.0-20220930041014-e6102ea848ec
-	github.com/NpoolPlatform/chain-middleware v0.0.0-20221201084405-d3c3772efbc8
+	github.com/NpoolPlatform/chain-middleware v0.0.0-20221216021206-c73dbc7ea1ce
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20221102072657-7fcc5e6f1012
-	github.com/NpoolPlatform/good-middleware v0.0.0-20221109024849-724709e2093e
+	github.com/NpoolPlatform/good-middleware v0.0.0-20221216031911-f2715afb4b66
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20220828055038-8f46c152722b
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20221201081448-db4c8a641f1c
-	github.com/NpoolPlatform/order-middleware v0.0.0-20221130031001-7cbeedee9966
+	github.com/NpoolPlatform/message v0.0.0-20221216024225-e7572ae5c761
+	github.com/NpoolPlatform/order-middleware v0.0.0-20221215041035-9804ca4d3515
 	github.com/NpoolPlatform/staker-manager v0.0.0-20221115085811-ef42d742ddcf
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
@@ -22,7 +22,7 @@ require (
 	github.com/urfave/cli/v2 v2.23.0
 	go.opentelemetry.io/otel v1.8.0
 	go.opentelemetry.io/otel/trace v1.8.0
-	google.golang.org/grpc v1.50.1
+	google.golang.org/grpc v1.51.0
 	google.golang.org/protobuf v1.28.1
 )
 
@@ -102,7 +102,7 @@ require (
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
 	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
 	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10 // indirect
-	golang.org/x/text v0.3.8 // indirect
+	golang.org/x/text v0.4.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f // indirect
 	google.golang.org/genproto v0.0.0-20221014213838-99cd37c6964a // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
