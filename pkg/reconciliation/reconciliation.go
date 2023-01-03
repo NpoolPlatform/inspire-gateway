@@ -7,8 +7,10 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
-	archivement "github.com/NpoolPlatform/staker-manager/pkg/archivement"
-	commission "github.com/NpoolPlatform/staker-manager/pkg/commission"
+	accountingmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/accounting"
+	accountingmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/accounting"
+
+	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
 
 	ordermwpb "github.com/NpoolPlatform/message/npool/order/mw/v1/order"
 	ordercli "github.com/NpoolPlatform/order-middleware/pkg/client/order"
@@ -39,18 +41,34 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 			return nil
 		}
 
+		// TODO: get good list
+
 		for _, order := range orders {
-			if err := commission.CalculateCommission(ctx, order.ID, false); err != nil {
+			comms, err := accountingmwcli.Accounting(ctx, &accountingmwpb.AccountingRequest{
+				AppID:     order.AppID,
+				UserID:    order.UserID,
+				GoodID:    order.GoodID,
+				OrderID:   order.ID,
+				PaymentID: order.PaymentID,
+				// CoinTypeID:             order.CoinTypeID,
+				PaymentCoinTypeID:      order.PaymentCoinTypeID,
+				PaymentCoinUSDCurrency: order.PaymentCoinUSDCurrency,
+				Units:                  order.Units,
+				PaymentAmount:          order.PaymentAmount, // PayWithBalanceAmount
+				//GoodValue:              order.GoodValue,
+				SettleType: commmgrpb.SettleType_GoodOrderPercent,
+			})
+			if err != nil {
 				logger.Sugar().Warnw("UpdateArchivement", "OrderID", order.ID, "error", err)
 				continue
 			}
-			if err := archivement.CalculateArchivement(ctx, order.ID); err != nil {
-				logger.Sugar().Warnw("UpdateArchivement", "OrderID", order.ID, "error", err)
-			}
+
+			logger.Sugar().Warnw("UpdateArchivement", "OrderID", order.ID, "Comms", comms)
+			// TODO: update comm to ledger
 		}
 
 		offset += int32(len(orders))
-		// Only mock, so just return
-		return nil
 	}
+
+	return nil
 }

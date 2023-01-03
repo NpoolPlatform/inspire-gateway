@@ -12,13 +12,16 @@ import (
 	usercli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	userpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
-	archivementdetailmgrcli "github.com/NpoolPlatform/archivement-manager/pkg/client/detail"
-	archivementgeneralmgrcli "github.com/NpoolPlatform/archivement-manager/pkg/client/general"
+	archivementdetailmgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/archivement/detail"
+	archivementgeneralmgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/archivement/general"
 	archivementdetailmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/archivement/detail"
 	archivementgeneralmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/archivement/general"
 
-	inspirecli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation"
-	inspirepb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/inspire/invitation"
+	regmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
+	regmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
+
+	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
+	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 
 	coininfocli "github.com/NpoolPlatform/chain-middleware/pkg/client/coin"
 
@@ -46,13 +49,21 @@ func GetGoodArchivements(
 		limit = 1000
 	}
 
-	// 1 Get all layered users
-	invitations, _, err := inspirecli.GetInvitees(ctx, appID, []string{userID}, offset, limit)
+	invitations, _, err := regmwcli.GetSubordinates(ctx, &regmgrpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+		InviterIDs: &commonpb.StringSliceVal{
+			Op:    cruder.IN,
+			Value: []string{userID},
+		},
+	}, offset, limit)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	ivMap := map[string]*inspirepb.Invitation{}
+	ivMap := map[string]*regmgrpb.Registration{}
 	for _, iv := range invitations {
 		ivMap[iv.InviteeID] = iv
 	}
@@ -74,8 +85,16 @@ func GetUserGoodArchivements(
 		limit = 1000
 	}
 
-	// 1 Get all layered users
-	invitations, total, err := inspirecli.GetInviters(ctx, appID, userIDs, offset, limit)
+	invitations, total, err := regmwcli.GetSuperiores(ctx, &regmgrpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+		InviteeIDs: &commonpb.StringSliceVal{
+			Op:    cruder.IN,
+			Value: userIDs,
+		},
+	}, offset, limit)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -85,7 +104,7 @@ func GetUserGoodArchivements(
 		}
 	}
 
-	ivMap := map[string]*inspirepb.Invitation{}
+	ivMap := map[string]*regmgrpb.Registration{}
 	for _, iv := range invitations {
 		ivMap[iv.InviteeID] = iv
 	}
@@ -97,7 +116,7 @@ func GetUserGoodArchivements(
 func getUserArchivements(
 	ctx context.Context,
 	appID, userID string, uids []string,
-	ivMap map[string]*inspirepb.Invitation,
+	ivMap map[string]*regmgrpb.Registration,
 	offset, limit int32,
 ) (
 	infos []*npool.UserArchivement, total uint32, err error,
@@ -110,7 +129,16 @@ func getUserArchivements(
 	}
 
 	for {
-		ivs, _, err := inspirecli.GetInvitees(ctx, appID, uids, inviteesOfs, limit)
+		ivs, _, err := regmwcli.GetSubordinates(ctx, &regmgrpb.Conds{
+			AppID: &commonpb.StringVal{
+				Op:    cruder.EQ,
+				Value: appID,
+			},
+			InviterIDs: &commonpb.StringSliceVal{
+				Op:    cruder.IN,
+				Value: uids,
+			},
+		}, inviteesOfs, limit)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -166,7 +194,6 @@ func getUserArchivements(
 		coinMap[coin.ID] = coin
 	}
 
-	// 4 Get all users
 	users, n, err := usercli.GetManyUsers(ctx, uids)
 	if err != nil {
 		return nil, 0, err
@@ -177,11 +204,20 @@ func getUserArchivements(
 		userMap[user.ID] = user
 	}
 
-	percents := []*inspirepb.Percent{}
+	percents := []*commmwpb.Commission{}
 	iofs := int32(0)
 
 	for {
-		p, _, err := inspirecli.GetPercents(ctx, appID, uids, true, iofs, limit)
+		p, _, err := commmwcli.GetCommissions(ctx, &commmwpb.Conds{
+			AppID: &commonpb.StringVal{
+				Op:    cruder.EQ,
+				Value: appID,
+			},
+			UserIDs: &commonpb.StringSliceVal{
+				Op:    cruder.IN,
+				Value: uids,
+			},
+		}, iofs, limit)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -220,19 +256,16 @@ func getUserArchivements(
 	archGoodMap := map[string]*goodspb.Good{}
 
 	for _, p := range percents {
-		if p.GoodID == "" || p.GoodID == uuid1.InvalidUUIDStr {
+		if p.GetGoodID() == "" || p.GetGoodID() == uuid1.InvalidUUIDStr {
 			continue
 		}
-		good, ok := goodMap[p.GoodID]
+		good, ok := goodMap[p.GetGoodID()]
 		if !ok {
 			logger.Sugar().Warn("good not exist continue")
 			continue
 		}
-		if p.CoinTypeID == "" || p.CoinTypeID == uuid1.InvalidUUIDStr {
-			p.CoinTypeID = good.CoinTypeID
-		}
 
-		archGoodMap[p.GoodID] = good
+		archGoodMap[p.GetGoodID()] = good
 	}
 
 	// 5 Merge info
@@ -243,7 +276,6 @@ func getUserArchivements(
 
 		iv, ok := ivMap[user.ID]
 		if ok {
-			kol = iv.Kol
 			invitedAt = iv.CreatedAt
 		}
 
@@ -280,13 +312,16 @@ func getUserArchivements(
 			continue
 		}
 
-		percent := uint32(0)
+		percent := decimal.NewFromInt(0)
 
 		for _, p := range percents {
-			if general.UserID != p.UserID || general.GoodID != p.GoodID {
+			if general.UserID != p.UserID || general.GoodID != p.GetGoodID() {
 				continue
 			}
-			percent = p.Percent
+			percent, err = decimal.NewFromString(p.GetPercent())
+			if err != nil {
+				continue
+			}
 			break
 		}
 
@@ -294,7 +329,7 @@ func getUserArchivements(
 			GoodID:            general.GoodID,
 			GoodName:          good.Title,
 			GoodUnit:          good.Unit,
-			CommissionPercent: percent,
+			CommissionPercent: percent.String(),
 			CoinTypeID:        coin.ID,
 			CoinName:          coin.Name,
 			CoinLogo:          coin.Logo,
@@ -320,13 +355,16 @@ func getUserArchivements(
 				}
 			}
 
-			percent := uint32(0)
+			percent := decimal.NewFromInt(0)
 
 			for _, p := range percents {
-				if archivement.UserID != p.UserID || goodID != p.GoodID {
+				if archivement.UserID != p.UserID || goodID != p.GetGoodID() {
 					continue
 				}
-				percent = p.Percent
+				percent, err = decimal.NewFromString(p.GetPercent())
+				if err != nil {
+					continue
+				}
 				break
 			}
 
@@ -336,7 +374,7 @@ func getUserArchivements(
 				GoodID:            goodID,
 				GoodName:          good.Title,
 				GoodUnit:          good.Unit,
-				CommissionPercent: percent,
+				CommissionPercent: percent.String(),
 				CoinTypeID:        coin.ID,
 				CoinName:          coin.Name,
 				CoinLogo:          coin.Logo,
