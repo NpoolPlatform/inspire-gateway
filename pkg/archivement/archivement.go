@@ -271,7 +271,6 @@ func getUserArchivements(
 	// 5 Merge info
 	archivements := map[string]*npool.UserArchivement{}
 	for _, user := range users {
-		kol := user.ID == userID
 		invitedAt := uint32(0)
 
 		iv, ok := ivMap[user.ID]
@@ -286,7 +285,7 @@ func getUserArchivements(
 			PhoneNO:       user.PhoneNO,
 			FirstName:     user.FirstName,
 			LastName:      user.LastName,
-			Kol:           kol,
+			Kol:           user.Kol,
 			TotalInvitees: inviteesMap[user.ID],
 			CreatedAt:     user.CreatedAt,
 			InvitedAt:     invitedAt,
