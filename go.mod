@@ -11,7 +11,7 @@ require (
 	github.com/NpoolPlatform/inspire-manager v0.0.0-20230103084503-ee52a9e4d724
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230103121444-66253311ad31
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230103130232-29dea3a8f05d
+	github.com/NpoolPlatform/message v0.0.0-20230104013956-2d4bc74ebf69
 	github.com/NpoolPlatform/order-middleware v0.0.0-20221215041035-9804ca4d3515
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0

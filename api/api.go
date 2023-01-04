@@ -7,6 +7,10 @@ import (
 
 	"github.com/NpoolPlatform/inspire-gateway/api/archivement"
 	"github.com/NpoolPlatform/inspire-gateway/api/commission"
+	"github.com/NpoolPlatform/inspire-gateway/api/coupon/allocated"
+	"github.com/NpoolPlatform/inspire-gateway/api/coupon/coupon"
+	"github.com/NpoolPlatform/inspire-gateway/api/invitation/invitationcode"
+	"github.com/NpoolPlatform/inspire-gateway/api/invitation/registration"
 	"github.com/NpoolPlatform/inspire-gateway/api/reconciliation"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
@@ -22,6 +26,10 @@ func Register(server grpc.ServiceRegistrar) {
 	archivement.Register(server)
 	commission.Register(server)
 	reconciliation.Register(server)
+	coupon.Register(server)
+	allocated.Register(server)
+	invitationcode.Register(server)
+	registration.Register(server)
 }
 
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
@@ -35,6 +43,18 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 		return err
 	}
 	if err := reconciliation.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := coupon.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := allocated.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := invitationcode.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := registration.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	return nil
