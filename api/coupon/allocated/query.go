@@ -50,3 +50,29 @@ func (s *Server) GetCoupons(ctx context.Context, in *npool.GetCouponsRequest) (*
 		Total: total,
 	}, nil
 }
+
+func (s *Server) GetAppCoupons(ctx context.Context, in *npool.GetAppCouponsRequest) (*npool.GetAppCouponsResponse, error) {
+	if _, err := uuid.Parse(in.GetAppID()); err != nil {
+		return &npool.GetAppCouponsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	limit := constant.DefaultRowLimit
+	if in.GetLimit() > 0 {
+		limit = in.GetLimit()
+	}
+
+	infos, total, err := allocated1.GetCoupons(ctx, &allocatedmgrpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetAppID(),
+		},
+	}, in.GetOffset(), limit)
+	if err != nil {
+		return &npool.GetAppCouponsResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.GetAppCouponsResponse{
+		Infos: infos,
+		Total: total,
+	}, nil
+}
