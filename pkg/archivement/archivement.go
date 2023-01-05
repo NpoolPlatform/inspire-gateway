@@ -5,8 +5,6 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
-	goodscli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
-
 	"github.com/shopspring/decimal"
 
 	usercli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
@@ -21,13 +19,14 @@ import (
 	regmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
 
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
+	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
 	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 
 	coininfocli "github.com/NpoolPlatform/chain-middleware/pkg/client/coin"
 
-	goodspb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
-
-	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/good"
+	goodscli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
+	goodspb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
 
 	coininfopb "github.com/NpoolPlatform/message/npool/chain/mw/v1/coin"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/archivement"
@@ -204,42 +203,17 @@ func getUserArchivements(
 		userMap[user.ID] = user
 	}
 
-	percents := []*commmwpb.Commission{}
-	iofs := int32(0)
-
-	for {
-		p, _, err := commmwcli.GetCommissions(ctx, &commmwpb.Conds{
-			AppID: &commonpb.StringVal{
-				Op:    cruder.EQ,
-				Value: appID,
-			},
-			UserIDs: &commonpb.StringSliceVal{
-				Op:    cruder.IN,
-				Value: uids,
-			},
-		}, iofs, limit)
-		if err != nil {
-			return nil, 0, err
-		}
-		if len(p) == 0 {
-			break
-		}
-		percents = append(percents, p...)
-		iofs += limit
-	}
-
 	goodIDs := []string{}
-
-	for _, val := range percents {
-		goodIDs = append(goodIDs, val.GetGoodID())
-	}
-
 	for _, val := range generals {
 		goodIDs = append(goodIDs, val.GetGoodID())
 	}
 
 	goods, _, err := goodscli.GetGoods(ctx, &goodmgrpb.Conds{
-		IDs: &commonpb.StringSliceVal{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+		GoodIDs: &commonpb.StringSliceVal{
 			Op:    cruder.IN,
 			Value: goodIDs,
 		},
@@ -248,24 +222,62 @@ func getUserArchivements(
 		return nil, 0, err
 	}
 
+	goodCommMap := map[commmgrpb.SettleType][]string{}
+	for _, good := range goods {
+		goodCommMap[good.CommissionSettleType] = append(goodCommMap[good.CommissionSettleType], good.GoodID)
+	}
+
+	comms := []*commmwpb.Commission{}
+	for k, v := range goodCommMap {
+		switch k {
+		case commmgrpb.SettleType_GoodOrderPercent:
+			_comms, _, err := commmwcli.GetCommissions(ctx, &commmwpb.Conds{
+				AppID: &commonpb.StringVal{
+					Op:    cruder.EQ,
+					Value: appID,
+				},
+				UserIDs: &commonpb.StringSliceVal{
+					Op:    cruder.IN,
+					Value: uids,
+				},
+				GoodIDs: &commonpb.StringSliceVal{
+					Op:    cruder.IN,
+					Value: v,
+				},
+				SettleType: &commonpb.Int32Val{
+					Op:    cruder.EQ,
+					Value: int32(k),
+				},
+			}, 0, int32(len(v)))
+			if err != nil {
+				return nil, 0, err
+			}
+			comms = append(comms, _comms...)
+		case commmgrpb.SettleType_LimitedOrderPercent:
+		case commmgrpb.SettleType_AmountThreshold:
+		case commmgrpb.SettleType_NoCommission:
+		default:
+		}
+	}
+
 	goodMap := map[string]*goodspb.Good{}
 	for _, good := range goods {
-		goodMap[good.ID] = good
+		goodMap[good.GoodID] = good
 	}
 
 	archGoodMap := map[string]*goodspb.Good{}
 
-	for _, p := range percents {
-		if p.GetGoodID() == "" || p.GetGoodID() == uuid1.InvalidUUIDStr {
+	for _, comm := range comms {
+		if comm.GetGoodID() == "" || comm.GetGoodID() == uuid1.InvalidUUIDStr {
 			continue
 		}
-		good, ok := goodMap[p.GetGoodID()]
+		good, ok := goodMap[comm.GetGoodID()]
 		if !ok {
 			logger.Sugar().Warn("good not exist continue")
 			continue
 		}
 
-		archGoodMap[p.GetGoodID()] = good
+		archGoodMap[comm.GetGoodID()] = good
 	}
 
 	// 5 Merge info
@@ -313,11 +325,11 @@ func getUserArchivements(
 
 		percent := decimal.NewFromInt(0)
 
-		for _, p := range percents {
-			if general.UserID != p.UserID || general.GoodID != p.GetGoodID() {
+		for _, comm := range comms {
+			if general.UserID != comm.UserID || general.GoodID != comm.GetGoodID() {
 				continue
 			}
-			percent, err = decimal.NewFromString(p.GetPercent())
+			percent, err = decimal.NewFromString(comm.GetPercent())
 			if err != nil {
 				continue
 			}
@@ -326,7 +338,7 @@ func getUserArchivements(
 
 		arch := &npool.GoodArchivement{
 			GoodID:            general.GoodID,
-			GoodName:          good.Title,
+			GoodName:          good.GoodName,
 			GoodUnit:          good.Unit,
 			CommissionPercent: percent.String(),
 			CoinTypeID:        coin.ID,
@@ -356,11 +368,11 @@ func getUserArchivements(
 
 			percent := decimal.NewFromInt(0)
 
-			for _, p := range percents {
-				if archivement.UserID != p.UserID || goodID != p.GetGoodID() {
+			for _, comm := range comms {
+				if archivement.UserID != comm.UserID || goodID != comm.GetGoodID() {
 					continue
 				}
-				percent, err = decimal.NewFromString(p.GetPercent())
+				percent, err = decimal.NewFromString(comm.GetPercent())
 				if err != nil {
 					continue
 				}
@@ -371,7 +383,7 @@ func getUserArchivements(
 
 			arch := &npool.GoodArchivement{
 				GoodID:            goodID,
-				GoodName:          good.Title,
+				GoodName:          good.GoodName,
 				GoodUnit:          good.Unit,
 				CommissionPercent: percent.String(),
 				CoinTypeID:        coin.ID,
