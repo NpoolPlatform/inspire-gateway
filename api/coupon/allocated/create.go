@@ -9,12 +9,17 @@ import (
 
 	allocated1 "github.com/NpoolPlatform/inspire-gateway/pkg/coupon/allocated"
 
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
+	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/coupon"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
 	"github.com/google/uuid"
 )
 
+//nolint
 func (s *Server) CreateCoupon(ctx context.Context, in *npool.CreateCouponRequest) (*npool.CreateCouponResponse, error) {
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		return &npool.CreateCouponResponse{}, status.Error(codes.InvalidArgument, err.Error())
@@ -44,6 +49,30 @@ func (s *Server) CreateCoupon(ctx context.Context, in *npool.CreateCouponRequest
 		return &npool.CreateCouponResponse{}, status.Error(codes.InvalidArgument, "Not implemented")
 	default:
 		return &npool.CreateCouponResponse{}, status.Error(codes.InvalidArgument, "Unknown coupon type")
+	}
+
+	user, err := usermwcli.GetUser(ctx, in.GetAppID(), in.GetTargetUserID())
+	if err != nil {
+		return &npool.CreateCouponResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if user == nil {
+		return &npool.CreateCouponResponse{}, status.Error(codes.InvalidArgument, "TargetUserID is invalid")
+	}
+
+	app, err := appmwcli.GetApp(ctx, in.GetAppID())
+	if err != nil {
+		return &npool.CreateCouponResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if app == nil {
+		return &npool.CreateCouponResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
+	}
+
+	coup, err := couponmwcli.GetCoupon(ctx, in.GetCouponID(), in.GetCouponType())
+	if err != nil {
+		return &npool.CreateCouponResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if coup == nil {
+		return &npool.CreateCouponResponse{}, status.Error(codes.InvalidArgument, "CouponID is invalid")
 	}
 
 	info, err := allocated1.CreateCoupon(ctx, &allocatedmwpb.CouponReq{
