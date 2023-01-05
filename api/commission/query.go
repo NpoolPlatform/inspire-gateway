@@ -19,7 +19,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func GetCommissions(ctx context.Context, in *npool.GetCommissionsRequest) (*npool.GetCommissionsResponse, error) {
+func (s *Server) GetCommissions(ctx context.Context, in *npool.GetCommissionsRequest) (*npool.GetCommissionsResponse, error) {
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		return &npool.GetCommissionsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -52,7 +52,7 @@ func GetCommissions(ctx context.Context, in *npool.GetCommissionsRequest) (*npoo
 	}, nil
 }
 
-func GetAppCommissions(ctx context.Context, in *npool.GetAppCommissionsRequest) (*npool.GetAppCommissionsResponse, error) {
+func (s *Server) GetAppCommissions(ctx context.Context, in *npool.GetAppCommissionsRequest) (*npool.GetAppCommissionsResponse, error) {
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		return &npool.GetAppCommissionsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
