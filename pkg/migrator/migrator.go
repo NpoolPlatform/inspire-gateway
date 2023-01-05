@@ -36,7 +36,7 @@ import (
 	inspireent "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/db/ent"
 	inspireconst "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/message/const"
 
-	archivementmgrconst "github.com/NpoolPlatform/inspire-manager/pkg/message/const"
+	archivementmgrconst "github.com/NpoolPlatform/archivement-manager/pkg/message/const"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
