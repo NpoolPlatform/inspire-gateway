@@ -9,9 +9,9 @@ require (
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
 	github.com/NpoolPlatform/good-middleware v0.0.0-20230104062128-8bbc2f086a47
 	github.com/NpoolPlatform/inspire-manager v0.0.0-20230104101525-832f39ec3bdf
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230105063006-b22158e7cb58
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230105071031-a95d5ee58cf7
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230105064722-622df6001cf0
+	github.com/NpoolPlatform/message v0.0.0-20230105070618-a5a57b6a02cb
 	github.com/NpoolPlatform/order-middleware v0.0.0-20221215041035-9804ca4d3515
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
