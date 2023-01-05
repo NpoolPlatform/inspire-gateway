@@ -23,6 +23,7 @@ import (
 	"github.com/google/uuid"
 )
 
+//nolint
 func CreateCoupon(ctx context.Context, in *npool.CreateCouponRequest) (*npool.CreateCouponResponse, error) {
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		return &npool.CreateCouponResponse{}, status.Error(codes.InvalidArgument, err.Error())
