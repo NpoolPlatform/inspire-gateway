@@ -41,6 +41,7 @@ import (
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 
+	_ "github.com/NpoolPlatform/archivement-manager/pkg/db/ent/runtime"
 	_ "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/db/ent/runtime"
 )
 
