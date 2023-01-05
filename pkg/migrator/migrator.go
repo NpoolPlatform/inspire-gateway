@@ -27,9 +27,11 @@ import (
 	entgeneral "github.com/NpoolPlatform/archivement-manager/pkg/db/ent/general"
 
 	constant "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
+	constant1 "github.com/NpoolPlatform/inspire-gateway/pkg/message/const"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	"github.com/NpoolPlatform/go-service-framework/pkg/redis"
 
 	inspireent "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/db/ent"
 	inspireconst "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/message/const"
@@ -438,6 +440,14 @@ func Migrate(ctx context.Context) error {
 	if err := db.Init(); err != nil {
 		return err
 	}
+
+	serviceID := config.GetStringValueWithNameSpace(constant1.ServiceName, config.KeyServiceID)
+	if err := redis.TryLock(serviceID, 0); err != nil {
+		return nil
+	}
+	defer func() {
+		_ = redis.Unlock(serviceID)
+	}()
 
 	conn, err := open(inspireconst.ServiceName)
 	if err != nil {
