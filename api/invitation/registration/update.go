@@ -23,7 +23,6 @@ import (
 	"github.com/google/uuid"
 )
 
-//nolint
 func (s *Server) UpdateRegistration(ctx context.Context, in *npool.UpdateRegistrationRequest) (*npool.UpdateRegistrationResponse, error) {
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		return &npool.UpdateRegistrationResponse{}, status.Error(codes.InvalidArgument, err.Error())
