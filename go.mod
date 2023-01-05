@@ -3,9 +3,11 @@ module github.com/NpoolPlatform/inspire-gateway
 go 1.17
 
 require (
+	entgo.io/ent v0.11.3
 	github.com/NpoolPlatform/api-manager v0.0.0-20220930035751-2b8a48b8df04
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230104052521-5e169ab923c6
 	github.com/NpoolPlatform/chain-middleware v0.0.0-20221216021206-c73dbc7ea1ce
+	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20221110031410-781ff87233f1
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
 	github.com/NpoolPlatform/good-middleware v0.0.0-20230104062128-8bbc2f086a47
 	github.com/NpoolPlatform/inspire-manager v0.0.0-20230104101525-832f39ec3bdf
@@ -27,7 +29,6 @@ require (
 
 require (
 	ariga.io/atlas v0.7.2-0.20220927111110-867ee0cca56a // indirect
-	entgo.io/ent v0.11.3 // indirect
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
