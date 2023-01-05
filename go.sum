@@ -69,6 +69,8 @@ github.com/NpoolPlatform/api-manager v0.0.0-20220930035751-2b8a48b8df04/go.mod h
 github.com/NpoolPlatform/appuser-manager v0.0.0-20230104052047-d72e4a9723d7 h1:1p8pIRh0m6Www9s0XUYMVJTH6GU3nddwCkL7lUBFTdI=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20230104052521-5e169ab923c6 h1:HOdh9+niKosqLtaZXbICv52CYcRCAj6ofheDBGBbS8A=
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20230104052521-5e169ab923c6/go.mod h1:iIkCCpsuV3IO4u32jBUATHZ1C0gDGW+nalZcrlHXHoM=
+github.com/NpoolPlatform/archivement-manager v0.0.0-20220930041014-e6102ea848ec h1:3LvYxrGcyyPun/X4nUg0ytOLzRXqd/Znw05J5T3FAs0=
+github.com/NpoolPlatform/archivement-manager v0.0.0-20220930041014-e6102ea848ec/go.mod h1:Lg3sHl5QRBMTd8DGao27BHeyfizzWcYZaqn9NCmQP28=
 github.com/NpoolPlatform/chain-manager v0.0.0-20221214080455-07f7e511376f h1:lcqQpwbs7ktY9vjmDFD0X1DFdeXm78X3R5ry4gAelPI=
 github.com/NpoolPlatform/chain-middleware v0.0.0-20221216021206-c73dbc7ea1ce h1:lJ6jB8mUNoou/5a96pxwg6UxJP4/0ZKSta9mJqGn0GU=
 github.com/NpoolPlatform/chain-middleware v0.0.0-20221216021206-c73dbc7ea1ce/go.mod h1:ZTSnIdltJKyf+THfvHVCkoEmaJWESxDgpF35kJu/n78=

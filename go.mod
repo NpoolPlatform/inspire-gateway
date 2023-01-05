@@ -6,6 +6,7 @@ require (
 	entgo.io/ent v0.11.3
 	github.com/NpoolPlatform/api-manager v0.0.0-20220930035751-2b8a48b8df04
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230104052521-5e169ab923c6
+	github.com/NpoolPlatform/archivement-manager v0.0.0-20220930041014-e6102ea848ec
 	github.com/NpoolPlatform/chain-middleware v0.0.0-20221216021206-c73dbc7ea1ce
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20221110031410-781ff87233f1
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd

@@ -12,6 +12,8 @@ import (
 
 	"github.com/shopspring/decimal"
 
+	entarchivementdetail "github.com/NpoolPlatform/inspire-manager/pkg/db/ent/archivementdetail"
+	entarchivementgeneral "github.com/NpoolPlatform/inspire-manager/pkg/db/ent/archivementgeneral"
 	entgoodorderpercent "github.com/NpoolPlatform/inspire-manager/pkg/db/ent/goodorderpercent"
 	entivcode "github.com/NpoolPlatform/inspire-manager/pkg/db/ent/invitationcode"
 	entreg "github.com/NpoolPlatform/inspire-manager/pkg/db/ent/registration"
@@ -19,6 +21,10 @@ import (
 	entinspiresetting "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/db/ent/apppurchaseamountsetting"
 	entregiv "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/db/ent/registrationinvitation"
 	entoivcode "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/db/ent/userinvitationcode"
+
+	archivementent "github.com/NpoolPlatform/archivement-manager/pkg/db/ent"
+	entdetail "github.com/NpoolPlatform/archivement-manager/pkg/db/ent/detail"
+	entgeneral "github.com/NpoolPlatform/archivement-manager/pkg/db/ent/general"
 
 	constant "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 
@@ -280,7 +286,151 @@ func migrateAmountSetting(ctx context.Context, conn *sql.DB) error {
 	return nil
 }
 
-func migrateArchivement(ctx context.Context, conn *sql.DB) error {
+func migrateArchivementGeneral(ctx context.Context, conn *sql.DB) error {
+	cli := archivementent.NewClient(archivementent.Driver(entsql.OpenDB(dialect.MySQL, conn)))
+	generals, err := cli.
+		General.
+		Query().
+		Where(
+			entgeneral.DeletedAt(0),
+		).
+		All(ctx)
+	if err != nil {
+		logger.Sugar().Errorw("migrateArchivementGeneral", "Error", err)
+		return err
+	}
+
+	return db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
+		infos, err := cli.
+			ArchivementGeneral.
+			Query().
+			Limit(1).
+			All(_ctx)
+		if err != nil {
+			return err
+		}
+		if len(infos) > 0 {
+			return nil
+		}
+
+		for _, general := range generals {
+			info, err := cli.
+				ArchivementGeneral.
+				Query().
+				Where(
+					entarchivementgeneral.ID(general.ID),
+				).
+				Only(_ctx)
+			if err != nil {
+				if !ent.IsNotFound(err) {
+					return err
+				}
+			}
+			if info != nil {
+				continue
+			}
+
+			_, err = cli.
+				ArchivementGeneral.
+				Create().
+				SetID(general.ID).
+				SetAppID(general.AppID).
+				SetUserID(general.UserID).
+				SetUserID(general.GoodID).
+				SetCoinTypeID(general.CoinTypeID).
+				SetTotalUnits(general.TotalUnits).
+				SetSelfUnits(general.SelfUnits).
+				SetTotalAmount(general.TotalAmount).
+				SetSelfAmount(general.SelfAmount).
+				SetTotalCommission(general.TotalCommission).
+				SetSelfCommission(general.SelfCommission).
+				SetCreatedAt(general.CreatedAt).
+				SetUpdatedAt(general.UpdatedAt).
+				Save(_ctx)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
+	return nil
+}
+
+func migrateArchivementDetail(ctx context.Context, conn *sql.DB) error {
+	cli := archivementent.NewClient(archivementent.Driver(entsql.OpenDB(dialect.MySQL, conn)))
+	details, err := cli.
+		Detail.
+		Query().
+		Where(
+			entdetail.DeletedAt(0),
+		).
+		All(ctx)
+	if err != nil {
+		logger.Sugar().Errorw("migrateAmountSetting", "Error", err)
+		return err
+	}
+
+	return db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
+		infos, err := cli.
+			ArchivementDetail.
+			Query().
+			Limit(1).
+			All(_ctx)
+		if err != nil {
+			return err
+		}
+		if len(infos) > 0 {
+			return nil
+		}
+
+		for _, detail := range details {
+			info, err := cli.
+				ArchivementDetail.
+				Query().
+				Where(
+					entarchivementdetail.ID(detail.ID),
+				).
+				Only(_ctx)
+			if err != nil {
+				if !ent.IsNotFound(err) {
+					return err
+				}
+			}
+			if info != nil {
+				continue
+			}
+
+			_, err = cli.
+				ArchivementDetail.
+				Create().
+				SetID(detail.ID).
+				SetAppID(detail.AppID).
+				SetUserID(detail.UserID).
+				SetDirectContributorID(detail.DirectContributorID).
+				SetUserID(detail.GoodID).
+				SetOrderID(detail.OrderID).
+				SetSelfOrder(detail.SelfOrder).
+				SetPaymentID(detail.PaymentID).
+				SetCoinTypeID(detail.CoinTypeID).
+				SetPaymentCoinTypeID(detail.PaymentCoinTypeID).
+				SetPaymentCoinUsdCurrency(detail.PaymentCoinUsdCurrency).
+				SetUnits(detail.Units).
+				SetAmount(detail.Amount).
+				SetUsdAmount(detail.UsdAmount).
+				SetCommission(detail.Commission).
+				SetCreatedAt(detail.CreatedAt).
+				SetUpdatedAt(detail.UpdatedAt).
+				Save(_ctx)
+			if err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
 	return nil
 }
 
@@ -311,7 +461,11 @@ func Migrate(ctx context.Context) error {
 		return err
 	}
 
-	if err := migrateArchivement(ctx, conn); err != nil {
+	if err := migrateArchivementGeneral(ctx, conn); err != nil {
+		return err
+	}
+
+	if err := migrateArchivementDetail(ctx, conn); err != nil {
 		return err
 	}
 
