@@ -2,6 +2,7 @@ package reconciliation
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
@@ -9,6 +10,9 @@ import (
 
 	accountingmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/accounting"
 	accountingmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/accounting"
+
+	ledgermwcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger/v2"
+	ledgerdetailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/detail"
 
 	ordermwpb "github.com/NpoolPlatform/message/npool/order/mw/v1/order"
 	ordercli "github.com/NpoolPlatform/order-middleware/pkg/client/order"
@@ -113,8 +117,40 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 				continue
 			}
 
+			if len(comms) == 0 {
+				continue
+			}
+
 			logger.Sugar().Warnw("UpdateArchivement", "OrderID", order.ID, "Comms", comms)
-			// TODO: update comm to ledger
+
+			details := []*ledgerdetailmgrpb.DetailReq{}
+			ioType := ledgerdetailmgrpb.IOType_Incoming
+			ioSubType := ledgerdetailmgrpb.IOSubType_Commission
+
+			for _, comm := range comms {
+				ioExtra := fmt.Sprintf(
+					`{"PaymentID":"%v","OrderID":"%v","DirectContributorID":"%v","OrderUserID":"%v"}`,
+					order.PaymentID,
+					order.ID,
+					comm.GetDirectContributorUserID(),
+					order.UserID,
+				)
+
+				details = append(details, &ledgerdetailmgrpb.DetailReq{
+					AppID:      &order.AppID,
+					UserID:     &comm.UserID,
+					CoinTypeID: &good.CoinTypeID,
+					IOType:     &ioType,
+					IOSubType:  &ioSubType,
+					Amount:     &comm.Amount,
+					IOExtra:    &ioExtra,
+				})
+			}
+
+			err = ledgermwcli.BookKeeping(ctx, details)
+			if err != nil {
+				return err
+			}
 		}
 
 		offset += int32(len(orders))

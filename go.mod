@@ -11,10 +11,11 @@ require (
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20221110031410-781ff87233f1
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
 	github.com/NpoolPlatform/good-middleware v0.0.0-20230104062128-8bbc2f086a47
-	github.com/NpoolPlatform/inspire-manager v0.0.0-20230104101525-832f39ec3bdf
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230105071031-a95d5ee58cf7
+	github.com/NpoolPlatform/inspire-manager v0.0.0-20230105082813-e8d807b7ec2c
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230106040901-737c67a4a79d
+	github.com/NpoolPlatform/ledger-middleware v0.0.0-20221222080503-edf65d38e64b
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230106023827-5ec70073150a
+	github.com/NpoolPlatform/message v0.0.0-20230106040648-77021995a1b2
 	github.com/NpoolPlatform/order-middleware v0.0.0-20221215041035-9804ca4d3515
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0

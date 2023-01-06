@@ -171,6 +171,7 @@ func GetCommissions(ctx context.Context, conds *commmwpb.Conds, offset, limit in
 	for _, info := range infos {
 		user, ok := userMap[info.UserID]
 		if !ok {
+			fmt.Printf("XXXXX: UserID: %v\n", info.UserID)
 			continue
 		}
 
