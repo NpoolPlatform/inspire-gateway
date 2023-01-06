@@ -41,6 +41,10 @@ func (s *Server) GetCommissions(ctx context.Context, in *npool.GetCommissionsReq
 			Op:    cruder.EQ,
 			Value: in.GetUserID(),
 		},
+		SettleType: &commonpb.Int32Val{
+			Op:    cruder.EQ,
+			Value: int32(in.GetSettleType()),
+		},
 	}, in.GetOffset(), limit)
 	if err != nil {
 		return &npool.GetCommissionsResponse{}, status.Error(codes.Internal, err.Error())
@@ -66,6 +70,10 @@ func (s *Server) GetAppCommissions(ctx context.Context, in *npool.GetAppCommissi
 		AppID: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: in.GetAppID(),
+		},
+		SettleType: &commonpb.Int32Val{
+			Op:    cruder.EQ,
+			Value: int32(in.GetSettleType()),
 		},
 	}, in.GetOffset(), limit)
 	if err != nil {
