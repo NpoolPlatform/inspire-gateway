@@ -263,6 +263,10 @@ func migrateAmountSetting(ctx context.Context, conn *sql.DB) error {
 				continue
 			}
 
+			if setting.UserID.String() == "4775ff56-c3b9-4728-9ac6-b5df1ee9fbab" {
+				logger.Sugar().Infow("XXXXXXX", "Setting", setting)
+			}
+
 			percent := decimal.NewFromInt(int64(setting.Percent))
 
 			_, err = cli.
@@ -271,7 +275,7 @@ func migrateAmountSetting(ctx context.Context, conn *sql.DB) error {
 				SetID(setting.ID).
 				SetAppID(setting.AppID).
 				SetUserID(setting.UserID).
-				SetUserID(setting.GoodID).
+				SetGoodID(setting.GoodID).
 				SetPercent(percent).
 				SetStartAt(setting.Start).
 				SetEndAt(setting.End).
@@ -339,7 +343,7 @@ func migrateArchivementGeneral(ctx context.Context, conn *sql.DB) error {
 				SetID(general.ID).
 				SetAppID(general.AppID).
 				SetUserID(general.UserID).
-				SetUserID(general.GoodID).
+				SetGoodID(general.GoodID).
 				SetCoinTypeID(general.CoinTypeID).
 				SetTotalUnits(general.TotalUnits).
 				SetSelfUnits(general.SelfUnits).
@@ -412,7 +416,7 @@ func migrateArchivementDetail(ctx context.Context, conn *sql.DB) error {
 				SetAppID(detail.AppID).
 				SetUserID(detail.UserID).
 				SetDirectContributorID(detail.DirectContributorID).
-				SetUserID(detail.GoodID).
+				SetGoodID(detail.GoodID).
 				SetOrderID(detail.OrderID).
 				SetSelfOrder(detail.SelfOrder).
 				SetPaymentID(detail.PaymentID).

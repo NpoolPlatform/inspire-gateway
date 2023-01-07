@@ -121,8 +121,6 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 				continue
 			}
 
-			logger.Sugar().Warnw("UpdateArchivement", "OrderID", order.ID, "Comms", comms)
-
 			details := []*ledgerdetailmgrpb.DetailReq{}
 			ioType := ledgerdetailmgrpb.IOType_Incoming
 			ioSubType := ledgerdetailmgrpb.IOSubType_Commission
