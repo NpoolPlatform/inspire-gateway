@@ -34,8 +34,9 @@ func UpdateCommission(
 	}
 
 	req := &commmwpb.CommissionReq{
-		ID:      &id,
-		StartAt: startAt,
+		ID:         &id,
+		SettleType: &settleType,
+		StartAt:    startAt,
 	}
 
 	if value != nil {
