@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
+	mgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
 
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
 	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
@@ -23,8 +24,8 @@ import (
 	commonpb "github.com/NpoolPlatform/message/npool"
 )
 
-func GetCommission(ctx context.Context, id string) (*npool.Commission, error) {
-	info, err := commmwcli.GetCommission(ctx, id)
+func GetCommission(ctx context.Context, id string, settleType mgrpb.SettleType) (*npool.Commission, error) {
+	info, err := commmwcli.GetCommission(ctx, id, settleType)
 	if err != nil {
 		return nil, err
 	}

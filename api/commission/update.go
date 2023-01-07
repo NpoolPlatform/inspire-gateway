@@ -37,6 +37,7 @@ func (s *Server) UpdateCommission(ctx context.Context, in *npool.UpdateCommissio
 		ctx,
 		in.GetID(),
 		in.GetAppID(),
+		in.GetSettleType(),
 		in.Value,
 		in.StartAt,
 	)

@@ -87,5 +87,5 @@ func CreateCommission(
 		return nil, err
 	}
 
-	return GetCommission(ctx, info.ID)
+	return GetCommission(ctx, info.ID, settleType)
 }
