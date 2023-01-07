@@ -164,14 +164,13 @@ func GetCommissions(ctx context.Context, conds *commmwpb.Conds, offset, limit in
 
 	coinMap := map[string]*coinmwpb.Coin{}
 	for _, coin := range coins {
-		coinMap[coin.ID] = coin
+		coinMap[coin.CoinTypeID] = coin
 	}
 
 	comms := []*npool.Commission{}
 	for _, info := range infos {
 		user, ok := userMap[info.UserID]
 		if !ok {
-			fmt.Printf("XXXXX: UserID: %v\n", info.UserID)
 			continue
 		}
 
