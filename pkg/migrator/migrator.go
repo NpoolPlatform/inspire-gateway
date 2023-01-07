@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	archivementmgrconst "github.com/NpoolPlatform/archivement-manager/pkg/message/const"
 	"time"
 
 	"github.com/NpoolPlatform/inspire-manager/pkg/db"
@@ -26,6 +27,9 @@ import (
 	entdetail "github.com/NpoolPlatform/archivement-manager/pkg/db/ent/detail"
 	entgeneral "github.com/NpoolPlatform/archivement-manager/pkg/db/ent/general"
 
+	appuserent "github.com/NpoolPlatform/appuser-manager/pkg/db/ent"
+	appuserctlent "github.com/NpoolPlatform/appuser-manager/pkg/db/ent/appusercontrol"
+
 	constant "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 	constant1 "github.com/NpoolPlatform/inspire-gateway/pkg/message/const"
 
@@ -33,14 +37,14 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/go-service-framework/pkg/redis"
 
+	appuserconst "github.com/NpoolPlatform/appuser-manager/pkg/message/const"
 	inspireent "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/db/ent"
 	inspireconst "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/message/const"
-
-	archivementmgrconst "github.com/NpoolPlatform/archivement-manager/pkg/message/const"
 
 	"entgo.io/ent/dialect"
 	entsql "entgo.io/ent/dialect/sql"
 
+	_ "github.com/NpoolPlatform/appuser-manager/pkg/db/ent/runtime"
 	_ "github.com/NpoolPlatform/archivement-manager/pkg/db/ent/runtime"
 	_ "github.com/NpoolPlatform/cloud-hashing-inspire/pkg/db/ent/runtime"
 )
@@ -110,6 +114,12 @@ func migrateInvitationCode(ctx context.Context, conn *sql.DB) error {
 		return err
 	}
 
+	appUserConn, err := open(appuserconst.ServiceName)
+	if err != nil {
+		return err
+	}
+	appUserCli := appuserent.NewClient(appuserent.Driver(entsql.OpenDB(dialect.MySQL, appUserConn)))
+
 	return db.WithClient(ctx, func(_ctx context.Context, cli *ent.Client) error {
 		infos, err := cli.
 			InvitationCode.
@@ -152,6 +162,36 @@ func migrateInvitationCode(ctx context.Context, conn *sql.DB) error {
 			if err != nil {
 				return err
 			}
+
+			appuserCtl, err := appUserCli.
+				AppUserControl.
+				Query().
+				Where(
+					appuserctlent.UserID(code.UserID),
+				).
+				ForUpdate().
+				Only(ctx)
+			if err != nil {
+				if !appuserent.IsNotFound(err) {
+					return err
+				}
+			}
+
+			if appuserent.IsNotFound(err) {
+				appUserCli.
+					AppUserControl.
+					Create().
+					SetKol(true).
+					SetAppID(code.AppID).
+					SetUserID(code.UserID).
+					Save(ctx)
+			} else {
+				_, err = appuserCtl.Update().SetKol(true).Save(ctx)
+				if err != nil {
+					return err
+				}
+			}
+
 		}
 
 		return nil
