@@ -9,6 +9,9 @@ import (
 
 	archivement1 "github.com/NpoolPlatform/inspire-gateway/pkg/archivement"
 
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
+	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 
@@ -22,12 +25,28 @@ func (s *Server) GetGoodArchivements(
 ) {
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		logger.Sugar().Errorw("GetGoodArchivements", "AppID", in.GetAppID(), "error", err)
-		return &npool.GetGoodArchivementsResponse{}, status.Error(codes.Internal, "AppID is invalid")
+		return &npool.GetGoodArchivementsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	if _, err := uuid.Parse(in.GetUserID()); err != nil {
 		logger.Sugar().Errorw("GetGoodArchivements", "UserID", in.GetUserID(), "error", err)
-		return &npool.GetGoodArchivementsResponse{}, status.Error(codes.Internal, "UserID is invalid")
+		return &npool.GetGoodArchivementsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	user, err := usermwcli.GetUser(ctx, in.GetAppID(), in.GetUserID())
+	if err != nil {
+		return &npool.GetGoodArchivementsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if user == nil {
+		return &npool.GetGoodArchivementsResponse{}, status.Error(codes.InvalidArgument, "User is invalid")
+	}
+
+	app, err := appmwcli.GetApp(ctx, in.GetAppID())
+	if err != nil {
+		return &npool.GetGoodArchivementsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if app == nil {
+		return &npool.GetGoodArchivementsResponse{}, status.Error(codes.InvalidArgument, "App is invalid")
 	}
 
 	infos, total, err := archivement1.GetGoodArchivements(ctx,
@@ -51,6 +70,14 @@ func (s *Server) GetUserGoodArchivements(
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		logger.Sugar().Errorw("GetUserGoodArchivements", "AppID", in.GetAppID(), "error", err)
 		return &npool.GetUserGoodArchivementsResponse{}, status.Error(codes.Internal, "AppID is invalid")
+	}
+
+	app, err := appmwcli.GetApp(ctx, in.GetAppID())
+	if err != nil {
+		return &npool.GetUserGoodArchivementsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if app == nil {
+		return &npool.GetUserGoodArchivementsResponse{}, status.Error(codes.InvalidArgument, "App is invalid")
 	}
 
 	if len(in.GetUserIDs()) == 0 {
