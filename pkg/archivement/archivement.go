@@ -307,19 +307,16 @@ func getUserArchivements(
 	for _, general := range generals {
 		archivement, ok := archivements[general.UserID]
 		if !ok {
-			logger.Sugar().Warn("user not exist continue")
 			continue
 		}
 
 		coin, ok := coinMap[general.CoinTypeID]
 		if !ok {
-			logger.Sugar().Warn("coin not exist continue")
 			continue
 		}
 
 		good, ok := goodMap[general.GoodID]
 		if !ok {
-			logger.Sugar().Warn("good not exist continue")
 			continue
 		}
 
