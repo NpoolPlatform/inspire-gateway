@@ -25,6 +25,7 @@ func GetRegistration(ctx context.Context, id string) (*npool.Registration, error
 	}
 
 	reg := &npool.Registration{
+		ID:        info.ID,
 		AppID:     info.AppID,
 		InviterID: info.InviterID,
 		InviteeID: info.InviteeID,
@@ -83,6 +84,7 @@ func GetRegistrations(ctx context.Context, conds *regmgrpb.Conds, offset, limit 
 		}
 
 		regs = append(regs, &npool.Registration{
+			ID:                  info.ID,
 			AppID:               info.AppID,
 			InviterID:           info.InviterID,
 			InviterEmailAddress: inviter.EmailAddress,
