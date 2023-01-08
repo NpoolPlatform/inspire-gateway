@@ -65,6 +65,7 @@ func (s *Server) UpdateRegistration(ctx context.Context, in *npool.UpdateRegistr
 	}
 
 	info, err := registration1.UpdateRegistration(ctx, &registrationmgrpb.RegistrationReq{
+		ID:        &in.ID,
 		AppID:     &in.AppID,
 		InviterID: &in.InviterID,
 	})
