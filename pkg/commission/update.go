@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
-	mgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
 
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
 	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
@@ -15,7 +14,7 @@ import (
 func UpdateCommission(
 	ctx context.Context,
 	id, appID string,
-	settleType mgrpb.SettleType,
+	settleType commmgrpb.SettleType,
 	value *string,
 	startAt *uint32,
 ) (
