@@ -2,6 +2,7 @@ package commission
 
 import (
 	"context"
+	"time"
 
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
 	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
@@ -46,6 +47,11 @@ func (s *Server) CreateCommission(ctx context.Context, in *npool.CreateCommissio
 		return &npool.CreateCommissionResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
+	startAt := in.GetStartAt()
+	if startAt == 0 {
+		startAt = uint32(time.Now().Unix())
+	}
+
 	info, err := comm1.CreateCommission(
 		ctx,
 		in.GetAppID(),
@@ -53,7 +59,7 @@ func (s *Server) CreateCommission(ctx context.Context, in *npool.CreateCommissio
 		in.GoodID,
 		in.GetSettleType(),
 		value,
-		in.StartAt,
+		&startAt,
 	)
 	if err != nil {
 		return &npool.CreateCommissionResponse{}, status.Error(codes.Internal, err.Error())
