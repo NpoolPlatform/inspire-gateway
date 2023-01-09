@@ -25,7 +25,7 @@ import (
 )
 
 //nolint
-func UpdateCoupon(ctx context.Context, in *npool.UpdateCouponRequest) (*npool.UpdateCouponResponse, error) {
+func (s *Server) UpdateCoupon(ctx context.Context, in *npool.UpdateCouponRequest) (*npool.UpdateCouponResponse, error) {
 	if _, err := uuid.Parse(in.GetID()); err != nil {
 		return &npool.UpdateCouponResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}

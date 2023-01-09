@@ -37,10 +37,8 @@ func (s *Server) CreateCoupon(ctx context.Context, in *npool.CreateCouponRequest
 
 	switch in.GetCouponType() {
 	case allocatedmgrpb.CouponType_FixAmount:
-		fallthrough //nolint
 	case allocatedmgrpb.CouponType_Discount:
 	case allocatedmgrpb.CouponType_SpecialOffer:
-		return &npool.CreateCouponResponse{}, status.Error(codes.InvalidArgument, "Not supported")
 	case allocatedmgrpb.CouponType_ThresholdFixAmount:
 		fallthrough //nolint
 	case allocatedmgrpb.CouponType_ThresholdDiscount:
