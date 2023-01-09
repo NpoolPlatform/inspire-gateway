@@ -24,7 +24,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-//nolint
 func CreateCommission(
 	ctx context.Context,
 	appID, userID string,
@@ -83,39 +82,6 @@ func CreateCommission(
 		}
 	}
 
-	conds := &commmwpb.Conds{
-		AppID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: appID,
-		},
-		UserID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: userID,
-		},
-		SettleType: &commonpb.Int32Val{
-			Op:    cruder.EQ,
-			Value: int32(settleType),
-		},
-		EndAt: &commonpb.Uint32Val{
-			Op:    cruder.EQ,
-			Value: uint32(0),
-		},
-	}
-	if goodID != nil {
-		conds.GoodID = &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: *goodID,
-		}
-	}
-
-	comm1, err := commmwcli.GetCommissionOnly(ctx, conds)
-	if err != nil {
-		return nil, err
-	}
-	if comm1 == nil {
-		return nil, fmt.Errorf("commission not exist")
-	}
-
 	req := &commmwpb.CommissionReq{
 		AppID:      &appID,
 		UserID:     &userID,
@@ -128,13 +94,6 @@ func CreateCommission(
 
 	switch settleType {
 	case commmgrpb.SettleType_GoodOrderPercent:
-		percent, err := decimal.NewFromString(comm1.GetPercent())
-		if err != nil {
-			return nil, err
-		}
-		if percent.Cmp(value) < 0 {
-			return nil, fmt.Errorf("invalid percent")
-		}
 		req.Percent = &valueStr
 	case commmgrpb.SettleType_LimitedOrderPercent:
 		fallthrough //nolint

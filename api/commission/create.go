@@ -2,10 +2,14 @@ package commission
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
+
+	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
 	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
+	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 
 	comm1 "github.com/NpoolPlatform/inspire-gateway/pkg/commission"
 
@@ -77,6 +81,62 @@ func (s *Server) createCommission(ctx context.Context, in *npool.CreateCommissio
 }
 
 func (s *Server) CreateCommission(ctx context.Context, in *npool.CreateCommissionRequest) (*npool.CreateCommissionResponse, error) {
+	conds := &commmwpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetAppID(),
+		},
+		UserID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetUserID(),
+		},
+		SettleType: &commonpb.Int32Val{
+			Op:    cruder.EQ,
+			Value: int32(in.GetSettleType()),
+		},
+		EndAt: &commonpb.Uint32Val{
+			Op:    cruder.EQ,
+			Value: uint32(0),
+		},
+	}
+	if in.GoodID != nil {
+		conds.GoodID = &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: in.GetGoodID(),
+		}
+	}
+	comm, err := commmwcli.GetCommissionOnly(ctx, conds)
+	if err != nil {
+		return &npool.CreateCommissionResponse{}, status.Error(codes.Internal, err.Error())
+	}
+	if comm == nil {
+		return &npool.CreateCommissionResponse{}, status.Error(codes.Internal, "commission not exist")
+	}
+
+	value, err := decimal.NewFromString(in.GetValue())
+	if err != nil {
+		return &npool.CreateCommissionResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	switch in.GetSettleType() {
+	case commmgrpb.SettleType_GoodOrderPercent:
+		percent, err := decimal.NewFromString(comm.GetPercent())
+		if err != nil {
+			return nil, err
+		}
+		if percent.Cmp(value) < 0 {
+			return nil, fmt.Errorf("invalid percent")
+		}
+	case commmgrpb.SettleType_LimitedOrderPercent:
+		fallthrough //nolint
+	case commmgrpb.SettleType_AmountThreshold:
+		fallthrough //nolint
+	case commmgrpb.SettleType_NoCommission:
+		return nil, fmt.Errorf("not implemented")
+	default:
+		return nil, fmt.Errorf("unknown settle type")
+	}
+
 	reg, err := regmwcli.GetRegistrationOnly(ctx, &regmgrpb.Conds{
 		AppID: &commonpb.StringVal{
 			Op:    cruder.EQ,
