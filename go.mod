@@ -5,18 +5,18 @@ go 1.17
 require (
 	entgo.io/ent v0.11.3
 	github.com/NpoolPlatform/api-manager v0.0.0-20220930035751-2b8a48b8df04
-	github.com/NpoolPlatform/appuser-manager v0.0.0-20230104052047-d72e4a9723d7
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230104052521-5e169ab923c6
+	github.com/NpoolPlatform/appuser-manager v0.0.0-20230109044457-821cf6489cbb
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230109045418-21a2fca3a42c
 	github.com/NpoolPlatform/archivement-manager v0.0.0-20220930041014-e6102ea848ec
 	github.com/NpoolPlatform/chain-middleware v0.0.0-20221216021206-c73dbc7ea1ce
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20221110031410-781ff87233f1
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
 	github.com/NpoolPlatform/good-middleware v0.0.0-20230104062128-8bbc2f086a47
-	github.com/NpoolPlatform/inspire-manager v0.0.0-20230105082813-e8d807b7ec2c
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230107074502-2be79f0a67e9
+	github.com/NpoolPlatform/inspire-manager v0.0.0-20230109042955-e648980b46df
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230109043649-69d20197a758
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20221222080503-edf65d38e64b
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230108093711-709767c30a03
+	github.com/NpoolPlatform/message v0.0.0-20230109042432-9ecd6eed7d13
 	github.com/NpoolPlatform/order-middleware v0.0.0-20221215041035-9804ca4d3515
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0

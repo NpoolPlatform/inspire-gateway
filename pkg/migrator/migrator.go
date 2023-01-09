@@ -157,7 +157,6 @@ func migrateInvitationCode(ctx context.Context, conn *sql.DB) error {
 				SetAppID(code.AppID).
 				SetUserID(code.UserID).
 				SetInvitationCode(code.InvitationCode).
-				SetConfirmed(code.Confirmed).
 				Save(_ctx)
 			if err != nil {
 				return err
@@ -182,6 +181,7 @@ func migrateInvitationCode(ctx context.Context, conn *sql.DB) error {
 					AppUserControl.
 					Create().
 					SetKol(true).
+					SetKolConfirmed(code.Confirmed).
 					SetAppID(code.AppID).
 					SetUserID(code.UserID).
 					Save(ctx)
