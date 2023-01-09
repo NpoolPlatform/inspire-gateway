@@ -72,7 +72,7 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/get/app/commissionhistories
+          - path: /api/inspire/v1/get/app/commissions
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
