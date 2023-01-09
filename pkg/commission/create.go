@@ -42,6 +42,9 @@ func CreateCommission(
 	if user == nil {
 		return nil, fmt.Errorf("invalid user")
 	}
+	if !user.KolConfirmed || !user.Kol {
+		return nil, fmt.Errorf("user not kol")
+	}
 
 	if goodID != nil {
 		good, err := goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
