@@ -30,7 +30,7 @@ func CreateCommission(
 	goodID *string,
 	settleType commmgrpb.SettleType,
 	value decimal.Decimal,
-	startAt uint32,
+	startAt *uint32,
 ) (
 	*npool.Commission,
 	error,
@@ -84,7 +84,7 @@ func CreateCommission(
 		UserID:     &userID,
 		GoodID:     goodID,
 		SettleType: &settleType,
-		StartAt:    &startAt,
+		StartAt:    startAt,
 	}
 
 	valueStr := value.String()

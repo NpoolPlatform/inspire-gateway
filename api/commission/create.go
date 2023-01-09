@@ -53,7 +53,7 @@ func (s *Server) CreateCommission(ctx context.Context, in *npool.CreateCommissio
 		in.GoodID,
 		in.GetSettleType(),
 		value,
-		in.GetStartAt(),
+		in.StartAt,
 	)
 	if err != nil {
 		return &npool.CreateCommissionResponse{}, status.Error(codes.Internal, err.Error())
