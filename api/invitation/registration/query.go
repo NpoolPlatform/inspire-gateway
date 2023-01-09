@@ -45,7 +45,13 @@ func (s *Server) GetRegistrations(ctx context.Context, in *npool.GetRegistration
 	}, nil
 }
 
-func (s *Server) GetAppRegistrations(ctx context.Context, in *npool.GetAppRegistrationsRequest) (*npool.GetAppRegistrationsResponse, error) {
+func (s *Server) GetAppRegistrations(
+	ctx context.Context,
+	in *npool.GetAppRegistrationsRequest,
+) (
+	*npool.GetAppRegistrationsResponse,
+	error,
+) {
 	resp, err := s.GetRegistrations(ctx, &npool.GetRegistrationsRequest{
 		AppID:  in.GetTargetAppID(),
 		Offset: in.GetOffset(),
