@@ -54,6 +54,9 @@ func GetRegistrations(ctx context.Context, conds *regmgrpb.Conds, offset, limit 
 	if err != nil {
 		return nil, 0, err
 	}
+	if len(infos) == 0 {
+		return nil, 0, nil
+	}
 
 	userIDs := []string{}
 	for _, info := range infos {
