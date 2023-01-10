@@ -419,7 +419,7 @@ func migrateArchivementDetail(ctx context.Context, conn *sql.DB) error {
 		).
 		All(ctx)
 	if err != nil {
-		logger.Sugar().Errorw("migrateAmountSetting", "Error", err)
+		logger.Sugar().Errorw("migrateArchivementDetail", "Error", err)
 		return err
 	}
 
