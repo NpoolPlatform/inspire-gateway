@@ -250,7 +250,7 @@ func getUserArchivements(
 					Op:    cruder.EQ,
 					Value: uint32(0),
 				},
-			}, 0, int32(len(v)))
+			}, 0, int32(len(v) * len(uids)))
 			if err != nil {
 				return nil, 0, err
 			}
