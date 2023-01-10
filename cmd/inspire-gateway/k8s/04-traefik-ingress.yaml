@@ -104,6 +104,10 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          - path: /api/inspire/v1/get/app/invitationcodes
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
           - path: /api/inspire/v1/update/commission
             backend:
               serviceName: inspire-gateway
