@@ -48,7 +48,7 @@ func GetGoodArchivements(
 		limit = 1000
 	}
 
-	invitations, _, err := regmwcli.GetSubordinates(ctx, &regmgrpb.Conds{
+	invitations, _, err := regmwcli.GetRegistrations(ctx, &regmgrpb.Conds{
 		AppID: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: appID,
@@ -128,7 +128,7 @@ func getUserArchivements(
 	}
 
 	for {
-		ivs, _, err := regmwcli.GetSubordinates(ctx, &regmgrpb.Conds{
+		ivs, _, err := regmwcli.GetRegistrations(ctx, &regmgrpb.Conds{
 			AppID: &commonpb.StringVal{
 				Op:    cruder.EQ,
 				Value: appID,
