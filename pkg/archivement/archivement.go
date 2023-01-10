@@ -101,6 +101,10 @@ func GetUserGoodArchivements(
 		}
 	}
 
+	for _, iv := range invitations {
+		userIDs = append(userIDs, iv.InviterID)
+	}
+
 	ivMap := map[string]*regmgrpb.Registration{}
 	for _, iv := range invitations {
 		ivMap[iv.InviteeID] = iv
