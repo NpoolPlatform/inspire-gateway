@@ -42,7 +42,7 @@ func CreateCommission(
 	if user == nil {
 		return nil, fmt.Errorf("invalid user")
 	}
-	if !user.KolConfirmed || !user.Kol {
+	if !user.Kol {
 		return nil, fmt.Errorf("user not kol")
 	}
 
