@@ -307,14 +307,16 @@ func getUserArchivements(
 	archivements := map[string]*npool.UserArchivement{}
 	for _, user := range users {
 		invitedAt := uint32(0)
+		var inviterID string
 
 		iv, ok := ivMap[user.ID]
 		if ok {
 			invitedAt = iv.CreatedAt
+			inviterID = iv.InviterID
 		}
 
 		archivements[user.ID] = &npool.UserArchivement{
-			InviterID:     iv.InviterID,
+			InviterID:     inviterID,
 			UserID:        user.ID,
 			Username:      user.Username,
 			EmailAddress:  user.EmailAddress,
