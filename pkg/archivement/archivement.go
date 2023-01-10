@@ -3,8 +3,6 @@ package archivement
 import (
 	"context"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-
 	"github.com/shopspring/decimal"
 
 	usercli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
@@ -248,6 +246,10 @@ func getUserArchivements(
 					Op:    cruder.EQ,
 					Value: int32(k),
 				},
+				EndAt: &commonpb.Uint32Val {
+					Op:    cruder.EQ,
+					Value: uint32(0),
+				},
 			}, 0, int32(len(v)))
 			if err != nil {
 				return nil, 0, err
@@ -273,7 +275,6 @@ func getUserArchivements(
 		}
 		good, ok := goodMap[comm.GetGoodID()]
 		if !ok {
-			logger.Sugar().Warn("good not exist continue")
 			continue
 		}
 
