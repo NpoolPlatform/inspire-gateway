@@ -225,6 +225,7 @@ func getUserArchivements(
 		goodCommMap[good.CommissionSettleType] = append(goodCommMap[good.CommissionSettleType], good.GoodID)
 	}
 
+
 	comms := []*commmwpb.Commission{}
 	for k, v := range goodCommMap {
 		switch k {
@@ -237,10 +238,6 @@ func getUserArchivements(
 				UserIDs: &commonpb.StringSliceVal{
 					Op:    cruder.IN,
 					Value: uids,
-				},
-				GoodIDs: &commonpb.StringSliceVal{
-					Op:    cruder.IN,
-					Value: v,
 				},
 				SettleType: &commonpb.Int32Val{
 					Op:    cruder.EQ,
@@ -260,6 +257,28 @@ func getUserArchivements(
 		case commmgrpb.SettleType_NoCommission:
 		default:
 		}
+	}
+
+	goodIDs = []string{}
+	for _, val := range generals {
+		goodIDs = append(goodIDs, val.GetGoodID())
+	}
+	for _, val := range comms {
+		goodIDs = append(goodIDs, val.GetGoodID())
+	}
+
+	goods, _, err = goodscli.GetGoods(ctx, &goodmgrpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+		GoodIDs: &commonpb.StringSliceVal{
+			Op:    cruder.IN,
+			Value: goodIDs,
+		},
+	}, 0, int32(len(goodIDs)))
+	if err != nil {
+		return nil, 0, err
 	}
 
 	goodMap := map[string]*goodspb.Good{}
@@ -377,7 +396,10 @@ func getUserArchivements(
 				break
 			}
 
-			coin := coinMap[good.CoinTypeID]
+			coin, ok := coinMap[good.CoinTypeID]
+			if !ok {
+				continue
+			}
 
 			arch := &npool.GoodArchivement{
 				GoodID:            goodID,
