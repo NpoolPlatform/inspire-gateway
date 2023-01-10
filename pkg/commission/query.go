@@ -39,6 +39,8 @@ func GetCommission(ctx context.Context, id string, settleType mgrpb.SettleType) 
 	}
 
 	comm := &npool.Commission{
+		ID:             info.ID,
+		AppID:          info.AppID,
 		UserID:         info.UserID,
 		Username:       user.Username,
 		EmailAddress:   user.EmailAddress,
@@ -179,6 +181,8 @@ func GetCommissions(ctx context.Context, conds *commmwpb.Conds, offset, limit in
 		}
 
 		comm := &npool.Commission{
+			ID:             info.ID,
+			AppID:          info.AppID,
 			UserID:         info.UserID,
 			Username:       user.Username,
 			EmailAddress:   user.EmailAddress,
