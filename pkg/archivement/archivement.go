@@ -229,7 +229,6 @@ func getUserArchivements(
 		goodCommMap[good.CommissionSettleType] = append(goodCommMap[good.CommissionSettleType], good.GoodID)
 	}
 
-
 	comms := []*commmwpb.Commission{}
 	for k, v := range goodCommMap {
 		switch k {
@@ -247,11 +246,11 @@ func getUserArchivements(
 					Op:    cruder.EQ,
 					Value: int32(k),
 				},
-				EndAt: &commonpb.Uint32Val {
+				EndAt: &commonpb.Uint32Val{
 					Op:    cruder.EQ,
 					Value: uint32(0),
 				},
-			}, 0, int32(len(v) * len(uids)))
+			}, 0, int32(len(v)*len(uids)))
 			if err != nil {
 				return nil, 0, err
 			}
@@ -315,6 +314,7 @@ func getUserArchivements(
 		}
 
 		archivements[user.ID] = &npool.UserArchivement{
+			InviterID:     iv.InviterID,
 			UserID:        user.ID,
 			Username:      user.Username,
 			EmailAddress:  user.EmailAddress,

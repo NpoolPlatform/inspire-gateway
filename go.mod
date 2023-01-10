@@ -16,7 +16,7 @@ require (
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230109043649-69d20197a758
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20221222080503-edf65d38e64b
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230110105700-cb7477abf264
+	github.com/NpoolPlatform/message v0.0.0-20230110162534-83df43757858
 	github.com/NpoolPlatform/order-middleware v0.0.0-20221215041035-9804ca4d3515
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
