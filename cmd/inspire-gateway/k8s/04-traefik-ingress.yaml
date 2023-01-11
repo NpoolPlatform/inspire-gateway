@@ -35,6 +35,8 @@ spec:
       http: *http_rules
     - host: api.lpsecretbase.com
       http: *http_rules
+    - host: api.jh-testing.npool.top
+      http: *http_rules
 
 ---
 
@@ -68,7 +70,47 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/get/commissionpercents
+          - path: /api/inspire/v1/get/commissionhistories
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/get/app/commissions
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/create/commission
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/create/user/commission
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/get/registrationinvitations
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/update/registrationinvitation
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/get/app/registrationinvitations
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/create/invitationcode
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/get/invitationcodes
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/get/app/invitationcodes
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/update/commission
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
@@ -83,6 +125,7 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top
@@ -92,4 +135,6 @@ spec:
     - host: api.procyon.xpool.top
       http: *http_rules
     - host: api.lpsecretbase.com
+      http: *http_rules
+    - host: api.jh-testing.npool.top
       http: *http_rules

@@ -3,28 +3,28 @@ package archivement
 import (
 	"context"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-
-	goodscli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
-
 	"github.com/shopspring/decimal"
 
 	usercli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	userpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
-	archivementdetailmgrcli "github.com/NpoolPlatform/archivement-manager/pkg/client/detail"
-	archivementgeneralmgrcli "github.com/NpoolPlatform/archivement-manager/pkg/client/general"
+	archivementdetailmgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/archivement/detail"
+	archivementgeneralmgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/archivement/general"
 	archivementdetailmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/archivement/detail"
 	archivementgeneralmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/archivement/general"
 
-	inspirecli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation"
-	inspirepb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/inspire/invitation"
+	regmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
+	regmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
+
+	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
+	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
+	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 
 	coininfocli "github.com/NpoolPlatform/chain-middleware/pkg/client/coin"
 
-	goodspb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
-
-	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/good"
+	goodscli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
+	goodspb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
 
 	coininfopb "github.com/NpoolPlatform/message/npool/chain/mw/v1/coin"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/archivement"
@@ -46,13 +46,21 @@ func GetGoodArchivements(
 		limit = 1000
 	}
 
-	// 1 Get all layered users
-	invitations, _, err := inspirecli.GetInvitees(ctx, appID, []string{userID}, offset, limit)
+	invitations, _, err := regmwcli.GetRegistrations(ctx, &regmgrpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+		InviterIDs: &commonpb.StringSliceVal{
+			Op:    cruder.IN,
+			Value: []string{userID},
+		},
+	}, offset, limit)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	ivMap := map[string]*inspirepb.Invitation{}
+	ivMap := map[string]*regmgrpb.Registration{}
 	for _, iv := range invitations {
 		ivMap[iv.InviteeID] = iv
 	}
@@ -74,8 +82,16 @@ func GetUserGoodArchivements(
 		limit = 1000
 	}
 
-	// 1 Get all layered users
-	invitations, total, err := inspirecli.GetInviters(ctx, appID, userIDs, offset, limit)
+	invitations, total, err := regmwcli.GetSuperiores(ctx, &regmgrpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+		InviteeIDs: &commonpb.StringSliceVal{
+			Op:    cruder.IN,
+			Value: userIDs,
+		},
+	}, offset, limit)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -85,7 +101,11 @@ func GetUserGoodArchivements(
 		}
 	}
 
-	ivMap := map[string]*inspirepb.Invitation{}
+	for _, iv := range invitations {
+		userIDs = append(userIDs, iv.InviterID)
+	}
+
+	ivMap := map[string]*regmgrpb.Registration{}
 	for _, iv := range invitations {
 		ivMap[iv.InviteeID] = iv
 	}
@@ -97,7 +117,7 @@ func GetUserGoodArchivements(
 func getUserArchivements(
 	ctx context.Context,
 	appID, userID string, uids []string,
-	ivMap map[string]*inspirepb.Invitation,
+	ivMap map[string]*regmgrpb.Registration,
 	offset, limit int32,
 ) (
 	infos []*npool.UserArchivement, total uint32, err error,
@@ -110,7 +130,16 @@ func getUserArchivements(
 	}
 
 	for {
-		ivs, _, err := inspirecli.GetInvitees(ctx, appID, uids, inviteesOfs, limit)
+		ivs, _, err := regmwcli.GetRegistrations(ctx, &regmgrpb.Conds{
+			AppID: &commonpb.StringVal{
+				Op:    cruder.EQ,
+				Value: appID,
+			},
+			InviterIDs: &commonpb.StringSliceVal{
+				Op:    cruder.IN,
+				Value: uids,
+			},
+		}, inviteesOfs, limit)
 		if err != nil {
 			return nil, 0, err
 		}
@@ -166,7 +195,6 @@ func getUserArchivements(
 		coinMap[coin.ID] = coin
 	}
 
-	// 4 Get all users
 	users, n, err := usercli.GetManyUsers(ctx, uids)
 	if err != nil {
 		return nil, 0, err
@@ -177,33 +205,77 @@ func getUserArchivements(
 		userMap[user.ID] = user
 	}
 
-	percents := []*inspirepb.Percent{}
-	iofs := int32(0)
-
-	for {
-		p, _, err := inspirecli.GetPercents(ctx, appID, uids, true, iofs, limit)
-		if err != nil {
-			return nil, 0, err
-		}
-		if len(p) == 0 {
-			break
-		}
-		percents = append(percents, p...)
-		iofs += limit
-	}
-
 	goodIDs := []string{}
-
-	for _, val := range percents {
-		goodIDs = append(goodIDs, val.GetGoodID())
-	}
-
 	for _, val := range generals {
 		goodIDs = append(goodIDs, val.GetGoodID())
 	}
 
 	goods, _, err := goodscli.GetGoods(ctx, &goodmgrpb.Conds{
-		IDs: &commonpb.StringSliceVal{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+		GoodIDs: &commonpb.StringSliceVal{
+			Op:    cruder.IN,
+			Value: goodIDs,
+		},
+	}, 0, int32(len(goodIDs)))
+	if err != nil {
+		return nil, 0, err
+	}
+
+	goodCommMap := map[commmgrpb.SettleType][]string{}
+	for _, good := range goods {
+		goodCommMap[good.CommissionSettleType] = append(goodCommMap[good.CommissionSettleType], good.GoodID)
+	}
+
+	comms := []*commmwpb.Commission{}
+	for k, v := range goodCommMap {
+		switch k {
+		case commmgrpb.SettleType_GoodOrderPercent:
+			_comms, _, err := commmwcli.GetCommissions(ctx, &commmwpb.Conds{
+				AppID: &commonpb.StringVal{
+					Op:    cruder.EQ,
+					Value: appID,
+				},
+				UserIDs: &commonpb.StringSliceVal{
+					Op:    cruder.IN,
+					Value: uids,
+				},
+				SettleType: &commonpb.Int32Val{
+					Op:    cruder.EQ,
+					Value: int32(k),
+				},
+				EndAt: &commonpb.Uint32Val{
+					Op:    cruder.EQ,
+					Value: uint32(0),
+				},
+			}, 0, int32(len(v)*len(uids)))
+			if err != nil {
+				return nil, 0, err
+			}
+			comms = append(comms, _comms...)
+		case commmgrpb.SettleType_LimitedOrderPercent:
+		case commmgrpb.SettleType_AmountThreshold:
+		case commmgrpb.SettleType_NoCommission:
+		default:
+		}
+	}
+
+	goodIDs = []string{}
+	for _, val := range generals {
+		goodIDs = append(goodIDs, val.GetGoodID())
+	}
+	for _, val := range comms {
+		goodIDs = append(goodIDs, val.GetGoodID())
+	}
+
+	goods, _, err = goodscli.GetGoods(ctx, &goodmgrpb.Conds{
+		AppID: &commonpb.StringVal{
+			Op:    cruder.EQ,
+			Value: appID,
+		},
+		GoodIDs: &commonpb.StringSliceVal{
 			Op:    cruder.IN,
 			Value: goodIDs,
 		},
@@ -214,47 +286,44 @@ func getUserArchivements(
 
 	goodMap := map[string]*goodspb.Good{}
 	for _, good := range goods {
-		goodMap[good.ID] = good
+		goodMap[good.GoodID] = good
 	}
 
 	archGoodMap := map[string]*goodspb.Good{}
 
-	for _, p := range percents {
-		if p.GoodID == "" || p.GoodID == uuid1.InvalidUUIDStr {
+	for _, comm := range comms {
+		if comm.GetGoodID() == "" || comm.GetGoodID() == uuid1.InvalidUUIDStr {
 			continue
 		}
-		good, ok := goodMap[p.GoodID]
+		good, ok := goodMap[comm.GetGoodID()]
 		if !ok {
-			logger.Sugar().Warn("good not exist continue")
 			continue
-		}
-		if p.CoinTypeID == "" || p.CoinTypeID == uuid1.InvalidUUIDStr {
-			p.CoinTypeID = good.CoinTypeID
 		}
 
-		archGoodMap[p.GoodID] = good
+		archGoodMap[comm.GetGoodID()] = good
 	}
 
 	// 5 Merge info
 	archivements := map[string]*npool.UserArchivement{}
 	for _, user := range users {
-		kol := user.ID == userID
 		invitedAt := uint32(0)
+		var inviterID string
 
 		iv, ok := ivMap[user.ID]
 		if ok {
-			kol = iv.Kol
 			invitedAt = iv.CreatedAt
+			inviterID = iv.InviterID
 		}
 
 		archivements[user.ID] = &npool.UserArchivement{
+			InviterID:     inviterID,
 			UserID:        user.ID,
 			Username:      user.Username,
 			EmailAddress:  user.EmailAddress,
 			PhoneNO:       user.PhoneNO,
 			FirstName:     user.FirstName,
 			LastName:      user.LastName,
-			Kol:           kol,
+			Kol:           user.Kol,
 			TotalInvitees: inviteesMap[user.ID],
 			CreatedAt:     user.CreatedAt,
 			InvitedAt:     invitedAt,
@@ -264,37 +333,37 @@ func getUserArchivements(
 	for _, general := range generals {
 		archivement, ok := archivements[general.UserID]
 		if !ok {
-			logger.Sugar().Warn("user not exist continue")
 			continue
 		}
 
 		coin, ok := coinMap[general.CoinTypeID]
 		if !ok {
-			logger.Sugar().Warn("coin not exist continue")
 			continue
 		}
 
 		good, ok := goodMap[general.GoodID]
 		if !ok {
-			logger.Sugar().Warn("good not exist continue")
 			continue
 		}
 
-		percent := uint32(0)
+		percent := decimal.NewFromInt(0)
 
-		for _, p := range percents {
-			if general.UserID != p.UserID || general.GoodID != p.GoodID {
+		for _, comm := range comms {
+			if general.UserID != comm.UserID || general.GoodID != comm.GetGoodID() {
 				continue
 			}
-			percent = p.Percent
+			percent, err = decimal.NewFromString(comm.GetPercent())
+			if err != nil {
+				continue
+			}
 			break
 		}
 
 		arch := &npool.GoodArchivement{
 			GoodID:            general.GoodID,
-			GoodName:          good.Title,
+			GoodName:          good.GoodName,
 			GoodUnit:          good.Unit,
-			CommissionPercent: percent,
+			CommissionPercent: percent.String(),
 			CoinTypeID:        coin.ID,
 			CoinName:          coin.Name,
 			CoinLogo:          coin.Logo,
@@ -320,23 +389,29 @@ func getUserArchivements(
 				}
 			}
 
-			percent := uint32(0)
+			percent := decimal.NewFromInt(0)
 
-			for _, p := range percents {
-				if archivement.UserID != p.UserID || goodID != p.GoodID {
+			for _, comm := range comms {
+				if archivement.UserID != comm.UserID || goodID != comm.GetGoodID() {
 					continue
 				}
-				percent = p.Percent
+				percent, err = decimal.NewFromString(comm.GetPercent())
+				if err != nil {
+					continue
+				}
 				break
 			}
 
-			coin := coinMap[good.CoinTypeID]
+			coin, ok := coinMap[good.CoinTypeID]
+			if !ok {
+				continue
+			}
 
 			arch := &npool.GoodArchivement{
 				GoodID:            goodID,
-				GoodName:          good.Title,
+				GoodName:          good.GoodName,
 				GoodUnit:          good.Unit,
-				CommissionPercent: percent,
+				CommissionPercent: percent.String(),
 				CoinTypeID:        coin.ID,
 				CoinName:          coin.Name,
 				CoinLogo:          coin.Logo,
