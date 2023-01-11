@@ -253,6 +253,8 @@ func migrateRegistration(ctx context.Context, conn *sql.DB) error {
 				SetAppID(reg.AppID).
 				SetInviterID(reg.InviterID).
 				SetInviteeID(reg.InviteeID).
+				SetCreatedAt(reg.CreateAt).
+				SetUpdatedAt(reg.UpdateAt).
 				Save(_ctx)
 			if err != nil {
 				return err
