@@ -205,23 +205,26 @@ func getUserArchivements(
 		userMap[user.ID] = user
 	}
 
-	goodIDs := []string{}
-	for _, val := range generals {
-		goodIDs = append(goodIDs, val.GetGoodID())
-	}
+	goods := []*goodspb.Good{}
+	offset = 0
 
-	goods, _, err := goodscli.GetGoods(ctx, &goodmgrpb.Conds{
-		AppID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: appID,
-		},
-		GoodIDs: &commonpb.StringSliceVal{
-			Op:    cruder.IN,
-			Value: goodIDs,
-		},
-	}, 0, int32(len(goodIDs)))
-	if err != nil {
-		return nil, 0, err
+	for {
+		_goods, _, err := goodscli.GetGoods(ctx, &goodmgrpb.Conds{
+			AppID: &commonpb.StringVal{
+				Op:    cruder.EQ,
+				Value: appID,
+			},
+		}, offset, limit)
+		if err != nil {
+			return nil, 0, err
+		}
+		if len(_goods) == 0 {
+			break
+		}
+
+		goods = append(goods, _goods...)
+
+		offset += limit
 	}
 
 	goodCommMap := map[commmgrpb.SettleType][]string{}
@@ -260,28 +263,6 @@ func getUserArchivements(
 		case commmgrpb.SettleType_NoCommission:
 		default:
 		}
-	}
-
-	goodIDs = []string{}
-	for _, val := range generals {
-		goodIDs = append(goodIDs, val.GetGoodID())
-	}
-	for _, val := range comms {
-		goodIDs = append(goodIDs, val.GetGoodID())
-	}
-
-	goods, _, err = goodscli.GetGoods(ctx, &goodmgrpb.Conds{
-		AppID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: appID,
-		},
-		GoodIDs: &commonpb.StringSliceVal{
-			Op:    cruder.IN,
-			Value: goodIDs,
-		},
-	}, 0, int32(len(goodIDs)))
-	if err != nil {
-		return nil, 0, err
 	}
 
 	goodMap := map[string]*goodspb.Good{}
