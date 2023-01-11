@@ -5,19 +5,19 @@ go 1.17
 require (
 	entgo.io/ent v0.11.3
 	github.com/NpoolPlatform/api-manager v0.0.0-20220930035751-2b8a48b8df04
-	github.com/NpoolPlatform/appuser-manager v0.0.0-20230109044457-821cf6489cbb
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230109045418-21a2fca3a42c
+	github.com/NpoolPlatform/appuser-manager v0.0.0-20230111060622-e3a10cc791c1
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230111062013-f804f8850e22
 	github.com/NpoolPlatform/archivement-manager v0.0.0-20220930041014-e6102ea848ec
-	github.com/NpoolPlatform/chain-middleware v0.0.0-20221216021206-c73dbc7ea1ce
+	github.com/NpoolPlatform/chain-middleware v0.0.0-20230111062408-7bc4b269c1d4
 	github.com/NpoolPlatform/cloud-hashing-inspire v0.0.0-20221110031410-781ff87233f1
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
-	github.com/NpoolPlatform/good-middleware v0.0.0-20230104062128-8bbc2f086a47
-	github.com/NpoolPlatform/inspire-manager v0.0.0-20230109042955-e648980b46df
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230109043649-69d20197a758
-	github.com/NpoolPlatform/ledger-middleware v0.0.0-20221222080503-edf65d38e64b
+	github.com/NpoolPlatform/good-middleware v0.0.0-20230111062156-9d26cfe25c94
+	github.com/NpoolPlatform/inspire-manager v0.0.0-20230111060352-abcf8121824b
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230111061613-a6bccb1a45ba
+	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111062738-1054218618aa
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
 	github.com/NpoolPlatform/message v0.0.0-20230110162534-83df43757858
-	github.com/NpoolPlatform/order-middleware v0.0.0-20221215041035-9804ca4d3515
+	github.com/NpoolPlatform/order-middleware v0.0.0-20230111062552-aa2af7d0c282
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.12.0
