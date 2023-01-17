@@ -2,17 +2,33 @@ package commission
 
 import (
 	"context"
+	"fmt"
 
 	commmgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/commission/goodorderpercent"
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
-	mgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
-	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission/goodorderpercent"
+	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
+	goodorderpercentmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission/goodorderpercent"
 	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 )
 
-func CloneCommissions(ctx context.Context, appID, oldGoodID, newGoodID string) error {
+func CloneCommissions(ctx context.Context, appID, fromGoodID, toGoodID string, settleType commmgrpb.SettleType) error {
+	switch settleType {
+	case commmgrpb.SettleType_GoodOrderPercent:
+		return cloneGoodOrderPercent(ctx, appID, fromGoodID, toGoodID)
+	case commmgrpb.SettleType_LimitedOrderPercent:
+		fallthrough //nolint
+	case commmgrpb.SettleType_AmountThreshold:
+		fallthrough //nolint
+	case commmgrpb.SettleType_NoCommission:
+		return fmt.Errorf("not implemented")
+	default:
+		return fmt.Errorf("unknown settle type")
+	}
+}
+
+func cloneGoodOrderPercent(ctx context.Context, appID, fromGoodID, toGoodID string) error {
 	offset := int32(0)
 	limit := int32(1000) //nolint
 	for {
@@ -23,11 +39,11 @@ func CloneCommissions(ctx context.Context, appID, oldGoodID, newGoodID string) e
 			},
 			GoodID: &commonpb.StringVal{
 				Op:    cruder.EQ,
-				Value: oldGoodID,
+				Value: fromGoodID,
 			},
 			SettleType: &commonpb.Int32Val{
 				Op:    cruder.EQ,
-				Value: int32(mgrpb.SettleType_GoodOrderPercent),
+				Value: int32(commmgrpb.SettleType_GoodOrderPercent),
 			},
 		}, offset, limit)
 		if err != nil {
@@ -37,12 +53,12 @@ func CloneCommissions(ctx context.Context, appID, oldGoodID, newGoodID string) e
 			break
 		}
 		offset += limit
-		req := []*commmgrpb.OrderPercentReq{}
+		req := []*goodorderpercentmgrpb.OrderPercentReq{}
 		for _, val := range infos {
-			req = append(req, &commmgrpb.OrderPercentReq{
+			req = append(req, &goodorderpercentmgrpb.OrderPercentReq{
 				AppID:   &val.AppID,
 				UserID:  &val.UserID,
-				GoodID:  &newGoodID,
+				GoodID:  &toGoodID,
 				Percent: val.Percent,
 				StartAt: &val.StartAt,
 				EndAt:   &val.EndAt,
@@ -54,6 +70,5 @@ func CloneCommissions(ctx context.Context, appID, oldGoodID, newGoodID string) e
 			return err
 		}
 	}
-
 	return nil
 }
