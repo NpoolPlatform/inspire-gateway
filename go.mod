@@ -8,11 +8,11 @@ require (
 	github.com/NpoolPlatform/chain-middleware v0.0.0-20230111062408-7bc4b269c1d4
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
 	github.com/NpoolPlatform/good-middleware v0.0.0-20230111062156-9d26cfe25c94
-	github.com/NpoolPlatform/inspire-manager v0.0.0-20230111060352-abcf8121824b
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230111061613-a6bccb1a45ba
+	github.com/NpoolPlatform/inspire-manager v0.0.0-20230117123047-6c63abc55a12
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230117130033-23bbaba20e00
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230117070547-4b0b136b42fd
+	github.com/NpoolPlatform/message v0.0.0-20230117123548-c6fd401f2b8b
 	github.com/NpoolPlatform/order-middleware v0.0.0-20230111062552-aa2af7d0c282
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
@@ -61,7 +61,6 @@ require (
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/miekg/dns v1.1.43 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
@@ -73,7 +72,6 @@ require (
 	github.com/prometheus/common v0.32.1 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
-	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

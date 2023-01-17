@@ -5,14 +5,14 @@ import (
 	"context"
 	"fmt"
 
-	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
-	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
-	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
+
+	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
 	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
+
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
-	mgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
-	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
+
 	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -20,7 +20,7 @@ import (
 	comm1 "github.com/NpoolPlatform/inspire-gateway/pkg/commission"
 )
 
-func validateClone(ctx context.Context, appID, fromGoodID, toGoodID string, settleType mgrpb.SettleType) error {
+func validateClone(ctx context.Context, appID, fromGoodID, toGoodID string) error {
 	if _, err := uuid.Parse(appID); err != nil {
 		return err
 	}
@@ -31,24 +31,24 @@ func validateClone(ctx context.Context, appID, fromGoodID, toGoodID string, sett
 		return err
 	}
 
-	_, total, err := goodmwcli.GetGoods(ctx, &goodmgrpb.Conds{
+	ag, err := goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
 		AppID: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: appID,
 		},
 		GoodID: &commonpb.StringVal{
 			Op:    cruder.EQ,
-			Value: toGoodID,
+			Value: fromGoodID,
 		},
-	}, 0, 1)
+	})
 	if err != nil {
 		return err
 	}
-	if total == 0 {
-		return fmt.Errorf("to good not exist")
+	if ag == nil {
+		return fmt.Errorf("invalid appgood")
 	}
 
-	_, total, err = commmwcli.GetCommissions(ctx, &commmwpb.Conds{
+	ag, err = goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
 		AppID: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: appID,
@@ -57,29 +57,26 @@ func validateClone(ctx context.Context, appID, fromGoodID, toGoodID string, sett
 			Op:    cruder.EQ,
 			Value: toGoodID,
 		},
-		SettleType: &commonpb.Int32Val{
-			Op:    cruder.EQ,
-			Value: int32(settleType),
-		},
-	}, 0, 1)
+	})
 	if err != nil {
 		return err
 	}
-	if total > 0 {
-		return fmt.Errorf("to good commission already exist")
+	if ag == nil {
+		return fmt.Errorf("invalid appgood")
 	}
+
 	return nil
 }
 
 func (s *Server) CloneCommissions(ctx context.Context, in *npool.CloneCommissionsRequest) (*npool.CloneCommissionsResponse, error) {
-	err := validateClone(ctx, in.GetAppID(), in.GetFromGoodID(), in.GetToGoodID(), in.GetSettleType())
+	err := validateClone(ctx, in.GetAppID(), in.GetFromGoodID(), in.GetToGoodID())
 	if err != nil {
 		return &npool.CloneCommissionsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = comm1.CloneCommissions(ctx, in.GetAppID(), in.GetFromGoodID(), in.GetToGoodID(), in.GetSettleType())
+	err = comm1.CloneCommissions(ctx, in.GetAppID(), in.GetFromGoodID(), in.GetToGoodID())
 	if err != nil {
-		return &npool.CloneCommissionsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.CloneCommissionsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &npool.CloneCommissionsResponse{}, nil
@@ -92,14 +89,14 @@ func (s *Server) CloneAppCommissions(
 	*npool.CloneAppCommissionsResponse,
 	error,
 ) {
-	err := validateClone(ctx, in.GetTargetAppID(), in.GetFromGoodID(), in.GetToGoodID(), in.GetSettleType())
+	err := validateClone(ctx, in.GetTargetAppID(), in.GetFromGoodID(), in.GetToGoodID())
 	if err != nil {
 		return &npool.CloneAppCommissionsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = comm1.CloneCommissions(ctx, in.GetTargetAppID(), in.GetFromGoodID(), in.GetToGoodID(), in.GetSettleType())
+	err = comm1.CloneCommissions(ctx, in.GetTargetAppID(), in.GetFromGoodID(), in.GetToGoodID())
 	if err != nil {
-		return &npool.CloneAppCommissionsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.CloneAppCommissionsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &npool.CloneAppCommissionsResponse{}, nil
