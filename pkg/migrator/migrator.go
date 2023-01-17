@@ -10,7 +10,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
+	constant "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 )
 
 const (
