@@ -45,7 +45,7 @@ func validateClone(ctx context.Context, appID, fromGoodID, toGoodID string, sett
 		return err
 	}
 	if total == 0 {
-		return fmt.Errorf("new good not exist")
+		return fmt.Errorf("to good not exist")
 	}
 
 	_, total, err = commmwcli.GetCommissions(ctx, &commmwpb.Conds{
@@ -66,7 +66,7 @@ func validateClone(ctx context.Context, appID, fromGoodID, toGoodID string, sett
 		return err
 	}
 	if total > 0 {
-		return fmt.Errorf("new good commission already exist")
+		return fmt.Errorf("to good commission already exist")
 	}
 	return nil
 }
