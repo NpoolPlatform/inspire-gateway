@@ -3,16 +3,16 @@ module github.com/NpoolPlatform/inspire-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230111062013-f804f8850e22
-	github.com/NpoolPlatform/basal-middleware v0.0.0-20221228013048-951da3e0461c
-	github.com/NpoolPlatform/chain-middleware v0.0.0-20230111062408-7bc4b269c1d4
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230216023722-ef86d576f6ab
+	github.com/NpoolPlatform/basal-middleware v0.0.0-20230216050150-a37a157528d1
+	github.com/NpoolPlatform/chain-middleware v0.0.0-20230112023546-afc372a2351e
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
 	github.com/NpoolPlatform/good-middleware v0.0.0-20230111062156-9d26cfe25c94
 	github.com/NpoolPlatform/inspire-manager v0.0.0-20230117123047-6c63abc55a12
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230117130033-23bbaba20e00
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230117123548-c6fd401f2b8b
+	github.com/NpoolPlatform/message v0.0.0-20230215131129-9b9e00221836
 	github.com/NpoolPlatform/order-middleware v0.0.0-20230111062552-aa2af7d0c282
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
