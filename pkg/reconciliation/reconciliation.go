@@ -84,7 +84,11 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 				return err
 			}
 
-			goodValue := price.Mul(decimal.NewFromInt32(int32(order.Units))).String()
+			untis, err := decimal.NewFromString(order.Units)
+			if err != nil {
+				return err
+			}
+			goodValue := price.Mul(untis).String()
 
 			paymentAmount, err := decimal.NewFromString(order.PaymentAmount)
 			if err != nil {
