@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
 
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
@@ -20,10 +22,23 @@ import (
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+
+	sendmwpb "github.com/NpoolPlatform/message/npool/third/mw/v1/send"
+	sendmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/send"
+
+	tmplmwpb "github.com/NpoolPlatform/message/npool/notif/mw/v1/template"
+	tmplmwcli "github.com/NpoolPlatform/notif-middleware/pkg/client/template"
+
+	applangmwcli "github.com/NpoolPlatform/g11n-middleware/pkg/client/applang"
+	applangmgrpb "github.com/NpoolPlatform/message/npool/g11n/mgr/v1/applang"
+
+	chanmgrpb "github.com/NpoolPlatform/message/npool/notif/mgr/v1/channel"
 
 	"github.com/shopspring/decimal"
 )
 
+//nolint
 func CreateCommission(
 	ctx context.Context,
 	appID, userID string,
@@ -48,14 +63,8 @@ func CreateCommission(
 
 	if goodID != nil {
 		good, err := goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
-			AppID: &commonpb.StringVal{
-				Op:    cruder.EQ,
-				Value: appID,
-			},
-			GoodID: &commonpb.StringVal{
-				Op:    cruder.EQ,
-				Value: *goodID,
-			},
+			AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: appID},
+			GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: *goodID},
 		})
 		if err != nil {
 			return nil, err
@@ -65,14 +74,8 @@ func CreateCommission(
 		}
 
 		coin, err := appcoinmwcli.GetCoinOnly(ctx, &appcoinmwpb.Conds{
-			AppID: &commonpb.StringVal{
-				Op:    cruder.EQ,
-				Value: appID,
-			},
-			CoinTypeID: &commonpb.StringVal{
-				Op:    cruder.EQ,
-				Value: good.CoinTypeID,
-			},
+			AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
+			CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: good.CoinTypeID},
 		})
 		if err != nil {
 			return nil, err
@@ -110,5 +113,52 @@ func CreateCommission(
 		return nil, err
 	}
 
-	return GetCommission(ctx, info.ID, settleType)
+	comm, err := GetCommission(ctx, info.ID, settleType)
+	if err != nil {
+		return nil, err
+	}
+
+	lang, err := applangmwcli.GetLangOnly(ctx, &applangmgrpb.Conds{
+		AppID: &commonpb.StringVal{Op: cruder.EQ, Value: appID},
+		Main:  &commonpb.BoolVal{Op: cruder.EQ, Value: true},
+	})
+	if err != nil {
+		logger.Sugar().Warnw("CreateCommission", "Error", err)
+		return comm, nil
+	}
+	if lang == nil {
+		logger.Sugar().Warnw("CreateCommission", "Error", "Main AppLang not exist")
+		return comm, nil
+	}
+
+	info1, err := tmplmwcli.GenerateText(ctx, &tmplmwpb.GenerateTextRequest{
+		AppID:     appID,
+		LangID:    lang.LangID,
+		Channel:   chanmgrpb.NotifChannel_ChannelEmail,
+		EventType: basetypes.UsedFor_SetCommission,
+	})
+	if err != nil {
+		logger.Sugar().Warnw("CreateCommission", "Error", err)
+		return comm, nil
+	}
+	if info1 == nil {
+		logger.Sugar().Warnw("CreateCommission", "Error", "Cannot generate text")
+		return comm, nil
+	}
+
+	err = sendmwcli.SendMessage(ctx, &sendmwpb.SendMessageRequest{
+		Subject:     info1.Subject,
+		Content:     info1.Content,
+		From:        info1.From,
+		To:          user.EmailAddress,
+		ToCCs:       info1.ToCCs,
+		ReplyTos:    info1.ReplyTos,
+		AccountType: basetypes.SignMethod_Email,
+	})
+	if err != nil {
+		logger.Sugar().Warnw("CreateCommission", "Error", "Cannot send message")
+		return comm, nil
+	}
+
+	return comm, nil
 }
