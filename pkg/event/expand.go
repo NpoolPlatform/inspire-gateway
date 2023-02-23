@@ -21,14 +21,15 @@ func expand(ctx context.Context, info *mgrpb.Event) (*npool.Event, error) {
 	}
 
 	return &npool.Event{
-		ID:            info.ID,
-		AppID:         info.AppID,
-		AppName:       app.Name,
-		EventType:     info.EventType,
-		Credits:       info.Credits,
-		CreditsPerUSD: info.CreditsPerUSD,
-		CreatedAt:     info.CreatedAt,
-		UpdatedAt:     info.UpdatedAt,
+		ID:             info.ID,
+		AppID:          info.AppID,
+		AppName:        app.Name,
+		EventType:      info.EventType,
+		Credits:        info.Credits,
+		CreditsPerUSD:  info.CreditsPerUSD,
+		MaxConsecutive: info.MaxConsecutive,
+		CreatedAt:      info.CreatedAt,
+		UpdatedAt:      info.UpdatedAt,
 	}, nil
 }
 
@@ -57,14 +58,15 @@ func expandMany(ctx context.Context, infos []*mgrpb.Event) ([]*npool.Event, erro
 		}
 
 		_infos = append(_infos, &npool.Event{
-			ID:            info.ID,
-			AppID:         info.AppID,
-			AppName:       app.Name,
-			EventType:     info.EventType,
-			Credits:       info.Credits,
-			CreditsPerUSD: info.CreditsPerUSD,
-			CreatedAt:     info.CreatedAt,
-			UpdatedAt:     info.UpdatedAt,
+			ID:             info.ID,
+			AppID:          info.AppID,
+			AppName:        app.Name,
+			EventType:      info.EventType,
+			Credits:        info.Credits,
+			CreditsPerUSD:  info.CreditsPerUSD,
+			MaxConsecutive: info.MaxConsecutive,
+			CreatedAt:      info.CreatedAt,
+			UpdatedAt:      info.UpdatedAt,
 		})
 	}
 
