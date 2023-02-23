@@ -1,7 +1,9 @@
+//nolint:dupl
 package event
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
@@ -9,6 +11,7 @@ import (
 
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
+	alloccoupmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/coupon/allocated"
 	mgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/event"
 
 	event1 "github.com/NpoolPlatform/inspire-gateway/pkg/event"
@@ -22,7 +25,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func (s *Server) UpdateEvent(ctx context.Context, in *npool.UpdateEventRequest) (*npool.UpdateEventResponse, error) {
+func (s *Server) UpdateEvent(ctx context.Context, in *npool.UpdateEventRequest) (*npool.UpdateEventResponse, error) { //nolint
 	if _, err := uuid.Parse(in.GetID()); err != nil {
 		logger.Sugar().Errorw("UpdateEvent", "ID", in.GetID(), "Error", err)
 		return &npool.UpdateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
@@ -31,11 +34,29 @@ func (s *Server) UpdateEvent(ctx context.Context, in *npool.UpdateEventRequest) 
 		logger.Sugar().Errorw("UpdateEvent", "AppID", in.GetAppID(), "Error", err)
 		return &npool.UpdateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
-	for _, id := range in.GetCouponIDs() {
-		if _, err := uuid.Parse(id); err != nil {
-			logger.Sugar().Errorw("UpdateEvent", "CouponIDs", in.GetCouponIDs(), "Error", err)
+	for _, coupon := range in.GetCoupons() {
+		if _, err := uuid.Parse(coupon.GetID()); err != nil {
+			logger.Sugar().Errorw("ValidateUpdate", "Coupons", in.GetCoupons(), "Error", err)
 			return &npool.UpdateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
 		}
+		switch coupon.GetCouponType() {
+		case alloccoupmgrpb.CouponType_FixAmount:
+		case alloccoupmgrpb.CouponType_Discount:
+		case alloccoupmgrpb.CouponType_SpecialOffer:
+		case alloccoupmgrpb.CouponType_ThresholdFixAmount:
+		case alloccoupmgrpb.CouponType_ThresholdDiscount:
+		case alloccoupmgrpb.CouponType_GoodFixAmount:
+		case alloccoupmgrpb.CouponType_GoodDiscount:
+		case alloccoupmgrpb.CouponType_GoodThresholdFixAmount:
+		case alloccoupmgrpb.CouponType_GoodThresholdDiscount:
+		default:
+			logger.Sugar().Errorw("ValidateUpdate", "Coupons", in.GetCoupons())
+			return &npool.UpdateEventResponse{}, fmt.Errorf("coupontype is invalid")
+		}
+	}
+	if _, err := decimal.NewFromString(in.GetCredits()); err != nil {
+		logger.Sugar().Errorw("UpdateEvent", "Credits", in.GetCredits(), "Error", err)
+		return &npool.UpdateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 	if in.Credits != nil {
 		if _, err := decimal.NewFromString(in.GetCredits()); err != nil {
@@ -66,7 +87,7 @@ func (s *Server) UpdateEvent(ctx context.Context, in *npool.UpdateEventRequest) 
 	req := &mgrpb.EventReq{
 		ID:            &in.ID,
 		AppID:         &in.AppID,
-		CouponIDs:     in.CouponIDs,
+		Coupons:       in.Coupons,
 		Credits:       in.Credits,
 		CreditsPerUSD: in.CreditsPerUSD,
 	}
