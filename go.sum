@@ -75,6 +75,7 @@ github.com/NpoolPlatform/good-manager v0.0.0-20230111060807-370f3d2a0627 h1:y/dK
 github.com/NpoolPlatform/good-middleware v0.0.0-20230111062156-9d26cfe25c94 h1:NUQvoFfvb8zAIRiKdBxnqqqexHg1JQXeBN+oybQ/Xb4=
 github.com/NpoolPlatform/good-middleware v0.0.0-20230111062156-9d26cfe25c94/go.mod h1:GDElJFYKq8r7ZMzk1SQZZMgBGd9Fa8xiQIXe0aGOpb4=
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/NpoolPlatform/inspire-manager v0.0.0-20230222084153-da15fb67faef h1:iss+kuxcznSPtnaW+j03hW3cwb5NEkqxmjJiIYccx6A=
 github.com/NpoolPlatform/inspire-manager v0.0.0-20230222084153-da15fb67faef/go.mod h1:fU7zUqMwXRODaM8LB5CVNdxIL1IaALgUL5hDnyyWfLQ=
 github.com/NpoolPlatform/inspire-middleware v0.0.0-20230222102015-d0ea9f83ef85 h1:UZUBR09gdcJJn+Rjg2gRBIVbbG4yPf5/BIFowcQP270=
@@ -86,11 +87,18 @@ github.com/NpoolPlatform/inspire-manager v0.0.0-20230223053837-47b8131f49df/go.m
 github.com/NpoolPlatform/inspire-middleware v0.0.0-20230223054332-175913621750 h1:gUME4vChG1xwYCa8yAoNE6DM83/G6ruS/fcSeMbO6Qc=
 github.com/NpoolPlatform/inspire-middleware v0.0.0-20230223054332-175913621750/go.mod h1:52NSF5IJ7OSFrutWBTzALvsmHWTIZmiNmgbP9fcuz4A=
 >>>>>>> Add max consecutive
+=======
+github.com/NpoolPlatform/inspire-manager v0.0.0-20230223061900-d0461d28ad43 h1:A/HEngrSRn1so7pAhwPkRGTAKqPoUHfZ7Mh/IsNjFt8=
+github.com/NpoolPlatform/inspire-manager v0.0.0-20230223061900-d0461d28ad43/go.mod h1:HVOZm75nekz9N0H/q8Wj9SBCA+pc8ZgwM4R1jKIEbEA=
+github.com/NpoolPlatform/inspire-middleware v0.0.0-20230223062137-c2a86d77e516 h1:oxFeQdp+No/eDOLuwfVox6ADNlglz9dh1PT/uwfFZOs=
+github.com/NpoolPlatform/inspire-middleware v0.0.0-20230223062137-c2a86d77e516/go.mod h1:0ugf30T4Z//9zEOfH3nvHwisZdlWPx5LNZx1WguD3YA=
+>>>>>>> Add good ID and good Name
 github.com/NpoolPlatform/ledger-manager v0.0.0-20230111061350-4bddabacc212 h1:hVJ95VbzLl3avb60fXjbcMo7IbDjVpCCb6pYI6wHp80=
 github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9 h1:BPXzjOXbuViWkv1ww8lFmQ+6dWC8vqEdiU5YaPy9SSM=
 github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9/go.mod h1:nmVvmSGYuOBGZ4RWeTZ8ny5Kw6Nx8uwQPblmJ/x1wYs=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb h1:IAQOJ0xQWdJS1BnimNdM6GZMLgTL/FnIa8C8K4xffUA=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb/go.mod h1:zvvqlRwbOdTUauPQ9dFDhDuxa91ILV0CQfVdPBZj+eA=
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 github.com/NpoolPlatform/message v0.0.0-20230226021727-29812bde6ee5 h1:A1Qba4tqkkfvdfupR036NtFT8kNeuld4q19ncauCqDE=
@@ -103,6 +111,10 @@ github.com/NpoolPlatform/message v0.0.0-20230222081612-cdb52fc5aa29/go.mod h1:bb
 github.com/NpoolPlatform/message v0.0.0-20230223053045-6a46a6e11ea6 h1:nSp9rLVI42SQt+Rkgf+rtTmoyIvr30LNlnasCFP74So=
 github.com/NpoolPlatform/message v0.0.0-20230223053045-6a46a6e11ea6/go.mod h1:bblNegLa6PLnrfbc7MEzwa1pjQOjJ8vJ/5K497ckiig=
 >>>>>>> Add max consecutive
+=======
+github.com/NpoolPlatform/message v0.0.0-20230223060043-8ff5b4f9e10b h1:PeCo6ow69LoHHJYZ/TVOSoJSMrZd1nO9VSwkLADDIps=
+github.com/NpoolPlatform/message v0.0.0-20230223060043-8ff5b4f9e10b/go.mod h1:bblNegLa6PLnrfbc7MEzwa1pjQOjJ8vJ/5K497ckiig=
+>>>>>>> Add good ID and good Name
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687 h1:EYQPrDW4UESGuEP49IV+Xwft4JUC16gb1DZQnH9YFu0=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687/go.mod h1:leYq+Scn4WZ72AQtq4bZKlmeMsxTXUpTgWOPZK7Eb34=
 github.com/NpoolPlatform/order-manager v0.0.0-20230226024220-9751e14c7cf9 h1:Ht27+vZlQku5Aq6wd7OpEEoVWva0kqedtMpN1AoLnGI=
