@@ -5,8 +5,15 @@ import (
 
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
 	mgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/event"
+
+	mgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/event"
 )
 
 func CreateEvent(ctx context.Context, in *mgrpb.EventReq) (*npool.Event, error) {
-	return nil, nil
+	info, err := mgrcli.CreateEvent(ctx, in)
+	if err != nil {
+		return nil, err
+	}
+
+	return expand(ctx, info)
 }
