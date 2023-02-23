@@ -97,6 +97,8 @@ func CreateCommission(
 
 	switch settleType {
 	case commmgrpb.SettleType_GoodOrderPercent:
+		fallthrough //nolint
+	case commmgrpb.SettleType_GoodOrderValuePercent:
 		req.Percent = &valueStr
 	case commmgrpb.SettleType_LimitedOrderPercent:
 		fallthrough //nolint
