@@ -18,6 +18,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+//nolint
 func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) (*npool.CreateEventResponse, error) {
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		logger.Sugar().Errorw("CreateEvent", "AppID", in.GetAppID(), "Error", err)
