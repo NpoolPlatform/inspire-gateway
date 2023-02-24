@@ -5,19 +5,25 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
+
 	"github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	"github.com/NpoolPlatform/inspire-manager/pkg/db"
 	"github.com/NpoolPlatform/inspire-manager/pkg/db/ent"
+
 	archivementdetailent "github.com/NpoolPlatform/inspire-manager/pkg/db/ent/archivementdetail"
 	archivementgeneralent "github.com/NpoolPlatform/inspire-manager/pkg/db/ent/archivementgeneral"
-	"github.com/shopspring/decimal"
-	"time"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
+	ordermgrpb "github.com/NpoolPlatform/message/npool/order/mgr/v1/order"
+
 	constant "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 	constant1 "github.com/NpoolPlatform/inspire-gateway/pkg/message/const"
+
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 const (
@@ -156,6 +162,103 @@ func Migrate(ctx context.Context) error {
 				return err
 			}
 		}
+
+		type order struct {
+			ID     uuid.UUID
+			AppID  uuid.UUID
+			UserID uuid.UUID
+			State  string
+			Type   string
+		}
+
+		rows, err := tx.QueryContext(
+			ctx,
+			"select "+
+				"id,"+
+				"app_id,"+
+				"user_id,"+
+				"state,"+
+				"type "+
+				"from order_manager.orders"+
+				"where deleted_at=0",
+		)
+		if err != nil {
+			return err
+		}
+
+		for rows.Next() {
+			order := order{}
+			err := rows.Scan(
+				&order.ID,
+				&order.AppID,
+				&order.UserID,
+				&order.State,
+				&order.Type,
+			)
+			if err != nil {
+				return err
+			}
+
+			if order.State == ordermgrpb.OrderType_Normal.String() {
+				continue
+			}
+
+			infos, err := tx.
+				ArchivementDetail.
+				Query().
+				Where(
+					archivementdetailent.OrderID(order.ID),
+				).
+				All(_ctx)
+			if err != nil {
+				return err
+			}
+
+			for _, info := range infos {
+				if info.Commission.Cmp(decimal.NewFromInt(0)) <= 0 {
+					continue
+				}
+
+				_, err := tx.
+					ArchivementDetail.
+					UpdateOneID(info.ID).
+					SetCommission(decimal.NewFromInt(0)).
+					Save(_ctx)
+				if err != nil {
+					return err
+				}
+
+				general, err := tx.
+					ArchivementGeneral.
+					Query().
+					Where(
+						archivementgeneralent.AppID(order.AppID),
+						archivementgeneralent.AppID(order.UserID),
+					).
+					Only(_ctx)
+				if err != nil {
+					return err
+				}
+
+				totalCommission := general.TotalCommission.Sub(info.Commission)
+				selfCommission := general.SelfCommission
+
+				if info.UserID == order.UserID {
+					selfCommission = selfCommission.Sub(info.Commission)
+				}
+
+				_, err = tx.
+					ArchivementGeneral.
+					UpdateOneID(general.ID).
+					SetTotalCommission(totalCommission).
+					SetSelfCommission(selfCommission).
+					Save(_ctx)
+				if err != nil {
+					return err
+				}
+			}
+		}
+
 		return nil
 	})
 }
