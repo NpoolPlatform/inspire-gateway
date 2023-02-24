@@ -77,6 +77,7 @@ github.com/NpoolPlatform/good-middleware v0.0.0-20230111062156-9d26cfe25c94/go.m
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/NpoolPlatform/inspire-manager v0.0.0-20230222084153-da15fb67faef h1:iss+kuxcznSPtnaW+j03hW3cwb5NEkqxmjJiIYccx6A=
 github.com/NpoolPlatform/inspire-manager v0.0.0-20230222084153-da15fb67faef/go.mod h1:fU7zUqMwXRODaM8LB5CVNdxIL1IaALgUL5hDnyyWfLQ=
 github.com/NpoolPlatform/inspire-middleware v0.0.0-20230222102015-d0ea9f83ef85 h1:UZUBR09gdcJJn+Rjg2gRBIVbbG4yPf5/BIFowcQP270=
@@ -100,11 +101,18 @@ github.com/NpoolPlatform/inspire-manager v0.0.0-20230223093322-967fe82bde4a/go.m
 github.com/NpoolPlatform/inspire-middleware v0.0.0-20230223095454-c9b6ebcf711c h1:Q/SpcZsHI4TeNqnVP9I/wHupXUJWcT6tORB4+sqMxIo=
 github.com/NpoolPlatform/inspire-middleware v0.0.0-20230223095454-c9b6ebcf711c/go.mod h1:/MNWk3a7TkttNTHlyZv+0JaWTSmJqUAnfH2xiMd0yvM=
 >>>>>>> Support coupon type incentive for event
+=======
+github.com/NpoolPlatform/inspire-manager v0.0.0-20230224043022-00cfda858d30 h1:kJ0h7H3efRZmsS4OPt/LzZXGOxWGgXMwkZijhR6LSp4=
+github.com/NpoolPlatform/inspire-manager v0.0.0-20230224043022-00cfda858d30/go.mod h1:epOrpFTDusojtpku2jMEB5/IaeloIdrH8EDjHtIK+ds=
+github.com/NpoolPlatform/inspire-middleware v0.0.0-20230224043310-2dd47cc798a7 h1:6BDnADCjObGOfQr7TGC9S1VzXKMnWv3dOEIrvpYbgeQ=
+github.com/NpoolPlatform/inspire-middleware v0.0.0-20230224043310-2dd47cc798a7/go.mod h1:8sOQpr2CF3K3WLUAbVoFIFf/Sixvtl9iOAWAmk39S1E=
+>>>>>>> Avoid create duplicate event
 github.com/NpoolPlatform/ledger-manager v0.0.0-20230111061350-4bddabacc212 h1:hVJ95VbzLl3avb60fXjbcMo7IbDjVpCCb6pYI6wHp80=
 github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9 h1:BPXzjOXbuViWkv1ww8lFmQ+6dWC8vqEdiU5YaPy9SSM=
 github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9/go.mod h1:nmVvmSGYuOBGZ4RWeTZ8ny5Kw6Nx8uwQPblmJ/x1wYs=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb h1:IAQOJ0xQWdJS1BnimNdM6GZMLgTL/FnIa8C8K4xffUA=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb/go.mod h1:zvvqlRwbOdTUauPQ9dFDhDuxa91ILV0CQfVdPBZj+eA=
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -127,6 +135,10 @@ github.com/NpoolPlatform/message v0.0.0-20230223060043-8ff5b4f9e10b/go.mod h1:bb
 github.com/NpoolPlatform/message v0.0.0-20230223072453-2dffe864b5af h1:gGH8qbUBvNfcl6xv1VVVOd8PYROhJ65xZOuIubjJEUs=
 github.com/NpoolPlatform/message v0.0.0-20230223072453-2dffe864b5af/go.mod h1:bblNegLa6PLnrfbc7MEzwa1pjQOjJ8vJ/5K497ckiig=
 >>>>>>> Support coupon type incentive for event
+=======
+github.com/NpoolPlatform/message v0.0.0-20230224042235-06bafe17e2b2 h1:mfJiFdp38urHlC9s+qDKu2Wdvbg48yfRr+TfhwTL7cg=
+github.com/NpoolPlatform/message v0.0.0-20230224042235-06bafe17e2b2/go.mod h1:bblNegLa6PLnrfbc7MEzwa1pjQOjJ8vJ/5K497ckiig=
+>>>>>>> Avoid create duplicate event
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687 h1:EYQPrDW4UESGuEP49IV+Xwft4JUC16gb1DZQnH9YFu0=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687/go.mod h1:leYq+Scn4WZ72AQtq4bZKlmeMsxTXUpTgWOPZK7Eb34=
 github.com/NpoolPlatform/order-manager v0.0.0-20230226024220-9751e14c7cf9 h1:Ht27+vZlQku5Aq6wd7OpEEoVWva0kqedtMpN1AoLnGI=

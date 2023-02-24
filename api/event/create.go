@@ -7,12 +7,16 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
 	alloccoupmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/coupon/allocated"
 	mgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/event"
 
 	event1 "github.com/NpoolPlatform/inspire-gateway/pkg/event"
+
+	mgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/event"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,6 +31,11 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 		logger.Sugar().Errorw("CreateEvent", "AppID", in.GetAppID(), "Error", err)
 		return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
+
+	conds := &mgrpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: in.GetAppID()},
+	}
+
 	switch in.GetEventType() {
 	case basetypes.UsedFor_Signup:
 	case basetypes.UsedFor_Signin:
@@ -43,10 +52,13 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 	case basetypes.UsedFor_KYCApproved:
 	case basetypes.UsedFor_KYCRejected:
 	case basetypes.UsedFor_Purchase:
+		fallthrough //nolint
+	case basetypes.UsedFor_AffiliatePurchase:
 		if _, err := uuid.Parse(in.GetGoodID()); err != nil {
 			logger.Sugar().Errorw("ValidateCreate", "GoodID", in.GetGoodID(), "Error", err)
 			return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
 		}
+		conds.GoodID = &basetypes.StringVal{Op: cruder.EQ, Value: in.GetGoodID()}
 	default:
 		logger.Sugar().Errorw("CreateEvent", "EventType", in.GetEventType())
 		return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, "EventType is invalid")
@@ -78,6 +90,17 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 	if _, err := decimal.NewFromString(in.GetCreditsPerUSD()); err != nil {
 		logger.Sugar().Errorw("CreateEvent", "CreditsPerUSD", in.GetCreditsPerUSD(), "Error", err)
 		return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	conds.EventType = &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(in.GetEventType())}
+	exist, err := mgrcli.ExistEventConds(ctx, conds)
+	if err != nil {
+		logger.Sugar().Errorw("CreateEvent", "Conds", conds, "Error", err)
+		return &npool.CreateEventResponse{}, status.Error(codes.Internal, err.Error())
+	}
+	if exist {
+		logger.Sugar().Errorw("CreateEvent", "Conds", conds, "Exist", exist)
+		return &npool.CreateEventResponse{}, status.Error(codes.AlreadyExists, err.Error())
 	}
 
 	req := &mgrpb.EventReq{
