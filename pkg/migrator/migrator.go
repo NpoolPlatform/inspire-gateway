@@ -101,63 +101,74 @@ func Migrate(ctx context.Context) error {
 	}
 
 	err = db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
-		infos, err := tx.
+		_, err := tx.
+			ExecContext(
+				ctx,
+				"update archivement_details set units_v1='0' where units_v1 is NULL",
+			)
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.
+			ExecContext(
+				ctx,
+				"update archivement_generals set total_units_v1='0' where total_units_v1 is NULL",
+			)
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.
+			ExecContext(
+				ctx,
+				"update archivement_generals set self_units_v1='0' where self_units_v1 is NULL",
+			)
+		if err != nil {
+			return err
+		}
+
+		details, err := tx.
 			ArchivementDetail.
 			Query().
-			Select(
-				archivementdetailent.FieldID,
-				archivementdetailent.FieldUnits,
+			Where(
+				archivementdetailent.UnitsV1(decimal.NewFromInt(0)),
 			).
 			All(_ctx)
 		if err != nil {
 			return err
 		}
 
-		for _, info := range infos {
-			units := decimal.NewFromInt(0)
-			if info.Units != 0 {
-				units = decimal.NewFromInt32(int32(info.Units))
-			}
-
+		for _, info := range details {
 			_, err = tx.
 				ArchivementDetail.
 				UpdateOneID(info.ID).
-				SetUnitsV1(units).
+				SetUnitsV1(decimal.NewFromInt(int64(info.Units))).
 				Save(_ctx)
 			if err != nil {
 				return err
 			}
 		}
-		infos1, err := tx.
+
+		generals, err := tx.
 			ArchivementGeneral.
 			Query().
-			Select(
-				archivementgeneralent.FieldID,
-				archivementgeneralent.FieldTotalUnits,
-				archivementgeneralent.FieldSelfUnits,
+			Where(
+				archivementgeneralent.TotalUnitsV1(decimal.NewFromInt(0)),
+				archivementgeneralent.SelfUnitsV1(decimal.NewFromInt(0)),
 			).
 			All(_ctx)
 		if err != nil {
 			return err
 		}
 
-		for _, info := range infos1 {
-			u := tx.
+		for _, info := range generals {
+			_, err := tx.
 				ArchivementGeneral.
-				UpdateOneID(info.ID)
-
-			totalUnits := decimal.NewFromInt(0)
-			if info.TotalUnits != 0 {
-				totalUnits = decimal.NewFromInt32(int32(info.TotalUnits))
-			}
-			u.SetTotalUnitsV1(totalUnits)
-
-			selfUnits := decimal.NewFromInt(0)
-			if info.SelfUnits != 0 {
-				selfUnits = decimal.NewFromInt32(int32(info.SelfUnits))
-			}
-			u.SetSelfUnitsV1(selfUnits)
-			_, err = u.Save(_ctx)
+				UpdateOneID(info.ID).
+				SetTotalUnitsV1(decimal.NewFromInt(int64(info.TotalUnits))).
+				SetSelfUnitsV1(decimal.NewFromInt(int64(info.SelfUnits))).
+				Save(_ctx)
 			if err != nil {
 				return err
 			}
