@@ -213,7 +213,7 @@ func Migrate(ctx context.Context) error {
 				return err
 			}
 
-			if order.State == ordermgrpb.OrderType_Normal.String() {
+			if order.Type == ordermgrpb.OrderType_Normal.String() {
 				continue
 			}
 
