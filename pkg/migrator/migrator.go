@@ -100,7 +100,7 @@ func Migrate(ctx context.Context) error {
 		return err
 	}
 
-	return db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
+	err = db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
 		infos, err := tx.
 			ArchivementDetail.
 			Query().
@@ -171,20 +171,23 @@ func Migrate(ctx context.Context) error {
 			Type   string
 		}
 
-		rows, err := tx.QueryContext(
-			ctx,
-			"select "+
-				"id,"+
-				"app_id,"+
-				"user_id,"+
-				"state,"+
-				"type "+
-				"from order_manager.orders"+
-				"where deleted_at=0",
-		)
+		rows, err := tx.
+			QueryContext(
+				ctx,
+				"select "+
+					"id,"+
+					"app_id,"+
+					"user_id,"+
+					"state,"+
+					"type "+
+					"from order_manager.orders "+
+					"where deleted_at=0",
+			)
 		if err != nil {
 			return err
 		}
+
+		ords := []*order{}
 
 		for rows.Next() {
 			order := order{}
@@ -203,6 +206,10 @@ func Migrate(ctx context.Context) error {
 				continue
 			}
 
+			ords = append(ords, &order)
+		}
+
+		for _, order := range ords {
 			infos, err := tx.
 				ArchivementDetail.
 				Query().
@@ -237,6 +244,10 @@ func Migrate(ctx context.Context) error {
 					).
 					Only(_ctx)
 				if err != nil {
+					if ent.IsNotFound(err) {
+						logger.Sugar().Errorw("Migrate", "AppID", order.AppID, "UserID", order.UserID, "Error", err)
+						continue
+					}
 					return err
 				}
 
@@ -261,4 +272,6 @@ func Migrate(ctx context.Context) error {
 
 		return nil
 	})
+
+	return err
 }
