@@ -21,6 +21,8 @@ import (
 	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
 	goodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
 
+	ordermgrpb "github.com/NpoolPlatform/message/npool/order/mgr/v1/order"
+
 	"github.com/shopspring/decimal"
 
 	"github.com/NpoolPlatform/message/npool"
@@ -84,7 +86,11 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 				return err
 			}
 
-			goodValue := price.Mul(decimal.NewFromInt32(int32(order.Units))).String()
+			untis, err := decimal.NewFromString(order.Units)
+			if err != nil {
+				return err
+			}
+			goodValue := price.Mul(untis).String()
 
 			paymentAmount, err := decimal.NewFromString(order.PaymentAmount)
 			if err != nil {
@@ -111,6 +117,7 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 				PaymentAmount:          paymentAmountS,
 				GoodValue:              goodValue,
 				SettleType:             good.CommissionSettleType,
+				HasCommission:          order.OrderType == ordermgrpb.OrderType_Normal,
 			})
 			if err != nil {
 				logger.Sugar().Warnw("UpdateArchivement", "OrderID", order.ID, "error", err)
