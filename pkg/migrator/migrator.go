@@ -213,7 +213,7 @@ func Migrate(ctx context.Context) error {
 				return err
 			}
 
-			if order.State == ordermgrpb.OrderType_Normal.String() {
+			if order.Type == ordermgrpb.OrderType_Normal.String() {
 				continue
 			}
 
@@ -251,7 +251,7 @@ func Migrate(ctx context.Context) error {
 					Query().
 					Where(
 						archivementgeneralent.AppID(order.AppID),
-						archivementgeneralent.AppID(order.UserID),
+						archivementgeneralent.UserID(order.UserID),
 					).
 					Only(_ctx)
 				if err != nil {
