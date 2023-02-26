@@ -7,13 +7,13 @@ require (
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230221094657-688f81366495
 	github.com/NpoolPlatform/chain-middleware v0.0.0-20230111062408-7bc4b269c1d4
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
-	github.com/NpoolPlatform/good-middleware v0.0.0-20230111062156-9d26cfe25c94
-	github.com/NpoolPlatform/inspire-manager v0.0.0-20230217070807-8c57aa156db3
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230224093134-0e1b9733eb8c
+	github.com/NpoolPlatform/good-middleware v0.0.0-20230226023613-1cd47e6f2fa2
+	github.com/NpoolPlatform/inspire-manager v0.0.0-20230226030512-99ccf5fa9fd1
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230226031546-c7ca7aade32c
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230224092851-7f46691c0dd1
-	github.com/NpoolPlatform/order-middleware v0.0.0-20230111062552-aa2af7d0c282
+	github.com/NpoolPlatform/message v0.0.0-20230226021727-29812bde6ee5
+	github.com/NpoolPlatform/order-middleware v0.0.0-20230226025300-b335a4be0fbb
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.12.0
@@ -28,6 +28,7 @@ require (
 
 require (
 	ariga.io/atlas v0.7.2-0.20220927111110-867ee0cca56a // indirect
+	cloud.google.com/go/compute/metadata v0.2.3 // indirect
 	entgo.io/ent v0.11.3 // indirect
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
 	github.com/agext/levenshtein v1.2.1 // indirect
@@ -101,8 +102,8 @@ require (
 	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect
-	golang.org/x/xerrors v0.0.0-20220411194840-2f41105eb62f // indirect
-	google.golang.org/genproto v0.0.0-20221118155620-16455021b5e6 // indirect
+	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
+	google.golang.org/genproto v0.0.0-20221202195650-67e5cbc046fd // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
