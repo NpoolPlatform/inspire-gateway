@@ -8,10 +8,13 @@ import (
 	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
+	allocatedmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/coupon/allocated"
 	mgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/event"
+	coupmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/coupon"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	coupmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/coupon"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
@@ -56,10 +59,49 @@ func expand(ctx context.Context, info *mgrpb.Event) (*npool.Event, error) {
 		_info.GoodName = good.GoodName
 	}
 
+	coupons := map[allocatedmgrpb.CouponType][]*coupmwpb.Coupon{}
+	couponIDs := map[allocatedmgrpb.CouponType][]string{}
+	for _, coup := range info.Coupons {
+		couponIDs[coup.CouponType] = append(couponIDs[coup.CouponType], coup.ID)
+	}
+
+	for ct, ids := range couponIDs {
+		_coupons, _, err := coupmwcli.GetCoupons(ctx, &coupmwpb.Conds{
+			CouponType: &commonpb.Int32Val{Op: cruder.EQ, Value: int32(ct)},
+			IDs:        &commonpb.StringSliceVal{Op: cruder.IN, Value: ids},
+		}, 0, int32(len(ids)))
+		if err != nil {
+			return nil, err
+		}
+
+		coupons[ct] = _coupons
+	}
+
+	coupMap := map[string]*coupmwpb.Coupon{}
+	for _, coups := range coupons {
+		for _, coup := range coups {
+			coupMap[coup.ID] = coup
+		}
+	}
+
+	for _, coup := range info.Coupons {
+		_coup, ok := coupMap[coup.ID]
+		if !ok {
+			continue
+		}
+
+		_info.Coupons = append(_info.Coupons, &npool.Coupon{
+			ID:         coup.ID,
+			CouponType: coup.CouponType,
+			Value:      _coup.Value,
+			Name:       _coup.Name,
+		})
+	}
+
 	return _info, nil
 }
 
-func expandMany(ctx context.Context, infos []*mgrpb.Event) ([]*npool.Event, error) {
+func expandMany(ctx context.Context, infos []*mgrpb.Event) ([]*npool.Event, error) { //nolint
 	appIDs := []string{}
 	goodIDs := []string{}
 
@@ -93,6 +135,33 @@ func expandMany(ctx context.Context, infos []*mgrpb.Event) ([]*npool.Event, erro
 		goodMap[good.GoodID] = good
 	}
 
+	coupons := map[allocatedmgrpb.CouponType][]*coupmwpb.Coupon{}
+	couponIDs := map[allocatedmgrpb.CouponType][]string{}
+	for _, info := range infos {
+		for _, coup := range info.Coupons {
+			couponIDs[coup.CouponType] = append(couponIDs[coup.CouponType], coup.ID)
+		}
+	}
+
+	for ct, ids := range couponIDs {
+		_coupons, _, err := coupmwcli.GetCoupons(ctx, &coupmwpb.Conds{
+			CouponType: &commonpb.Int32Val{Op: cruder.EQ, Value: int32(ct)},
+			IDs:        &commonpb.StringSliceVal{Op: cruder.IN, Value: ids},
+		}, 0, int32(len(ids)))
+		if err != nil {
+			return nil, err
+		}
+
+		coupons[ct] = _coupons
+	}
+
+	coupMap := map[string]*coupmwpb.Coupon{}
+	for _, coups := range coupons {
+		for _, coup := range coups {
+			coupMap[coup.ID] = coup
+		}
+	}
+
 	_infos := []*npool.Event{}
 
 	for _, info := range infos {
@@ -122,6 +191,20 @@ func expandMany(ctx context.Context, infos []*mgrpb.Event) ([]*npool.Event, erro
 
 			_info.GoodID = info.GoodID
 			_info.GoodName = good.GoodName
+		}
+
+		for _, coup := range info.Coupons {
+			_coup, ok := coupMap[coup.ID]
+			if !ok {
+				continue
+			}
+
+			_info.Coupons = append(_info.Coupons, &npool.Coupon{
+				ID:         coup.ID,
+				CouponType: coup.CouponType,
+				Value:      _coup.Value,
+				Name:       _coup.Name,
+			})
 		}
 
 		_infos = append(_infos, _info)
