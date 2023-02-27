@@ -22,9 +22,6 @@ import (
 	constant "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 	constant1 "github.com/NpoolPlatform/inspire-gateway/pkg/message/const"
 
-	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
-	goodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
-
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -231,16 +228,6 @@ func Migrate(ctx context.Context) error {
 			goodIDs = append(goodIDs, ord.GoodID.String())
 		}
 
-		goods, _, err := goodmwcli.GetManyGoods(ctx, goodIDs, 0, int32(len(goodIDs)))
-		if err != nil {
-			return err
-		}
-
-		goodMap := map[string]*goodmwpb.Good{}
-		for _, good := range goods {
-			goodMap[good.ID] = good
-		}
-
 		for _, order := range ords {
 			infos, err := tx.
 				ArchivementDetail.
@@ -267,24 +254,13 @@ func Migrate(ctx context.Context) error {
 					return err
 				}
 
-				good, ok := goodMap[order.GoodID.String()]
-				if !ok {
-					logger.Sugar().Errorw(
-						"Migrate",
-						"AppID", order.AppID,
-						"UserID", order.UserID,
-						"GoodID", order.GoodID,
-						"Error", "Invalid Good")
-					continue
-				}
-
 				general, err := tx.
 					ArchivementGeneral.
 					Query().
 					Where(
 						archivementgeneralent.AppID(order.AppID),
 						archivementgeneralent.UserID(order.UserID),
-						archivementgeneralent.CoinTypeID(uuid.MustParse(good.CoinTypeID)),
+						archivementgeneralent.GoodID(order.GoodID),
 					).
 					Only(_ctx)
 				if err != nil {
