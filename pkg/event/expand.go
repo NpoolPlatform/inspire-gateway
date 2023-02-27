@@ -39,6 +39,7 @@ func expand(ctx context.Context, info *mgrpb.Event) (*npool.Event, error) {
 		Credits:        info.Credits,
 		CreditsPerUSD:  info.CreditsPerUSD,
 		MaxConsecutive: info.MaxConsecutive,
+		InviterLayers:  info.InviterLayers,
 		CreatedAt:      info.CreatedAt,
 		UpdatedAt:      info.UpdatedAt,
 	}
@@ -179,6 +180,7 @@ func expandMany(ctx context.Context, infos []*mgrpb.Event) ([]*npool.Event, erro
 			CreditsPerUSD:  info.CreditsPerUSD,
 			MaxConsecutive: info.MaxConsecutive,
 			GoodID:         info.GoodID,
+			InviterLayers:  info.InviterLayers,
 			CreatedAt:      info.CreatedAt,
 			UpdatedAt:      info.UpdatedAt,
 		}
