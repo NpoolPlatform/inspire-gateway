@@ -9,13 +9,18 @@ import (
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
+	commonpb "github.com/NpoolPlatform/message/npool"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+
+	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
 	alloccoupmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/coupon/allocated"
 	mgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/event"
 
 	event1 "github.com/NpoolPlatform/inspire-gateway/pkg/event"
 
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
 	mgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/event"
 
 	"google.golang.org/grpc/codes"
@@ -30,6 +35,16 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 	if _, err := uuid.Parse(in.GetAppID()); err != nil {
 		logger.Sugar().Errorw("CreateEvent", "AppID", in.GetAppID(), "Error", err)
 		return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	app, err := appmwcli.GetApp(ctx, in.GetAppID())
+	if err != nil {
+		logger.Sugar().Errorw("CreateEvent", "AppID", in.GetAppID(), "Error", err)
+		return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+	if app == nil {
+		logger.Sugar().Errorw("CreateEvent", "AppID", in.GetAppID())
+		return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, "App not exist")
 	}
 
 	conds := &mgrpb.Conds{
@@ -59,6 +74,19 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 			return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
 		}
 		conds.GoodID = &basetypes.StringVal{Op: cruder.EQ, Value: in.GetGoodID()}
+
+		good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmgrpb.Conds{
+			AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: in.GetAppID()},
+			GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: in.GetGoodID()},
+		})
+		if err != nil {
+			logger.Sugar().Errorw("ValidateCreate", "GoodID", in.GetGoodID(), "Error", err)
+			return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		}
+		if good == nil {
+			logger.Sugar().Errorw("ValidateCreate", "GoodID", in.GetGoodID())
+			return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, "Good not exist")
+		}
 	default:
 		logger.Sugar().Errorw("CreateEvent", "EventType", in.GetEventType())
 		return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, "EventType is invalid")
