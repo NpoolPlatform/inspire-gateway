@@ -100,7 +100,7 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 	}
 	if exist {
 		logger.Sugar().Errorw("CreateEvent", "Conds", conds, "Exist", exist)
-		return &npool.CreateEventResponse{}, status.Error(codes.AlreadyExists, err.Error())
+		return &npool.CreateEventResponse{}, status.Error(codes.AlreadyExists, "Event already exist")
 	}
 
 	req := &mgrpb.EventReq{
