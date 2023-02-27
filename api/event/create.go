@@ -4,8 +4,11 @@ package event
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+
+	timedef "github.com/NpoolPlatform/go-service-framework/pkg/const/time"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
@@ -22,6 +25,7 @@ import (
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
 	mgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/event"
+	coupmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/coupon"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -109,6 +113,21 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 		default:
 			logger.Sugar().Errorw("ValidateCreate", "Coupons", in.GetCoupons())
 			return &npool.CreateEventResponse{}, fmt.Errorf("coupontype is invalid")
+		}
+
+		coup, err := coupmwcli.GetCoupon(ctx, coupon.ID, coupon.CouponType)
+		if err != nil {
+			logger.Sugar().Errorw("ValidateCreate", "Coupons", in.GetCoupons(), "Error", err)
+			return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		}
+		if coup == nil {
+			logger.Sugar().Errorw("ValidateCreate", "Coupons", in.GetCoupons(), "Error", err)
+			return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, "Coupon not exist")
+		}
+		now := uint32(time.Now().Unix())
+		if now < coup.StartAt || coup.StartAt+coup.DurationDays*timedef.SecondsPerDay < now {
+			logger.Sugar().Errorw("ValidateCreate", "Coupons", in.GetCoupons(), "Error", err)
+			return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, "Coupon invalid")
 		}
 	}
 	if _, err := decimal.NewFromString(in.GetCredits()); err != nil {
