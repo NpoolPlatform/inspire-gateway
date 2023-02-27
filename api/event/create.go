@@ -109,6 +109,7 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 		Coupons:       in.Coupons,
 		Credits:       in.Credits,
 		CreditsPerUSD: in.CreditsPerUSD,
+		GoodID:        in.GoodID,
 	}
 
 	info, err := event1.CreateEvent(ctx, req)
