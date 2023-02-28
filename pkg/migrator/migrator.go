@@ -103,7 +103,7 @@ func Migrate(ctx context.Context) error {
 			ArchivementDetail.
 			Query().
 			Where(
-				archivementdetailent.UnitsV1(decimal.NewFromInt(0)),
+				archivementdetailent.DeletedAt(0),
 			).
 			All(_ctx)
 		if err != nil {
@@ -119,12 +119,12 @@ func Migrate(ctx context.Context) error {
 		rows, err := tx.
 			QueryContext(
 				_ctx,
-				"select app_id,user_id,id from order_manager.orders where type='Offline' and deleted_at=0")
+				"select app_id,user_id,id from order_manager.orders where type='Normal' and deleted_at=0")
 		if err != nil {
 			return err
 		}
 
-		orders := []order{}
+		orders := []*order{}
 		for rows.Next() {
 			order := &order{}
 			err := rows.Scan(
@@ -135,11 +135,12 @@ func Migrate(ctx context.Context) error {
 			if err != nil {
 				return err
 			}
+			orders = append(orders, order)
 		}
 
-		orderMap := map[string]order{}
-		for _, ord := range orders {
-			orderMap[ord.OrderID.String()] = ord
+		orderMap := map[string]*order{}
+		for i, ord := range orders {
+			orderMap[ord.OrderID.String()] = orders[i]
 		}
 
 		comms := map[string]map[string]map[string]decimal.Decimal{}
@@ -148,6 +149,9 @@ func Migrate(ctx context.Context) error {
 		for _, info := range details {
 			ord, ok := orderMap[info.OrderID.String()]
 			if !ok {
+				if info.Commission.Cmp(decimal.NewFromInt(0)) > 0 {
+					logger.Sugar().Infow("Migrate", "OrderID", info.OrderID, "State", "Offline | Airdrop", "Commission", info.Commission)
+				}
 				continue
 			}
 
@@ -172,6 +176,7 @@ func Migrate(ctx context.Context) error {
 
 			comms[info.AppID.String()] = acomm
 
+			logger.Sugar().Infow("Migrate", "OrderID", info.OrderID, "Comm", _comm)
 			if info.UserID != ord.UserID {
 				continue
 			}
@@ -192,6 +197,7 @@ func Migrate(ctx context.Context) error {
 			}
 
 			_comm = _comm.Add(info.Commission)
+			logger.Sugar().Infow("Migrate", "OrderID", info.OrderID, "SelfComm", _comm)
 			comm[info.GoodID.String()] = _comm
 			acomm[info.UserID.String()] = comm
 
@@ -201,6 +207,7 @@ func Migrate(ctx context.Context) error {
 		for appID, _comms := range comms {
 			for userID, __comms := range _comms {
 				for goodID, comm := range __comms {
+					logger.Sugar().Infow("Migrate", "AppID", appID, "UserID", userID, "GoodID", goodID)
 					general, err := tx.
 						ArchivementGeneral.
 						Query().
@@ -223,16 +230,15 @@ func Migrate(ctx context.Context) error {
 						return err
 					}
 
-					totalCommission := general.TotalCommission.Sub(comm)
-					selfCommission := general.SelfCommission
+					selfComm := decimal.Decimal{}
 
 					_selfComms, ok := selfComms[appID]
 					if ok {
 						__selfComms, ok := _selfComms[userID]
 						if ok {
-							selfComm, ok := __selfComms[goodID]
+							_selfComm, ok := __selfComms[goodID]
 							if ok {
-								selfCommission = selfCommission.Sub(selfComm)
+								selfComm = _selfComm
 							}
 						}
 					}
@@ -240,8 +246,8 @@ func Migrate(ctx context.Context) error {
 					_, err = tx.
 						ArchivementGeneral.
 						UpdateOneID(general.ID).
-						SetTotalCommission(totalCommission).
-						SetSelfCommission(selfCommission).
+						SetTotalCommission(comm).
+						SetSelfCommission(selfComm).
 						Save(_ctx)
 					if err != nil {
 						return err
