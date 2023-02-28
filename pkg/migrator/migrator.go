@@ -152,7 +152,6 @@ func Migrate(ctx context.Context) error {
 				if info.Commission.Cmp(decimal.NewFromInt(0)) > 0 {
 					logger.Sugar().Infow("Migrate", "OrderID", info.OrderID, "State", "Offline | Airdrop", "Commission", info.Commission)
 				}
-				continue
 			}
 
 			acomm, ok := comms[info.AppID.String()]
