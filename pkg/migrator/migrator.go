@@ -73,4 +73,5 @@ func open(hostname string) (conn *sql.DB, err error) {
 
 func Migrate(ctx context.Context) error {
 	return nil
+
 }
