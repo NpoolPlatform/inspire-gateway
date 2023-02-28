@@ -84,11 +84,13 @@ func (s *Server) UpdateEvent(ctx context.Context, in *npool.UpdateEventRequest) 
 	}
 
 	req := &mgrpb.EventReq{
-		ID:            &in.ID,
-		AppID:         &in.AppID,
-		Coupons:       in.Coupons,
-		Credits:       in.Credits,
-		CreditsPerUSD: in.CreditsPerUSD,
+		ID:             &in.ID,
+		AppID:          &in.AppID,
+		Coupons:        in.Coupons,
+		Credits:        in.Credits,
+		CreditsPerUSD:  in.CreditsPerUSD,
+		MaxConsecutive: in.MaxConsecutive,
+		InviterLayers:  in.InviterLayers,
 	}
 
 	info, err := event1.UpdateEvent(ctx, req)

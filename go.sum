@@ -65,10 +65,10 @@ github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
 github.com/NpoolPlatform/good-manager v0.0.0-20230226022952-587c3365e458 h1:Q0B7idFl5xKoLtWIWEi3d5efZJTr7Y4S13Xc4RYJ2iA=
 github.com/NpoolPlatform/good-middleware v0.0.0-20230226023613-1cd47e6f2fa2 h1:LNK42df+xb1oEn8AMwdV2VfCPhjlwM7visGrOJBmRs0=
 github.com/NpoolPlatform/good-middleware v0.0.0-20230226023613-1cd47e6f2fa2/go.mod h1:Yd3fDoAi42urAV53R1SZZF/4x1SKQ4y5NdhaooBeasA=
-github.com/NpoolPlatform/inspire-manager v0.0.0-20230227064824-f768240f878b h1:YkV/HtUAwMO0T0DWxGE62u38z0418sT2IUJ2HAQHRpk=
-github.com/NpoolPlatform/inspire-manager v0.0.0-20230227064824-f768240f878b/go.mod h1:i4ozRI5Ny+XDDfbs9OcwLbcgK7Ek2ajrX9VNxjq+8Ik=
-github.com/NpoolPlatform/inspire-middleware v0.0.0-20230227104124-ec47db6572ce h1:aFMsT/LBG6ZqvahSavI3bI3R1U/XkXhRllTC0EdPQbQ=
-github.com/NpoolPlatform/inspire-middleware v0.0.0-20230227104124-ec47db6572ce/go.mod h1:lX7ccXLVBG7vSmjxRhSNWUdh2j/hatyDgreMTj6I9u0=
+github.com/NpoolPlatform/inspire-manager v0.0.0-20230228094933-e86fc5221e3e h1:2n0CYqtVLlR/f9ASjoCfq8kFPeks44+0/3S01A+Q72o=
+github.com/NpoolPlatform/inspire-manager v0.0.0-20230228094933-e86fc5221e3e/go.mod h1:i4ozRI5Ny+XDDfbs9OcwLbcgK7Ek2ajrX9VNxjq+8Ik=
+github.com/NpoolPlatform/inspire-middleware v0.0.0-20230228095023-e82b63fd0d1b h1:ynu+zrg/iFI6hvfibKpnPflyA6MxKcVkMMwtRyASz1I=
+github.com/NpoolPlatform/inspire-middleware v0.0.0-20230228095023-e82b63fd0d1b/go.mod h1:N4rEQvdh8F0bE78g5JH00MxwksUubsV9TLPOYEH867U=
 github.com/NpoolPlatform/ledger-manager v0.0.0-20230111061350-4bddabacc212 h1:hVJ95VbzLl3avb60fXjbcMo7IbDjVpCCb6pYI6wHp80=
 github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9 h1:BPXzjOXbuViWkv1ww8lFmQ+6dWC8vqEdiU5YaPy9SSM=
 github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9/go.mod h1:nmVvmSGYuOBGZ4RWeTZ8ny5Kw6Nx8uwQPblmJ/x1wYs=

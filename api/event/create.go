@@ -128,13 +128,17 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 			return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, "Coupon invalid")
 		}
 	}
-	if _, err := decimal.NewFromString(in.GetCredits()); err != nil {
-		logger.Sugar().Errorw("CreateEvent", "Credits", in.GetCredits(), "Error", err)
-		return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	if in.Credits != nil {
+		if _, err := decimal.NewFromString(in.GetCredits()); err != nil {
+			logger.Sugar().Errorw("CreateEvent", "Credits", in.GetCredits(), "Error", err)
+			return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		}
 	}
-	if _, err := decimal.NewFromString(in.GetCreditsPerUSD()); err != nil {
-		logger.Sugar().Errorw("CreateEvent", "CreditsPerUSD", in.GetCreditsPerUSD(), "Error", err)
-		return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	if in.CreditsPerUSD != nil {
+		if _, err := decimal.NewFromString(in.GetCreditsPerUSD()); err != nil {
+			logger.Sugar().Errorw("CreateEvent", "CreditsPerUSD", in.GetCreditsPerUSD(), "Error", err)
+			return &npool.CreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		}
 	}
 
 	conds.EventType = &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(in.GetEventType())}
@@ -149,12 +153,14 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 	}
 
 	req := &mgrpb.EventReq{
-		AppID:         &in.AppID,
-		EventType:     &in.EventType,
-		Coupons:       in.Coupons,
-		Credits:       in.Credits,
-		CreditsPerUSD: in.CreditsPerUSD,
-		GoodID:        in.GoodID,
+		AppID:          &in.AppID,
+		EventType:      &in.EventType,
+		Coupons:        in.Coupons,
+		Credits:        in.Credits,
+		CreditsPerUSD:  in.CreditsPerUSD,
+		GoodID:         in.GoodID,
+		MaxConsecutive: in.MaxConsecutive,
+		InviterLayers:  in.InviterLayers,
 	}
 
 	info, err := event1.CreateEvent(ctx, req)
