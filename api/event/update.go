@@ -53,10 +53,6 @@ func (s *Server) UpdateEvent(ctx context.Context, in *npool.UpdateEventRequest) 
 			return &npool.UpdateEventResponse{}, fmt.Errorf("coupontype is invalid")
 		}
 	}
-	if _, err := decimal.NewFromString(in.GetCredits()); err != nil {
-		logger.Sugar().Errorw("UpdateEvent", "Credits", in.GetCredits(), "Error", err)
-		return &npool.UpdateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
 	if in.Credits != nil {
 		if _, err := decimal.NewFromString(in.GetCredits()); err != nil {
 			logger.Sugar().Errorw("UpdateEvent", "Credits", in.GetCredits(), "Error", err)
