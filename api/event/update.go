@@ -3,7 +3,9 @@ package event
 import (
 	"context"
 	"fmt"
+	"time"
 
+	timedef "github.com/NpoolPlatform/go-service-framework/pkg/const/time"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -16,6 +18,7 @@ import (
 	event1 "github.com/NpoolPlatform/inspire-gateway/pkg/event"
 
 	mgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/event"
+	coupmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/coupon"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -41,7 +44,6 @@ func (s *Server) UpdateEvent(ctx context.Context, in *npool.UpdateEventRequest) 
 		switch coupon.GetCouponType() {
 		case alloccoupmgrpb.CouponType_FixAmount:
 		case alloccoupmgrpb.CouponType_Discount:
-		case alloccoupmgrpb.CouponType_SpecialOffer:
 		case alloccoupmgrpb.CouponType_ThresholdFixAmount:
 		case alloccoupmgrpb.CouponType_ThresholdDiscount:
 		case alloccoupmgrpb.CouponType_GoodFixAmount:
@@ -51,6 +53,21 @@ func (s *Server) UpdateEvent(ctx context.Context, in *npool.UpdateEventRequest) 
 		default:
 			logger.Sugar().Errorw("ValidateUpdate", "Coupons", in.GetCoupons())
 			return &npool.UpdateEventResponse{}, fmt.Errorf("coupontype is invalid")
+		}
+
+		coup, err := coupmwcli.GetCoupon(ctx, coupon.ID, coupon.CouponType)
+		if err != nil {
+			logger.Sugar().Errorw("ValidateUpdate", "Coupons", in.GetCoupons(), "Error", err)
+			return &npool.UpdateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		}
+		if coup == nil {
+			logger.Sugar().Errorw("ValidateUpdate", "Coupons", in.GetCoupons(), "Error", err)
+			return &npool.UpdateEventResponse{}, status.Error(codes.InvalidArgument, "Coupon not exist")
+		}
+		now := uint32(time.Now().Unix())
+		if now < coup.StartAt || coup.StartAt+coup.DurationDays*timedef.SecondsPerDay < now {
+			logger.Sugar().Errorw("ValidateUpdate", "Coupons", in.GetCoupons(), "Error", err)
+			return &npool.UpdateEventResponse{}, status.Error(codes.InvalidArgument, "Coupon invalid")
 		}
 	}
 	if in.Credits != nil {
