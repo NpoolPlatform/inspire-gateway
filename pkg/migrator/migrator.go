@@ -17,8 +17,6 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
-	ordermgrpb "github.com/NpoolPlatform/message/npool/order/mgr/v1/order"
-
 	constant "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 	constant1 "github.com/NpoolPlatform/inspire-gateway/pkg/message/const"
 
@@ -101,33 +99,6 @@ func Migrate(ctx context.Context) error {
 	}
 
 	err = db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
-		_, err := tx.
-			ExecContext(
-				ctx,
-				"update archivement_details set units_v1='0' where units_v1 is NULL",
-			)
-		if err != nil {
-			return err
-		}
-
-		_, err = tx.
-			ExecContext(
-				ctx,
-				"update archivement_generals set total_units_v1='0' where total_units_v1 is NULL",
-			)
-		if err != nil {
-			return err
-		}
-
-		_, err = tx.
-			ExecContext(
-				ctx,
-				"update archivement_generals set self_units_v1='0' where self_units_v1 is NULL",
-			)
-		if err != nil {
-			return err
-		}
-
 		details, err := tx.
 			ArchivementDetail.
 			Query().
@@ -139,158 +110,142 @@ func Migrate(ctx context.Context) error {
 			return err
 		}
 
-		for _, info := range details {
-			_, err = tx.
-				ArchivementDetail.
-				UpdateOneID(info.ID).
-				SetUnitsV1(decimal.NewFromInt(int64(info.Units))).
-				Save(_ctx)
-			if err != nil {
-				return err
-			}
-		}
-
-		generals, err := tx.
-			ArchivementGeneral.
-			Query().
-			Where(
-				archivementgeneralent.TotalUnitsV1(decimal.NewFromInt(0)),
-				archivementgeneralent.SelfUnitsV1(decimal.NewFromInt(0)),
-			).
-			All(_ctx)
-		if err != nil {
-			return err
-		}
-
-		for _, info := range generals {
-			_, err := tx.
-				ArchivementGeneral.
-				UpdateOneID(info.ID).
-				SetTotalUnitsV1(decimal.NewFromInt(int64(info.TotalUnits))).
-				SetSelfUnitsV1(decimal.NewFromInt(int64(info.SelfUnits))).
-				Save(_ctx)
-			if err != nil {
-				return err
-			}
-		}
-
 		type order struct {
-			ID     uuid.UUID
-			AppID  uuid.UUID
-			UserID uuid.UUID
-			GoodID uuid.UUID
-			State  string
-			Type   string
+			AppID   uuid.UUID
+			UserID  uuid.UUID
+			OrderID uuid.UUID
 		}
 
 		rows, err := tx.
 			QueryContext(
-				ctx,
-				"select "+
-					"id,"+
-					"app_id,"+
-					"user_id,"+
-					"good_id,"+
-					"state,"+
-					"type "+
-					"from order_manager.orders "+
-					"where deleted_at=0",
-			)
+				_ctx,
+				"select app_id,user_id,id from order_manager.orders where type='Offline' and deleted_at=0")
 		if err != nil {
 			return err
 		}
 
-		ords := []*order{}
-
+		orders := []order{}
 		for rows.Next() {
-			order := order{}
+			order := &order{}
 			err := rows.Scan(
-				&order.ID,
 				&order.AppID,
 				&order.UserID,
-				&order.GoodID,
-				&order.State,
-				&order.Type,
+				&order.OrderID,
 			)
 			if err != nil {
 				return err
 			}
+		}
 
-			if order.Type == ordermgrpb.OrderType_Normal.String() {
+		orderMap := map[string]order{}
+		for _, ord := range orders {
+			orderMap[ord.OrderID.String()] = ord
+		}
+
+		comms := map[string]map[string]map[string]decimal.Decimal{}
+		selfComms := map[string]map[string]map[string]decimal.Decimal{}
+
+		for _, info := range details {
+			ord, ok := orderMap[info.OrderID.String()]
+			if !ok {
 				continue
 			}
 
-			ords = append(ords, &order)
-		}
-
-		goodIDs := []string{}
-		for _, ord := range ords {
-			goodIDs = append(goodIDs, ord.GoodID.String())
-		}
-
-		for _, order := range ords {
-			infos, err := tx.
-				ArchivementDetail.
-				Query().
-				Where(
-					archivementdetailent.OrderID(order.ID),
-				).
-				All(_ctx)
-			if err != nil {
-				return err
+			acomm, ok := comms[info.AppID.String()]
+			if !ok {
+				acomm = map[string]map[string]decimal.Decimal{}
 			}
 
-			for _, info := range infos {
-				if info.Commission.Cmp(decimal.NewFromInt(0)) <= 0 {
-					continue
-				}
+			comm, ok := acomm[info.UserID.String()]
+			if !ok {
+				comm = map[string]decimal.Decimal{}
+			}
 
-				_, err := tx.
-					ArchivementDetail.
-					UpdateOneID(info.ID).
-					SetCommission(decimal.NewFromInt(0)).
-					Save(_ctx)
-				if err != nil {
-					return err
-				}
+			_comm, ok := comm[info.GoodID.String()]
+			if !ok {
+				_comm = decimal.Decimal{}
+			}
 
-				general, err := tx.
-					ArchivementGeneral.
-					Query().
-					Where(
-						archivementgeneralent.AppID(order.AppID),
-						archivementgeneralent.UserID(order.UserID),
-						archivementgeneralent.GoodID(order.GoodID),
-					).
-					Only(_ctx)
-				if err != nil {
-					if ent.IsNotFound(err) {
-						logger.Sugar().Errorw(
-							"Migrate",
-							"AppID", order.AppID,
-							"UserID", order.UserID,
-							"GoodID", order.GoodID,
-							"Error", "Invalid Good")
-						continue
+			_comm = _comm.Add(info.Commission)
+			comm[info.GoodID.String()] = _comm
+			acomm[info.UserID.String()] = comm
+
+			comms[info.AppID.String()] = acomm
+
+			if info.UserID != ord.UserID {
+				continue
+			}
+
+			acomm, ok = selfComms[info.AppID.String()]
+			if !ok {
+				acomm = map[string]map[string]decimal.Decimal{}
+			}
+
+			comm, ok = acomm[info.UserID.String()]
+			if !ok {
+				comm = map[string]decimal.Decimal{}
+			}
+
+			_comm, ok = comm[info.GoodID.String()]
+			if !ok {
+				_comm = decimal.Decimal{}
+			}
+
+			_comm = _comm.Add(info.Commission)
+			comm[info.GoodID.String()] = _comm
+			acomm[info.UserID.String()] = comm
+
+			selfComms[info.AppID.String()] = acomm
+		}
+
+		for appID, _comms := range comms {
+			for userID, __comms := range _comms {
+				for goodID, comm := range __comms {
+					general, err := tx.
+						ArchivementGeneral.
+						Query().
+						Where(
+							archivementgeneralent.AppID(uuid.MustParse(appID)),
+							archivementgeneralent.UserID(uuid.MustParse(userID)),
+							archivementgeneralent.GoodID(uuid.MustParse(goodID)),
+						).
+						Only(_ctx)
+					if err != nil {
+						if ent.IsNotFound(err) {
+							logger.Sugar().Errorw(
+								"Migrate",
+								"AppID", appID,
+								"UserID", userID,
+								"GoodID", goodID,
+								"Error", "Invalid General")
+							continue
+						}
+						return err
 					}
-					return err
-				}
 
-				totalCommission := general.TotalCommission.Sub(info.Commission)
-				selfCommission := general.SelfCommission
+					totalCommission := general.TotalCommission.Sub(comm)
+					selfCommission := general.SelfCommission
 
-				if info.UserID == order.UserID {
-					selfCommission = selfCommission.Sub(info.Commission)
-				}
+					_selfComms, ok := selfComms[appID]
+					if ok {
+						__selfComms, ok := _selfComms[userID]
+						if ok {
+							selfComm, ok := __selfComms[goodID]
+							if ok {
+								selfCommission = selfCommission.Sub(selfComm)
+							}
+						}
+					}
 
-				_, err = tx.
-					ArchivementGeneral.
-					UpdateOneID(general.ID).
-					SetTotalCommission(totalCommission).
-					SetSelfCommission(selfCommission).
-					Save(_ctx)
-				if err != nil {
-					return err
+					_, err = tx.
+						ArchivementGeneral.
+						UpdateOneID(general.ID).
+						SetTotalCommission(totalCommission).
+						SetSelfCommission(selfCommission).
+						Save(_ctx)
+					if err != nil {
+						return err
+					}
 				}
 			}
 		}
