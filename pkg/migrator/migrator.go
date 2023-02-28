@@ -175,6 +175,10 @@ func Migrate(ctx context.Context) error {
 
 			comms[info.AppID.String()] = acomm
 
+			if ord == nil {
+				continue
+			}
+
 			logger.Sugar().Infow("Migrate", "OrderID", info.OrderID, "Comm", _comm)
 			if info.UserID != ord.UserID {
 				continue
