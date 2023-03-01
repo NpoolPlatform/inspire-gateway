@@ -10,9 +10,6 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
-	"github.com/NpoolPlatform/inspire-manager/pkg/db"
-	"github.com/NpoolPlatform/inspire-manager/pkg/db/ent"
-
 	constant "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 	constant1 "github.com/NpoolPlatform/inspire-gateway/pkg/message/const"
 )
@@ -75,13 +72,5 @@ func open(hostname string) (conn *sql.DB, err error) {
 }
 
 func Migrate(ctx context.Context) error {
-	if err := db.Init(); err != nil {
-		return err
-	}
-
-	return db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
-		_, err := tx.
-			ExecContext(ctx, "alter table coupon_allocated change column type varchar(32) not null default ''")
-		return err
-	})
+	return nil
 }
