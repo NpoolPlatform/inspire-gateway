@@ -3,19 +3,19 @@ module github.com/NpoolPlatform/inspire-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230221095346-3f4e44fb0b41
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230301030209-7b107731185b
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230221094657-688f81366495
 	github.com/NpoolPlatform/chain-middleware v0.0.0-20230216025740-e05d9f4b4fe0
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
 	github.com/NpoolPlatform/good-middleware v0.0.0-20230226023613-1cd47e6f2fa2
-	github.com/NpoolPlatform/inspire-manager v0.0.0-20230228094933-e86fc5221e3e
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230228095023-e82b63fd0d1b
+	github.com/NpoolPlatform/inspire-manager v0.0.0-20230301024401-bdd6ade24d27
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230301025332-cc5f09197503
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230227103904-87e68d6415ce
+	github.com/NpoolPlatform/message v0.0.0-20230301024052-8f52dd5c97a1
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687
-	github.com/NpoolPlatform/order-middleware v0.0.0-20230227072249-c70f1f2a04b3
+	github.com/NpoolPlatform/order-middleware v0.0.0-20230301031035-f35cd4b89dc7
 	github.com/NpoolPlatform/third-middleware v0.0.0-20230221094357-40a170d76e2b
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
