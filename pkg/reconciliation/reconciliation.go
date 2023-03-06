@@ -19,7 +19,6 @@ import (
 
 	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
 	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
-	goodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
 
 	ordermgrpb "github.com/NpoolPlatform/message/npool/order/mgr/v1/order"
 
@@ -28,137 +27,147 @@ import (
 	"github.com/NpoolPlatform/message/npool"
 )
 
-// nolint
+func processOrder(ctx context.Context, order *ordermwpb.Order) error {
+	good, err := goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
+		AppID:  &npool.StringVal{Op: cruder.EQ, Value: order.AppID},
+		GoodID: &npool.StringVal{Op: cruder.EQ, Value: order.GoodID},
+	})
+	if err != nil {
+		return err
+	}
+
+	paymentAmount, err := decimal.NewFromString(order.PaymentAmount)
+	if err != nil {
+		return err
+	}
+	payWithBalance, err := decimal.NewFromString(order.PayWithBalanceAmount)
+	if err != nil {
+		return err
+	}
+
+	price, err := decimal.NewFromString(good.Price)
+	if err != nil {
+		return err
+	}
+	untis, err := decimal.NewFromString(order.Units)
+	if err != nil {
+		return err
+	}
+	goodValue := price.Mul(untis).String()
+
+	paymentAmountS := paymentAmount.Add(payWithBalance).String()
+	comms, err := accountingmwcli.Accounting(ctx, &accountingmwpb.AccountingRequest{
+		AppID:                  order.AppID,
+		UserID:                 order.UserID,
+		GoodID:                 order.GoodID,
+		OrderID:                order.ID,
+		PaymentID:              order.PaymentID,
+		CoinTypeID:             good.CoinTypeID,
+		PaymentCoinTypeID:      order.PaymentCoinTypeID,
+		PaymentCoinUSDCurrency: order.PaymentCoinUSDCurrency,
+		Units:                  order.Units,
+		PaymentAmount:          paymentAmountS,
+		GoodValue:              goodValue,
+		SettleType:             good.CommissionSettleType,
+		HasCommission:          order.OrderType == ordermgrpb.OrderType_Normal,
+	})
+	if err != nil {
+		return err
+	}
+
+	if len(comms) == 0 {
+		return nil
+	}
+
+	details := []*ledgerdetailmgrpb.DetailReq{}
+	ioType := ledgerdetailmgrpb.IOType_Incoming
+	ioSubType := ledgerdetailmgrpb.IOSubType_Commission
+
+	for _, comm := range comms {
+		ioExtra := fmt.Sprintf(
+			`{"PaymentID":"%v","OrderID":"%v","DirectContributorID":"%v","OrderUserID":"%v"}`,
+			order.PaymentID,
+			order.ID,
+			comm.GetDirectContributorUserID(),
+			order.UserID,
+		)
+
+		details = append(details, &ledgerdetailmgrpb.DetailReq{
+			AppID:      &order.AppID,
+			UserID:     &comm.UserID,
+			CoinTypeID: &good.CoinTypeID,
+			IOType:     &ioType,
+			IOSubType:  &ioSubType,
+			Amount:     &comm.Amount,
+			IOExtra:    &ioExtra,
+		})
+	}
+
+	err = ledgermwcli.BookKeeping(ctx, details)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func processOrders(ctx context.Context, conds *ordermwpb.Conds, offset, limit int32) (bool, error) {
+	orders, _, err := ordercli.GetOrders(ctx, conds, offset, limit)
+	if err != nil {
+		return false, err
+	}
+	if len(orders) == 0 {
+		return true, nil
+	}
+
+	for _, order := range orders {
+		if err := processOrder(ctx, order); err != nil {
+			logger.Sugar().Errorw(
+				"processOrders",
+				"AppID", order.AppID,
+				"UserID", order.UserID,
+				"OrderID", order.ID,
+				"Error", err,
+			)
+			return true, err
+		}
+	}
+
+	return false, nil
+}
+
 func UpdateArchivement(ctx context.Context, appID, userID string) error {
 	offset := int32(0)
-	limit := int32(1000) //nolint // Mock variable now
+	const limit = int32(100)
 
 	for {
-		orders, _, err := ordercli.GetOrders(ctx, &ordermwpb.Conds{
-			AppID: &npool.StringVal{
-				Op:    cruder.EQ,
-				Value: appID,
-			},
-			UserID: &npool.StringVal{
-				Op:    cruder.EQ,
-				Value: userID,
+		finish, err := processOrders(ctx, &ordermwpb.Conds{
+			AppID:  &npool.StringVal{Op: cruder.EQ, Value: appID},
+			UserID: &npool.StringVal{Op: cruder.EQ, Value: userID},
+			Type:   &npool.Uint32Val{Op: cruder.EQ, Value: uint32(ordermgrpb.OrderType_Normal)},
+			States: &npool.Uint32SliceVal{
+				Op: cruder.IN,
+				Value: []uint32{
+					uint32(ordermgrpb.OrderState_Paid),
+					uint32(ordermgrpb.OrderState_InService),
+					uint32(ordermgrpb.OrderState_Expired),
+				},
 			},
 		}, offset, limit)
 		if err != nil {
+			logger.Sugar().Errorw(
+				"UpdateArchivement",
+				"AppID", appID,
+				"UserID", userID,
+				"Error", err,
+			)
 			return err
 		}
-		if len(orders) == 0 {
-			return nil
+		if finish {
+			break
 		}
 
-		goodIDs := []string{}
-		for _, ord := range orders {
-			goodIDs = append(goodIDs, ord.GoodID)
-		}
-
-		goods, _, err := goodmwcli.GetGoods(ctx, &goodmgrpb.Conds{
-			AppID: &npool.StringVal{
-				Op:    cruder.EQ,
-				Value: appID,
-			},
-			GoodIDs: &npool.StringSliceVal{
-				Op:    cruder.IN,
-				Value: goodIDs,
-			},
-		}, int32(0), int32(len(goodIDs)))
-		if err != nil {
-			return err
-		}
-
-		goodMap := map[string]*goodmwpb.Good{}
-		for _, g := range goods {
-			goodMap[g.GoodID] = g
-		}
-
-		for _, order := range orders {
-			good, ok := goodMap[order.GoodID]
-			if !ok {
-				continue
-			}
-
-			price, err := decimal.NewFromString(good.Price)
-			if err != nil {
-				return err
-			}
-
-			untis, err := decimal.NewFromString(order.Units)
-			if err != nil {
-				return err
-			}
-			goodValue := price.Mul(untis).String()
-
-			paymentAmount, err := decimal.NewFromString(order.PaymentAmount)
-			if err != nil {
-				return err
-			}
-
-			payWithBalance, err := decimal.NewFromString(order.PayWithBalanceAmount)
-			if err != nil {
-				return err
-			}
-
-			paymentAmountS := paymentAmount.Add(payWithBalance).String()
-
-			comms, err := accountingmwcli.Accounting(ctx, &accountingmwpb.AccountingRequest{
-				AppID:                  order.AppID,
-				UserID:                 order.UserID,
-				GoodID:                 order.GoodID,
-				OrderID:                order.ID,
-				PaymentID:              order.PaymentID,
-				CoinTypeID:             good.CoinTypeID,
-				PaymentCoinTypeID:      order.PaymentCoinTypeID,
-				PaymentCoinUSDCurrency: order.PaymentCoinUSDCurrency,
-				Units:                  order.Units,
-				PaymentAmount:          paymentAmountS,
-				GoodValue:              goodValue,
-				SettleType:             good.CommissionSettleType,
-				HasCommission:          order.OrderType == ordermgrpb.OrderType_Normal,
-			})
-			if err != nil {
-				logger.Sugar().Warnw("UpdateArchivement", "OrderID", order.ID, "error", err)
-				continue
-			}
-
-			if len(comms) == 0 {
-				continue
-			}
-
-			details := []*ledgerdetailmgrpb.DetailReq{}
-			ioType := ledgerdetailmgrpb.IOType_Incoming
-			ioSubType := ledgerdetailmgrpb.IOSubType_Commission
-
-			for _, comm := range comms {
-				ioExtra := fmt.Sprintf(
-					`{"PaymentID":"%v","OrderID":"%v","DirectContributorID":"%v","OrderUserID":"%v"}`,
-					order.PaymentID,
-					order.ID,
-					comm.GetDirectContributorUserID(),
-					order.UserID,
-				)
-
-				details = append(details, &ledgerdetailmgrpb.DetailReq{
-					AppID:      &order.AppID,
-					UserID:     &comm.UserID,
-					CoinTypeID: &good.CoinTypeID,
-					IOType:     &ioType,
-					IOSubType:  &ioSubType,
-					Amount:     &comm.Amount,
-					IOExtra:    &ioExtra,
-				})
-			}
-
-			err = ledgermwcli.BookKeeping(ctx, details)
-			if err != nil {
-				return err
-			}
-		}
-
-		offset += int32(len(orders))
+		offset += limit
 	}
 
 	return nil
