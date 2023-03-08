@@ -27,7 +27,7 @@ import (
 	"github.com/NpoolPlatform/message/npool"
 )
 
-func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error {
+func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolint
 	good, err := goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
 		AppID:  &npool.StringVal{Op: cruder.EQ, Value: order.AppID},
 		GoodID: &npool.StringVal{Op: cruder.EQ, Value: order.GoodID},
