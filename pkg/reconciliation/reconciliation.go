@@ -53,9 +53,23 @@ func processOrder(ctx context.Context, order *ordermwpb.Order) error {
 	if err != nil {
 		return err
 	}
-	goodValue := price.Mul(untis).String()
 
+	goodValue := price.Mul(untis).String()
 	paymentAmountS := paymentAmount.Add(payWithBalance).String()
+
+	logger.Sugar().Infow(
+		"processOrder",
+		"AppID", order.AppID,
+		"UserID", order.UserID,
+		"OrderID", order.ID,
+		"PaymentAmount", paymentAmountS,
+		"GoodValue", goodValue,
+		"SettleType", good.CommissionSettleType,
+		"CoinTypeID", good.CoinTypeID,
+		"PaymentCoinTypeID", order.PaymentCoinTypeID,
+		"USDCurrency", order.PaymentCoinUSDCurrency,
+	)
+
 	comms, err := accountingmwcli.Accounting(ctx, &accountingmwpb.AccountingRequest{
 		AppID:                  order.AppID,
 		UserID:                 order.UserID,
@@ -83,7 +97,27 @@ func processOrder(ctx context.Context, order *ordermwpb.Order) error {
 	ioType := ledgerdetailmgrpb.IOType_Incoming
 	ioSubType := ledgerdetailmgrpb.IOSubType_Commission
 
+	logger.Sugar().Infow(
+		"processOrder",
+		"AppID", order.AppID,
+		"UserID", order.UserID,
+		"OrderID", order.ID,
+		"PaymentAmount", paymentAmountS,
+		"GoodValue", goodValue,
+		"SettleType", good.CommissionSettleType,
+		"CoinTypeID", good.CoinTypeID,
+		"PaymentCoinTypeID", order.PaymentCoinTypeID,
+	)
+
 	for _, comm := range comms {
+		logger.Sugar().Infow(
+			"processOrder",
+			"AppID", comm.AppID,
+			"UserID", comm.UserID,
+			"Amount", comm.Amount,
+			"DirectContributorUserID", comm.DirectContributorUserID,
+		)
+
 		ioExtra := fmt.Sprintf(
 			`{"PaymentID":"%v","OrderID":"%v","DirectContributorID":"%v","OrderUserID":"%v"}`,
 			order.PaymentID,
@@ -116,6 +150,12 @@ func processOrders(ctx context.Context, conds *ordermwpb.Conds, offset, limit in
 	if err != nil {
 		return false, err
 	}
+
+	logger.Sugar().Infow(
+		"processOrders",
+		"Orders", len(orders),
+	)
+
 	if len(orders) == 0 {
 		return true, nil
 	}
@@ -136,7 +176,14 @@ func processOrders(ctx context.Context, conds *ordermwpb.Conds, offset, limit in
 	return false, nil
 }
 
-func UpdateArchivement(ctx context.Context, appID, userID string) error {
+func processTypedOrders(ctx context.Context, appID, userID string, orderType ordermgrpb.OrderType) error {
+	logger.Sugar().Infow(
+		"processTypedOrders",
+		"AppID", appID,
+		"UserID", userID,
+		"OrderType", orderType,
+	)
+
 	offset := int32(0)
 	const limit = int32(100)
 
@@ -144,7 +191,7 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 		finish, err := processOrders(ctx, &ordermwpb.Conds{
 			AppID:  &npool.StringVal{Op: cruder.EQ, Value: appID},
 			UserID: &npool.StringVal{Op: cruder.EQ, Value: userID},
-			Type:   &npool.Uint32Val{Op: cruder.EQ, Value: uint32(ordermgrpb.OrderType_Normal)},
+			Type:   &npool.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
 			States: &npool.Uint32SliceVal{
 				Op: cruder.IN,
 				Value: []uint32{
@@ -159,6 +206,7 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 				"UpdateArchivement",
 				"AppID", appID,
 				"UserID", userID,
+				"Type", orderType,
 				"Error", err,
 			)
 			return err
@@ -171,4 +219,11 @@ func UpdateArchivement(ctx context.Context, appID, userID string) error {
 	}
 
 	return nil
+}
+
+func UpdateArchivement(ctx context.Context, appID, userID string) error {
+	if err := processTypedOrders(ctx, appID, userID, ordermgrpb.OrderType_Normal); err != nil {
+		return err
+	}
+	return processTypedOrders(ctx, appID, userID, ordermgrpb.OrderType_Offline)
 }
