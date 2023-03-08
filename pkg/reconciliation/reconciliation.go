@@ -143,7 +143,7 @@ func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolin
 		details = append(details, &ledgerdetailmgrpb.DetailReq{
 			AppID:      &order.AppID,
 			UserID:     &comm.UserID,
-			CoinTypeID: &good.CoinTypeID,
+			CoinTypeID: &order.PaymentCoinTypeID,
 			IOType:     &ioType,
 			IOSubType:  &ioSubType,
 			Amount:     &comm.Amount,
