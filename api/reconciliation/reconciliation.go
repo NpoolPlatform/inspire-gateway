@@ -21,7 +21,7 @@ func (s *Server) UpdateArchivement(ctx context.Context, in *npool.UpdateArchivem
 		return &npool.UpdateArchivementResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	if err := reconciliation1.UpdateArchivement(ctx, in.GetAppID(), in.GetUserID()); err != nil {
+	if err := reconciliation1.Reconcile(ctx, in.GetAppID(), in.GetUserID()); err != nil {
 		return &npool.UpdateArchivementResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
