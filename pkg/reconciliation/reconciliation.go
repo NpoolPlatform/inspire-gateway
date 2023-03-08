@@ -86,6 +86,18 @@ func processOrder(ctx context.Context, order *ordermwpb.Order) error {
 		HasCommission:          order.OrderType == ordermgrpb.OrderType_Normal,
 	})
 	if err != nil {
+		logger.Sugar().Infow(
+			"processOrder",
+			"AppID", order.AppID,
+			"UserID", order.UserID,
+			"OrderID", order.ID,
+			"PaymentAmount", paymentAmountS,
+			"GoodValue", goodValue,
+			"SettleType", good.CommissionSettleType,
+			"CoinTypeID", good.CoinTypeID,
+			"PaymentCoinTypeID", order.PaymentCoinTypeID,
+			"Error", err,
+		)
 		return err
 	}
 
@@ -116,6 +128,8 @@ func processOrder(ctx context.Context, order *ordermwpb.Order) error {
 			"UserID", comm.UserID,
 			"Amount", comm.Amount,
 			"DirectContributorUserID", comm.DirectContributorUserID,
+			"OrderID", order.ID,
+			"OrderUserID", order.UserID,
 		)
 
 		ioExtra := fmt.Sprintf(
@@ -139,6 +153,18 @@ func processOrder(ctx context.Context, order *ordermwpb.Order) error {
 
 	err = ledgermwcli.BookKeeping(ctx, details)
 	if err != nil {
+		logger.Sugar().Infow(
+			"processOrder",
+			"AppID", order.AppID,
+			"UserID", order.UserID,
+			"OrderID", order.ID,
+			"PaymentAmount", paymentAmountS,
+			"GoodValue", goodValue,
+			"SettleType", good.CommissionSettleType,
+			"CoinTypeID", good.CoinTypeID,
+			"PaymentCoinTypeID", order.PaymentCoinTypeID,
+			"Error", err,
+		)
 		return err
 	}
 
