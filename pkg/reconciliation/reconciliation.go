@@ -27,7 +27,7 @@ import (
 	"github.com/NpoolPlatform/message/npool"
 )
 
-func processOrder(ctx context.Context, order *ordermwpb.Order) error {
+func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error {
 	good, err := goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
 		AppID:  &npool.StringVal{Op: cruder.EQ, Value: order.AppID},
 		GoodID: &npool.StringVal{Op: cruder.EQ, Value: order.GoodID},
@@ -58,7 +58,7 @@ func processOrder(ctx context.Context, order *ordermwpb.Order) error {
 	paymentAmountS := paymentAmount.Add(payWithBalance).String()
 
 	logger.Sugar().Infow(
-		"processOrder",
+		"reconcileOrder",
 		"AppID", order.AppID,
 		"UserID", order.UserID,
 		"OrderID", order.ID,
@@ -87,7 +87,7 @@ func processOrder(ctx context.Context, order *ordermwpb.Order) error {
 	})
 	if err != nil {
 		logger.Sugar().Infow(
-			"processOrder",
+			"reconcileOrder",
 			"AppID", order.AppID,
 			"UserID", order.UserID,
 			"OrderID", order.ID,
@@ -110,7 +110,7 @@ func processOrder(ctx context.Context, order *ordermwpb.Order) error {
 	ioSubType := ledgerdetailmgrpb.IOSubType_Commission
 
 	logger.Sugar().Infow(
-		"processOrder",
+		"reconcileOrder",
 		"AppID", order.AppID,
 		"UserID", order.UserID,
 		"OrderID", order.ID,
@@ -123,7 +123,7 @@ func processOrder(ctx context.Context, order *ordermwpb.Order) error {
 
 	for _, comm := range comms {
 		logger.Sugar().Infow(
-			"processOrder",
+			"reconcileOrder",
 			"AppID", comm.AppID,
 			"UserID", comm.UserID,
 			"Amount", comm.Amount,
@@ -154,7 +154,7 @@ func processOrder(ctx context.Context, order *ordermwpb.Order) error {
 	err = ledgermwcli.BookKeeping(ctx, details)
 	if err != nil {
 		logger.Sugar().Infow(
-			"processOrder",
+			"reconcileOrder",
 			"AppID", order.AppID,
 			"UserID", order.UserID,
 			"OrderID", order.ID,
@@ -171,14 +171,14 @@ func processOrder(ctx context.Context, order *ordermwpb.Order) error {
 	return nil
 }
 
-func processOrders(ctx context.Context, conds *ordermwpb.Conds, offset, limit int32) (bool, error) {
+func reconcileOrders(ctx context.Context, conds *ordermwpb.Conds, offset, limit int32) (bool, error) {
 	orders, _, err := ordercli.GetOrders(ctx, conds, offset, limit)
 	if err != nil {
 		return false, err
 	}
 
 	logger.Sugar().Infow(
-		"processOrders",
+		"reconcileOrders",
 		"Orders", len(orders),
 	)
 
@@ -187,9 +187,9 @@ func processOrders(ctx context.Context, conds *ordermwpb.Conds, offset, limit in
 	}
 
 	for _, order := range orders {
-		if err := processOrder(ctx, order); err != nil {
+		if err := reconcileOrder(ctx, order); err != nil {
 			logger.Sugar().Errorw(
-				"processOrders",
+				"reconcileOrders",
 				"AppID", order.AppID,
 				"UserID", order.UserID,
 				"OrderID", order.ID,
@@ -202,9 +202,9 @@ func processOrders(ctx context.Context, conds *ordermwpb.Conds, offset, limit in
 	return false, nil
 }
 
-func processTypedOrders(ctx context.Context, appID, userID string, orderType ordermgrpb.OrderType) error {
+func reconcileTypedOrders(ctx context.Context, appID, userID string, orderType ordermgrpb.OrderType) error {
 	logger.Sugar().Infow(
-		"processTypedOrders",
+		"reconcileTypedOrders",
 		"AppID", appID,
 		"UserID", userID,
 		"OrderType", orderType,
@@ -214,7 +214,7 @@ func processTypedOrders(ctx context.Context, appID, userID string, orderType ord
 	const limit = int32(100)
 
 	for {
-		finish, err := processOrders(ctx, &ordermwpb.Conds{
+		finish, err := reconcileOrders(ctx, &ordermwpb.Conds{
 			AppID:  &npool.StringVal{Op: cruder.EQ, Value: appID},
 			UserID: &npool.StringVal{Op: cruder.EQ, Value: userID},
 			Type:   &npool.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
@@ -229,7 +229,7 @@ func processTypedOrders(ctx context.Context, appID, userID string, orderType ord
 		}, offset, limit)
 		if err != nil {
 			logger.Sugar().Errorw(
-				"UpdateArchivement",
+				"reconcileTypeOrders",
 				"AppID", appID,
 				"UserID", userID,
 				"Type", orderType,
@@ -247,9 +247,9 @@ func processTypedOrders(ctx context.Context, appID, userID string, orderType ord
 	return nil
 }
 
-func UpdateArchivement(ctx context.Context, appID, userID string) error {
-	if err := processTypedOrders(ctx, appID, userID, ordermgrpb.OrderType_Normal); err != nil {
+func Reconcile(ctx context.Context, appID, userID string) error {
+	if err := reconcileTypedOrders(ctx, appID, userID, ordermgrpb.OrderType_Normal); err != nil {
 		return err
 	}
-	return processTypedOrders(ctx, appID, userID, ordermgrpb.OrderType_Offline)
+	return reconcileTypedOrders(ctx, appID, userID, ordermgrpb.OrderType_Offline)
 }
