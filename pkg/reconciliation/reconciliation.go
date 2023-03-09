@@ -84,6 +84,7 @@ func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolin
 		GoodValue:              goodValue,
 		SettleType:             good.CommissionSettleType,
 		HasCommission:          order.OrderType == ordermgrpb.OrderType_Normal,
+		OrderCreatedAt:         order.CreatedAt,
 	})
 	if err != nil {
 		logger.Sugar().Infow(
