@@ -1,4 +1,4 @@
-package reconciliation
+package reconcile
 
 import (
 	"context"
@@ -158,6 +158,7 @@ func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolin
 			"reconcileOrder",
 			"AppID", order.AppID,
 			"UserID", order.UserID,
+			"GoodID", order.GoodID,
 			"OrderID", order.ID,
 			"PaymentAmount", paymentAmountS,
 			"GoodValue", goodValue,
@@ -193,6 +194,7 @@ func reconcileOrders(ctx context.Context, conds *ordermwpb.Conds, offset, limit 
 				"reconcileOrders",
 				"AppID", order.AppID,
 				"UserID", order.UserID,
+				"GoodID", order.GoodID,
 				"OrderID", order.ID,
 				"Error", err,
 			)
@@ -203,11 +205,12 @@ func reconcileOrders(ctx context.Context, conds *ordermwpb.Conds, offset, limit 
 	return false, nil
 }
 
-func reconcileTypedOrders(ctx context.Context, appID, userID string, orderType ordermgrpb.OrderType) error {
+func reconcileTypedOrders(ctx context.Context, appID, userID, goodID string, orderType ordermgrpb.OrderType) error {
 	logger.Sugar().Infow(
 		"reconcileTypedOrders",
 		"AppID", appID,
 		"UserID", userID,
+		"GoodID", goodID,
 		"OrderType", orderType,
 	)
 
@@ -218,6 +221,7 @@ func reconcileTypedOrders(ctx context.Context, appID, userID string, orderType o
 		finish, err := reconcileOrders(ctx, &ordermwpb.Conds{
 			AppID:  &npool.StringVal{Op: cruder.EQ, Value: appID},
 			UserID: &npool.StringVal{Op: cruder.EQ, Value: userID},
+			GoodID: &npool.StringVal{Op: cruder.EQ, Value: goodID},
 			Type:   &npool.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
 			States: &npool.Uint32SliceVal{
 				Op: cruder.IN,
@@ -248,9 +252,9 @@ func reconcileTypedOrders(ctx context.Context, appID, userID string, orderType o
 	return nil
 }
 
-func Reconcile(ctx context.Context, appID, userID string) error {
-	if err := reconcileTypedOrders(ctx, appID, userID, ordermgrpb.OrderType_Normal); err != nil {
+func Reconcile(ctx context.Context, appID, userID, goodID string) error {
+	if err := reconcileTypedOrders(ctx, appID, userID, goodID, ordermgrpb.OrderType_Normal); err != nil {
 		return err
 	}
-	return reconcileTypedOrders(ctx, appID, userID, ordermgrpb.OrderType_Offline)
+	return reconcileTypedOrders(ctx, appID, userID, goodID, ordermgrpb.OrderType_Offline)
 }

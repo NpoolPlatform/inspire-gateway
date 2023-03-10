@@ -12,7 +12,7 @@ import (
 	"github.com/NpoolPlatform/inspire-gateway/api/event"
 	"github.com/NpoolPlatform/inspire-gateway/api/invitation/invitationcode"
 	"github.com/NpoolPlatform/inspire-gateway/api/invitation/registration"
-	"github.com/NpoolPlatform/inspire-gateway/api/reconciliation"
+	"github.com/NpoolPlatform/inspire-gateway/api/reconcile"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -26,7 +26,7 @@ func Register(server grpc.ServiceRegistrar) {
 	inspire.RegisterGatewayServer(server, &Server{})
 	archivement.Register(server)
 	commission.Register(server)
-	reconciliation.Register(server)
+	reconcile.Register(server)
 	coupon.Register(server)
 	allocated.Register(server)
 	invitationcode.Register(server)
@@ -44,7 +44,7 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 	if err := commission.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
-	if err := reconciliation.RegisterGateway(mux, endpoint, opts); err != nil {
+	if err := reconcile.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	if err := coupon.RegisterGateway(mux, endpoint, opts); err != nil {
