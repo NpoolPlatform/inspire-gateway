@@ -5,12 +5,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/NpoolPlatform/go-service-framework/pkg/redis"
-	"github.com/NpoolPlatform/inspire-manager/pkg/db"
-	"github.com/NpoolPlatform/inspire-manager/pkg/db/ent"
-	archivementdetailent "github.com/NpoolPlatform/inspire-manager/pkg/db/ent/archivementdetail"
-	archivementgeneralent "github.com/NpoolPlatform/inspire-manager/pkg/db/ent/archivementgeneral"
-	"github.com/shopspring/decimal"
 	"time"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
@@ -78,84 +72,5 @@ func open(hostname string) (conn *sql.DB, err error) {
 }
 
 func Migrate(ctx context.Context) error {
-	var err error
-
-	if err := db.Init(); err != nil {
-		return err
-	}
-	logger.Sugar().Infow("Migrate order", "Start", "...")
-	defer func() {
-		_ = redis.Unlock(lockKey())
-		logger.Sugar().Infow("Migrate order", "Done", "...", "error", err)
-	}()
-
-	err = redis.TryLock(lockKey(), 0)
-	if err != nil {
-		return err
-	}
-
-	return db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
-		infos, err := tx.
-			ArchivementDetail.
-			Query().
-			Select(
-				archivementdetailent.FieldID,
-				archivementdetailent.FieldUnits,
-			).
-			All(_ctx)
-		if err != nil {
-			return err
-		}
-
-		for _, info := range infos {
-			units := decimal.NewFromInt(0)
-			if info.Units != 0 {
-				units = decimal.NewFromInt32(int32(info.Units))
-			}
-
-			_, err = tx.
-				ArchivementDetail.
-				UpdateOneID(info.ID).
-				SetUnitsV1(units).
-				Save(_ctx)
-			if err != nil {
-				return err
-			}
-		}
-		infos1, err := tx.
-			ArchivementGeneral.
-			Query().
-			Select(
-				archivementgeneralent.FieldID,
-				archivementgeneralent.FieldTotalUnits,
-				archivementgeneralent.FieldSelfUnits,
-			).
-			All(_ctx)
-		if err != nil {
-			return err
-		}
-
-		for _, info := range infos1 {
-			u := tx.
-				ArchivementGeneral.
-				UpdateOneID(info.ID)
-
-			totalUnits := decimal.NewFromInt(0)
-			if info.TotalUnits != 0 {
-				totalUnits = decimal.NewFromInt32(int32(info.TotalUnits))
-			}
-			u.SetTotalUnitsV1(totalUnits)
-
-			selfUnits := decimal.NewFromInt(0)
-			if info.SelfUnits != 0 {
-				selfUnits = decimal.NewFromInt32(int32(info.SelfUnits))
-			}
-			u.SetSelfUnitsV1(selfUnits)
-			_, err = u.Save(_ctx)
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	})
+	return nil
 }
