@@ -88,6 +88,10 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          - path: /api/inspire/v1/reconcile
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
           - path: /api/inspire/v1/get/registrationinvitations
             backend:
               serviceName: inspire-gateway
