@@ -17,7 +17,7 @@ func (s *Server) Reconcile(ctx context.Context, in *npool.ReconcileRequest) (*np
 		return &npool.ReconcileResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	if _, err := uuid.Parse(in.GetUserID()); err != nil {
+	if _, err := uuid.Parse(in.GetTargetUserID()); err != nil {
 		return &npool.ReconcileResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
@@ -25,7 +25,7 @@ func (s *Server) Reconcile(ctx context.Context, in *npool.ReconcileRequest) (*np
 		return &npool.ReconcileResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	if err := reconcile1.Reconcile(ctx, in.GetAppID(), in.GetUserID(), in.GetGoodID()); err != nil {
+	if err := reconcile1.Reconcile(ctx, in.GetAppID(), in.GetTargetUserID(), in.GetGoodID()); err != nil {
 		return &npool.ReconcileResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
