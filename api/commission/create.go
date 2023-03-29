@@ -37,6 +37,8 @@ func (s *Server) createCommission(ctx context.Context, in *npool.CreateCommissio
 
 	switch in.GetSettleType() {
 	case commmgrpb.SettleType_GoodOrderPercent:
+		fallthrough //nolint
+	case commmgrpb.SettleType_GoodOrderValuePercent:
 		if in.GoodID != nil {
 			if _, err := uuid.Parse(in.GetGoodID()); err != nil {
 				return &npool.CreateCommissionResponse{}, status.Error(codes.InvalidArgument, err.Error())
@@ -105,6 +107,7 @@ func (s *Server) CreateCommission(ctx context.Context, in *npool.CreateCommissio
 			Value: in.GetGoodID(),
 		}
 	}
+	// Only users with the same type of commission can set commissions for subordinate users
 	comm, err := commmwcli.GetCommissionOnly(ctx, conds)
 	if err != nil {
 		return &npool.CreateCommissionResponse{}, status.Error(codes.Internal, err.Error())
@@ -120,6 +123,8 @@ func (s *Server) CreateCommission(ctx context.Context, in *npool.CreateCommissio
 
 	switch in.GetSettleType() {
 	case commmgrpb.SettleType_GoodOrderPercent:
+		fallthrough //nolint
+	case commmgrpb.SettleType_GoodOrderValuePercent:
 		percent, err := decimal.NewFromString(comm.GetPercent())
 		if err != nil {
 			return nil, err

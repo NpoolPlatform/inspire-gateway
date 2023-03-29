@@ -41,6 +41,8 @@ func UpdateCommission(
 	if value != nil {
 		switch info.SettleType {
 		case commmgrpb.SettleType_GoodOrderPercent:
+			fallthrough //nolint
+		case commmgrpb.SettleType_GoodOrderValuePercent:
 			req.Percent = value
 		case commmgrpb.SettleType_LimitedOrderPercent:
 			fallthrough //nolint
