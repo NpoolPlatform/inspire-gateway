@@ -168,3 +168,5 @@ spec:
       http: *http_rules
     - host: api.jh-testing.npool.top
       http: *http_rules
+    - host: api.japan-procyon-production.npool.top
+      http: *http_rules
