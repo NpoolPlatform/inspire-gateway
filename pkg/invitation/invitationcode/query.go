@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/invitation/invitationcode"
-
-	invitationcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
-	invitationcodemgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
-
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	invitationcodemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/invitationcode"
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/invitation/invitationcode"
+	invitationcodemgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
 )
 
 func GetInvitationCode(ctx context.Context, id string) (*npool.InvitationCode, error) {
@@ -62,7 +62,9 @@ func GetInvitationCodes(
 		userIDs = append(userIDs, info.UserID)
 	}
 
-	users, _, err := usermwcli.GetManyUsers(ctx, userIDs)
+	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
+		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
+	}, 0, int32(len(userIDs)))
 	if err != nil {
 		return nil, 0, err
 	}

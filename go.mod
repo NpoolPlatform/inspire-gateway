@@ -3,17 +3,17 @@ module github.com/NpoolPlatform/inspire-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230301030209-7b107731185b
-	github.com/NpoolPlatform/basal-middleware v0.0.0-20230221094657-688f81366495
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230424050801-787a8feac17c
+	github.com/NpoolPlatform/basal-middleware v0.0.0-20230421085555-165e4722a9ba
 	github.com/NpoolPlatform/chain-middleware v0.0.0-20230216025740-e05d9f4b4fe0
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20230102062414-c71643aee0bd
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20230412082654-0f8f9e7ae58d
 	github.com/NpoolPlatform/good-middleware v0.0.0-20230329083545-39324dec7ff3
 	github.com/NpoolPlatform/inspire-manager v0.0.0-20230329073303-0e191fdeaa96
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230329092633-95eba020822a
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230329064500-da8e14fda821
+	github.com/NpoolPlatform/message v0.0.0-20230424085554-64fa8188328c
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687
 	github.com/NpoolPlatform/order-middleware v0.0.0-20230301031035-f35cd4b89dc7
 	github.com/NpoolPlatform/third-middleware v0.0.0-20230221094357-40a170d76e2b
@@ -25,7 +25,7 @@ require (
 	github.com/urfave/cli/v2 v2.23.0
 	go.opentelemetry.io/otel v1.10.0
 	go.opentelemetry.io/otel/trace v1.10.0
-	google.golang.org/grpc v1.53.0
+	google.golang.org/grpc v1.54.0
 	google.golang.org/protobuf v1.28.1
 )
 
@@ -63,17 +63,17 @@ require (
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml v1.9.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.0 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/prometheus/client_golang v1.12.1 // indirect
-	github.com/prometheus/client_model v0.2.0 // indirect
-	github.com/prometheus/common v0.32.1 // indirect
-	github.com/prometheus/procfs v0.7.3 // indirect
+	github.com/prometheus/client_golang v1.14.0 // indirect
+	github.com/prometheus/client_model v0.3.0 // indirect
+	github.com/prometheus/common v0.39.0 // indirect
+	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/spf13/afero v1.8.2 // indirect
 	github.com/spf13/cast v1.4.1 // indirect
@@ -89,9 +89,9 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/ratelimit v0.2.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
-	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
-	golang.org/x/text v0.6.0 // indirect
+	golang.org/x/net v0.8.0 // indirect
+	golang.org/x/sys v0.6.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/genproto v0.0.0-20230110181048-76db0878b65f // indirect
 	gopkg.in/ini.v1 v1.66.4 // indirect
