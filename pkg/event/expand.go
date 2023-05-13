@@ -18,6 +18,7 @@ import (
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	uuid1 "github.com/NpoolPlatform/go-service-framework/pkg/const/uuid"
 )
@@ -113,7 +114,9 @@ func expandMany(ctx context.Context, infos []*mgrpb.Event) ([]*npool.Event, erro
 		}
 	}
 
-	apps, _, err := appmwcli.GetManyApps(ctx, appIDs)
+	apps, _, err := appmwcli.GetApps(ctx, &appmwpb.Conds{
+		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: appIDs},
+	}, 0, int32(len(appIDs)))
 	if err != nil {
 		return nil, err
 	}

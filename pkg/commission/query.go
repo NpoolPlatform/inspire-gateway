@@ -23,6 +23,7 @@ import (
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 )
 
 func GetCommission(ctx context.Context, id string, settleType mgrpb.SettleType) (*npool.Commission, error) {
@@ -120,7 +121,9 @@ func GetCommissions(ctx context.Context, conds *commmwpb.Conds, offset, limit in
 		userIDs = append(userIDs, info.UserID)
 	}
 
-	users, _, err := usermwcli.GetManyUsers(ctx, userIDs)
+	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
+		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
+	}, 0, int32(len(userIDs)))
 	if err != nil {
 		return nil, 0, err
 	}

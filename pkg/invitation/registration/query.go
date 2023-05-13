@@ -4,6 +4,8 @@ import (
 	"context"
 
 	regmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/invitation/registration"
 	regmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
 
@@ -19,7 +21,9 @@ func GetRegistration(ctx context.Context, id string) (*npool.Registration, error
 
 	userIDs := []string{info.InviterID, info.InviteeID}
 
-	users, _, err := usermwcli.GetManyUsers(ctx, userIDs)
+	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
+		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
+	}, 0, int32(len(userIDs)))
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +67,9 @@ func GetRegistrations(ctx context.Context, conds *regmgrpb.Conds, offset, limit 
 		userIDs = append(userIDs, info.InviterID, info.InviteeID)
 	}
 
-	users, _, err := usermwcli.GetManyUsers(ctx, userIDs)
+	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
+		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
+	}, 0, int32(len(userIDs)))
 	if err != nil {
 		return nil, 0, err
 	}

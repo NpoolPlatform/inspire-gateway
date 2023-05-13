@@ -5,8 +5,8 @@ import (
 
 	"github.com/shopspring/decimal"
 
-	usercli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	userpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
 	archivementdetailmgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/archivement/detail"
 	archivementgeneralmgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/archivement/general"
@@ -31,6 +31,7 @@ import (
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
 	uuid1 "github.com/NpoolPlatform/go-service-framework/pkg/const/uuid"
 
@@ -195,12 +196,14 @@ func getUserArchivements(
 		coinMap[coin.ID] = coin
 	}
 
-	users, n, err := usercli.GetManyUsers(ctx, uids)
+	users, n, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
+		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: uids},
+	}, 0, int32(len(uids)))
 	if err != nil {
 		return nil, 0, err
 	}
 
-	userMap := map[string]*userpb.User{}
+	userMap := map[string]*usermwpb.User{}
 	for _, user := range users {
 		userMap[user.ID] = user
 	}
