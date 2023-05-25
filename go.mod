@@ -9,8 +9,8 @@ require (
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230412082654-0f8f9e7ae58d
 	github.com/NpoolPlatform/good-middleware v0.0.0-20230329083545-39324dec7ff3
-	github.com/NpoolPlatform/inspire-manager v0.0.0-20230329073303-0e191fdeaa96
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230329092633-95eba020822a
+	github.com/NpoolPlatform/inspire-manager v0.0.0-20230412114817-b7ac837bf451
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230525141811-801dae1ea0cd
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
 	github.com/NpoolPlatform/message v0.0.0-20230513100359-465cbc33723b
@@ -30,7 +30,6 @@ require (
 )
 
 require (
-	cloud.google.com/go/compute v1.14.0 // indirect
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
 	github.com/andres-erbsen/clock v0.0.0-20160526145045-9e14626cd129 // indirect
 	github.com/armon/go-metrics v0.3.10 // indirect

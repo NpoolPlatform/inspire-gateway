@@ -74,7 +74,7 @@ func (s *Server) CloneCommissions(ctx context.Context, in *npool.CloneCommission
 		return &npool.CloneCommissionsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = comm1.CloneCommissions(ctx, in.GetAppID(), in.GetFromGoodID(), in.GetToGoodID(), in.GetValue())
+	err = comm1.CloneCommissions(ctx, in.GetAppID(), in.GetFromGoodID(), in.GetToGoodID(), in.GetValue(), in.GetSettleType())
 	if err != nil {
 		return &npool.CloneCommissionsResponse{}, status.Error(codes.Internal, err.Error())
 	}
@@ -94,7 +94,7 @@ func (s *Server) CloneAppCommissions(
 		return &npool.CloneAppCommissionsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err = comm1.CloneCommissions(ctx, in.GetTargetAppID(), in.GetFromGoodID(), in.GetToGoodID(), in.GetValue())
+	err = comm1.CloneCommissions(ctx, in.GetTargetAppID(), in.GetFromGoodID(), in.GetToGoodID(), in.GetValue(), in.GetSettleType())
 	if err != nil {
 		return &npool.CloneAppCommissionsResponse{}, status.Error(codes.Internal, err.Error())
 	}
