@@ -18,8 +18,8 @@ import (
 	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
 	goodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
 
-	coinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/appcoin"
-	coinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/appcoin"
+	coinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
+	coinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
@@ -82,11 +82,11 @@ func GetCommission(ctx context.Context, id string, settleType mgrpb.SettleType) 
 		}
 
 		coin, err := coinmwcli.GetCoinOnly(ctx, &coinmwpb.Conds{
-			AppID: &commonpb.StringVal{
+			AppID: &basetypes.StringVal{
 				Op:    cruder.EQ,
 				Value: info.AppID,
 			},
-			CoinTypeID: &commonpb.StringVal{
+			CoinTypeID: &basetypes.StringVal{
 				Op:    cruder.EQ,
 				Value: good.CoinTypeID,
 			},
@@ -162,8 +162,11 @@ func GetCommissions(ctx context.Context, conds *commmwpb.Conds, offset, limit in
 	}
 
 	coins, _, err := coinmwcli.GetCoins(ctx, &coinmwpb.Conds{
-		AppID: conds.AppID,
-		CoinTypeIDs: &commonpb.StringSliceVal{
+		AppID: &basetypes.StringVal{
+			Op:    conds.GetAppID().GetOp(),
+			Value: conds.GetAppID().GetValue(),
+		},
+		CoinTypeIDs: &basetypes.StringSliceVal{
 			Op:    cruder.IN,
 			Value: coinTypeIDs,
 		},

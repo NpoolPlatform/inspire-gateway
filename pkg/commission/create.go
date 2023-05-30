@@ -12,8 +12,8 @@ import (
 	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
 	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 
-	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/appcoin"
-	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/appcoin"
+	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
+	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 
@@ -74,8 +74,8 @@ func CreateCommission(
 		}
 
 		coin, err := appcoinmwcli.GetCoinOnly(ctx, &appcoinmwpb.Conds{
-			AppID:      &commonpb.StringVal{Op: cruder.EQ, Value: appID},
-			CoinTypeID: &commonpb.StringVal{Op: cruder.EQ, Value: good.CoinTypeID},
+			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: appID},
+			CoinTypeID: &basetypes.StringVal{Op: cruder.EQ, Value: good.CoinTypeID},
 		})
 		if err != nil {
 			return nil, err
