@@ -49,8 +49,8 @@ github.com/NpoolPlatform/appuser-middleware v0.0.0-20230513100509-b19f356ebd4b h
 github.com/NpoolPlatform/appuser-middleware v0.0.0-20230513100509-b19f356ebd4b/go.mod h1:BzT48sEK4KSO6Gy8VJQa5rOuO5JpXib/cmLGHWt4Aqc=
 github.com/NpoolPlatform/basal-middleware v0.0.0-20230518061816-62bd589c0f63 h1:wQ+crGIMDqv7919i5slVz8liCjBhCZz8xZxHWC3N8uA=
 github.com/NpoolPlatform/basal-middleware v0.0.0-20230518061816-62bd589c0f63/go.mod h1:3sHDVUUQHRkZsCiBFI6CdCL2HWf3cO7/E2DZU3nHMfE=
-github.com/NpoolPlatform/chain-middleware v0.0.0-20230530034619-1c5e75258b60 h1:g+x35c98bjxMwZe9TIAnl5oJkvmwEdPMlpRHBw/czL4=
-github.com/NpoolPlatform/chain-middleware v0.0.0-20230530034619-1c5e75258b60/go.mod h1:j3OsSEzO6chmHqoSoc+wRMaegrM3kah7aT6zd959EgI=
+github.com/NpoolPlatform/chain-middleware v0.0.0-20230605123408-7e083d1f9b54 h1:PiDwxQTt18NSDaEBAEfr6ptndKafhUjcbnfuTik0yek=
+github.com/NpoolPlatform/chain-middleware v0.0.0-20230605123408-7e083d1f9b54/go.mod h1:eKFClCgMcgObhz7285/UzOvYTyFUlbWBboUZmyCHIg4=
 github.com/NpoolPlatform/g11n-manager v0.0.0-20230210192822-999a11e167c8 h1:7+HShGTyGFW3mIWMM0i7g7n4yaC40Uf++iBbjaWBX+Q=
 github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884 h1:H8yVZdgEVC45b6f0BZP3eDYH63hLVy6cOSErMJ1IXKk=
 github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884/go.mod h1:QYy5SMZaXgEzhTqjCMQnoHSKfD66Dj/19emGCBkJbk8=
@@ -68,8 +68,8 @@ github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9 h1
 github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9/go.mod h1:nmVvmSGYuOBGZ4RWeTZ8ny5Kw6Nx8uwQPblmJ/x1wYs=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb h1:IAQOJ0xQWdJS1BnimNdM6GZMLgTL/FnIa8C8K4xffUA=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb/go.mod h1:zvvqlRwbOdTUauPQ9dFDhDuxa91ILV0CQfVdPBZj+eA=
-github.com/NpoolPlatform/message v0.0.0-20230530030914-30800253bd09 h1:syLd1lwZCqhgCT0bGnW5bwyAOi93Ga9Pf/7UxYSaP54=
-github.com/NpoolPlatform/message v0.0.0-20230530030914-30800253bd09/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
+github.com/NpoolPlatform/message v0.0.0-20230605075344-03a09d2c34b8 h1:kLdPyKgd5xU8Oa6EJk4zFn5MMtRFuEogQOv1URXGxBE=
+github.com/NpoolPlatform/message v0.0.0-20230605075344-03a09d2c34b8/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687 h1:EYQPrDW4UESGuEP49IV+Xwft4JUC16gb1DZQnH9YFu0=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687/go.mod h1:leYq+Scn4WZ72AQtq4bZKlmeMsxTXUpTgWOPZK7Eb34=
 github.com/NpoolPlatform/order-manager v0.0.0-20230301030435-b03a2a42a69c h1:l7frtKUbO/71g7h5B4s8Bfcr9ypo3BsqBdevTRtpGb4=
@@ -131,6 +131,7 @@ github.com/cpuguy83/go-md2man/v2 v2.0.2/go.mod h1:tgQtvFlXSQOSOSIRvRPT7W67SCa46t
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
+github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f h1:lO4WD4F/rVNCu3HqELle0jiPLLBs70cWOduZpkS1E78=
 github.com/envoyproxy/go-control-plane v0.9.10-0.20210907150352-cf90f659a021/go.mod h1:AFq3mo9L8Lqqiid3OhADV3RfLJnjiw63cSpi+fDTRC0=
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
@@ -168,6 +169,7 @@ github.com/go-logr/logr v1.2.3/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbV
 github.com/go-logr/stdr v1.2.2 h1:hSWxHoqTgW2S2qGc0LTAI563KZ5YKYRhT3MFKZMbjag=
 github.com/go-logr/stdr v1.2.2/go.mod h1:mMo/vtBO5dYbehREoey6XUKy/eSumjCCveDpRre4VKE=
 github.com/go-openapi/inflect v0.19.0 h1:9jCH9scKIbHeV9m12SmPilScz6krDxKRasNNSNPXu/4=
+github.com/go-redis/redis/v8 v8.11.4 h1:kHoYkfZP6+pe04aFTnhDH6GDROa5yJdHJVNxV3F46Tg=
 github.com/go-resty/resty/v2 v2.7.0 h1:me+K9p3uhSmXtrBZ4k9jcEAfJmuC8IivWHwaLZwPrFY=
 github.com/go-resty/resty/v2 v2.7.0/go.mod h1:9PWDzw47qPphMRFfhsyk0NnSgvluHcljSMVIq3w7q0I=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=

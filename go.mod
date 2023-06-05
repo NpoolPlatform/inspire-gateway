@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230513100509-b19f356ebd4b
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230518061816-62bd589c0f63
-	github.com/NpoolPlatform/chain-middleware v0.0.0-20230530034619-1c5e75258b60
+	github.com/NpoolPlatform/chain-middleware v0.0.0-20230605123408-7e083d1f9b54
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230210193058-7c376766d884
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230602083207-1c0e6203556b
 	github.com/NpoolPlatform/good-middleware v0.0.0-20230329083545-39324dec7ff3
@@ -13,7 +13,7 @@ require (
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230525141811-801dae1ea0cd
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230530030914-30800253bd09
+	github.com/NpoolPlatform/message v0.0.0-20230605075344-03a09d2c34b8
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20230221093008-c752bddbb687
 	github.com/NpoolPlatform/order-middleware v0.0.0-20230301031035-f35cd4b89dc7
 	github.com/NpoolPlatform/third-middleware v0.0.0-20230221094357-40a170d76e2b
