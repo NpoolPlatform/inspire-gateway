@@ -31,7 +31,7 @@ import (
 	tmplmwcli "github.com/NpoolPlatform/notif-middleware/pkg/client/template"
 
 	applangmwcli "github.com/NpoolPlatform/g11n-middleware/pkg/client/applang"
-	applangmgrpb "github.com/NpoolPlatform/message/npool/g11n/mgr/v1/applang"
+	applangmwpb "github.com/NpoolPlatform/message/npool/g11n/mw/v1/applang"
 
 	chanmgrpb "github.com/NpoolPlatform/message/npool/notif/mgr/v1/channel"
 
@@ -120,9 +120,9 @@ func CreateCommission(
 		return nil, err
 	}
 
-	lang, err := applangmwcli.GetLangOnly(ctx, &applangmgrpb.Conds{
-		AppID: &commonpb.StringVal{Op: cruder.EQ, Value: appID},
-		Main:  &commonpb.BoolVal{Op: cruder.EQ, Value: true},
+	lang, err := applangmwcli.GetLangOnly(ctx, &applangmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: appID},
+		Main:  &basetypes.BoolVal{Op: cruder.EQ, Value: true},
 	})
 	if err != nil {
 		logger.Sugar().Warnw("CreateCommission", "Error", err)
