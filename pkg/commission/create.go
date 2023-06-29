@@ -33,8 +33,6 @@ import (
 	applangmwcli "github.com/NpoolPlatform/g11n-middleware/pkg/client/applang"
 	applangmwpb "github.com/NpoolPlatform/message/npool/g11n/mw/v1/applang"
 
-	chanmgrpb "github.com/NpoolPlatform/message/npool/notif/mgr/v1/channel"
-
 	"github.com/shopspring/decimal"
 )
 
@@ -136,7 +134,7 @@ func CreateCommission(
 	info1, err := tmplmwcli.GenerateText(ctx, &tmplmwpb.GenerateTextRequest{
 		AppID:     appID,
 		LangID:    lang.LangID,
-		Channel:   chanmgrpb.NotifChannel_ChannelEmail,
+		Channel:   basetypes.NotifChannel_ChannelEmail,
 		EventType: basetypes.UsedFor_SetCommission,
 	})
 	if err != nil {
