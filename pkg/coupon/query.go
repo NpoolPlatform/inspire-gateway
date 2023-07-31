@@ -2,11 +2,24 @@ package coupon
 
 import (
 	"context"
+	"fmt"
 
-	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/coupon"
-	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/coupon"
+	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
 )
 
-func GetCoupons(ctx context.Context, conds *couponmwpb.Conds, offset, limit int32) ([]*couponmwpb.Coupon, uint32, error) {
-	return couponmwcli.GetCoupons(ctx, conds, offset, limit)
+func (h *Handler) GetCoupons(ctx context.Context) ([]*couponmwpb.Coupon, uint32, error) {
+	if h.AppID == nil {
+		return nil, 0, fmt.Errorf("invalid appid")
+	}
+	return couponmwcli.GetCoupons(
+		ctx,
+		&couponmwpb.Conds{
+			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		},
+		h.Offset,
+		h.Limit,
+	)
 }

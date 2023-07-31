@@ -30,18 +30,22 @@ func (h *Handler) CreateCoupon(ctx context.Context) (*couponmwpb.Coupon, error) 
 	if *h.CouponType == types.CouponType_SpecialOffer {
 		return handler.createSpecialOffer(ctx)
 	}
-	return couponmwcli.CreateCoupon(ctx, &couponmwpb.CouponReq{
-		ID:               h.ID,
-		AppID:            h.AppID,
-		Denomination:     h.Denomination,
-		Circulation:      h.Circulation,
-		IssuedBy:         h.IssuedBy,
-		StartAt:          h.StartAt,
-		DurationDays:     h.DurationDays,
-		Message:          h.Message,
-		Name:             h.Name,
-		GoodID:           h.GoodID,
-		CouponConstraint: h.CouponConstraint,
-		Random:           h.Random,
-	})
+	return couponmwcli.CreateCoupon(
+		ctx,
+		&couponmwpb.CouponReq{
+			ID:               h.ID,
+			AppID:            h.AppID,
+			CouponType:       h.CouponType,
+			Denomination:     h.Denomination,
+			Circulation:      h.Circulation,
+			IssuedBy:         h.IssuedBy,
+			StartAt:          h.StartAt,
+			DurationDays:     h.DurationDays,
+			Message:          h.Message,
+			Name:             h.Name,
+			GoodID:           h.GoodID,
+			CouponConstraint: h.CouponConstraint,
+			Random:           h.Random,
+		},
+	)
 }

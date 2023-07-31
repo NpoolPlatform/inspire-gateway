@@ -7,6 +7,14 @@ import (
 	allocatedmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/allocated"
 )
 
-func CreateCoupon(ctx context.Context, in *allocatedmwpb.CouponReq) (*allocatedmwpb.Coupon, error) {
-	return allocatedmwcli.CreateCoupon(ctx, in)
+func (h *Handler) CreateCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) {
+	return allocatedmwcli.CreateCoupon(
+		ctx,
+		&allocatedmwpb.CouponReq{
+			ID:       h.ID,
+			AppID:    h.AppID,
+			UserID:   h.UserID,
+			CouponID: h.CouponID,
+		},
+	)
 }
