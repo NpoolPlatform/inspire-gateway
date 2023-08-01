@@ -15,6 +15,7 @@ type Handler struct {
 	ID              *string
 	AppID           *string
 	UserID          *string
+	TargetUserID    *string
 	GoodID          *string
 	SettleType      *types.SettleType
 	SettleMode      *types.SettleMode
@@ -24,12 +25,15 @@ type Handler struct {
 	FromGoodID      *string
 	ToGoodID        *string
 	ScalePercent    *string
+	CheckAffiliate  bool
 	Offset          int32
 	Limit           int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
-	handler := &Handler{}
+	handler := &Handler{
+		CheckAffiliate: true,
+	}
 	for _, opt := range options {
 		if err := opt(ctx, handler); err != nil {
 			return nil, err
@@ -73,6 +77,19 @@ func WithUserID(id *string) func(context.Context, *Handler) error {
 			return err
 		}
 		h.UserID = id
+		return nil
+	}
+}
+
+func WithTargetUserID(id *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.TargetUserID = id
 		return nil
 	}
 }
@@ -185,6 +202,13 @@ func WithScalePercent(percent *string) func(context.Context, *Handler) error {
 			return err
 		}
 		h.ScalePercent = percent
+		return nil
+	}
+}
+
+func WithCheckAffiliate(check bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.CheckAffiliate = check
 		return nil
 	}
 }
