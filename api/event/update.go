@@ -19,7 +19,7 @@ import (
 	event1 "github.com/NpoolPlatform/inspire-gateway/pkg/event"
 
 	mgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/event"
-	coupmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/coupon"
+	coupmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

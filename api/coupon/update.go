@@ -4,17 +4,17 @@ import (
 	"context"
 	"time"
 
-	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon/coupon"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon"
 	allocatedmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/coupon/allocated"
-	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/coupon"
+	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
 
-	coupon1 "github.com/NpoolPlatform/inspire-gateway/pkg/coupon/coupon"
+	coupon1 "github.com/NpoolPlatform/inspire-gateway/pkg/coupon"
 
 	timedef "github.com/NpoolPlatform/go-service-framework/pkg/const/time"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/coupon"
+	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 
 	"github.com/shopspring/decimal"
 

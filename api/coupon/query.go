@@ -3,12 +3,12 @@ package coupon
 import (
 	"context"
 
-	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon/coupon"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon"
 	allocatedmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/coupon/allocated"
-	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/coupon"
+	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
 
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
-	coupon1 "github.com/NpoolPlatform/inspire-gateway/pkg/coupon/coupon"
+	coupon1 "github.com/NpoolPlatform/inspire-gateway/pkg/coupon"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"

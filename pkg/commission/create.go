@@ -36,6 +36,129 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type createHandler struct {
+	*Handler
+	user *usermwpb.User
+	req  *commmwpb.CommissionReq
+}
+
+func (h *createHandler) getUser(ctx context.Context) error {
+	if h.AppID == nil {
+		return fmt.Errorf("invalid appid")
+	}
+	if h.UserID == nil {
+		return fmt.Errorf("invalid userid")
+	}
+	user, err := usermwcli.GetUser(ctx, *h.AppID, *h.UserID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return fmt.Errorf("invalid user")
+	}
+	if !user.Kol {
+		return fmt.Errorf("permission denied")
+	}
+	h.user = user
+	return nil
+}
+
+func (h *createHandler) validateGood(ctx context.Context) error {
+	if h.GoodID == nil {
+		return nil
+	}
+
+	good, err := goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
+		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if good == nil {
+		return nil, fmt.Errorf("invalid good")
+	}
+
+	coin, err := appcoinmwcli.GetCoinOnly(ctx, &appcoinmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		CoinTypeID: &basetypes.StringVal{Op: cruder.EQ, Value: good.CoinTypeID},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if coin == nil {
+		return nil, fmt.Errorf("invalid coin")
+	}
+
+	return nil
+}
+
+func (h *createHandler) createCommission(ctx context.Context) error {
+	h.req = &commmwpb.CommissionReq{
+		AppID:           h.AppID,
+		UserID:          h.UserID,
+		GoodID:          h.GoodID,
+		SettleType:      h.SettleType,
+		SettleMode:      h.SettleMode,
+		StartAt:         h.StartAt,
+		AmountOrPercemt: h.AmountOrPercent,
+	}
+	info, err := commmwcli.CreateCommission(ctx, h.req)
+	if err != nil {
+		return err
+	}
+	h.ID = &info.ID
+	return nil
+}
+
+func (h *createHandler) notifyCreateCommission(ctx context.Context) {
+	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
+		return publisher.Update(
+			basetypes.MsgID_CreateCommissionReq.String(),
+			nil,
+			nil,
+			nil,
+			&commmwpb.Commission{
+				AppID:           *h.AppID,
+				UserID:          *h.UserID,
+				GoodID:          *h.GoodID,
+				SettleType:      *h.SettleType,
+				SettleMode:      *h.SettleMode,
+				StartAt:         *h.StartAt,
+				AmountOrPercemt: *h.AmountOrPercent,
+			},
+		)
+	}); err != nil {
+		logger.Sugar().Errorw(
+			"rewardSignup",
+			"AppID", h.AppID,
+			"UserID", h.UserID,
+			"Error", err,
+		)
+	}
+}
+
+func (h *Handler) CreateCommission(ctx context.Context) (*npool.Commission, error) {
+	handler := &createHandler{
+		Handler: h,
+	}
+	if err := handler.getUser(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.validateGood(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.createCommmission(ctx); err != nil {
+		return nil, err
+	}
+	info, err := h.GetCommission(ctx)
+	if err != nil {
+		return nil, err
+	}
+	handler.notifyCreateCommission(ctx)
+	return info, nil
+}
+
 //nolint
 func CreateCommission(
 	ctx context.Context,
@@ -48,76 +171,6 @@ func CreateCommission(
 	*npool.Commission,
 	error,
 ) {
-	user, err := usermwcli.GetUser(ctx, appID, userID)
-	if err != nil {
-		return nil, err
-	}
-	if user == nil {
-		return nil, fmt.Errorf("invalid user")
-	}
-	if !user.Kol {
-		return nil, fmt.Errorf("user not kol")
-	}
-
-	if goodID != nil {
-		good, err := goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
-			AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: appID},
-			GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: *goodID},
-		})
-		if err != nil {
-			return nil, err
-		}
-		if good == nil {
-			return nil, fmt.Errorf("invalid good")
-		}
-
-		coin, err := appcoinmwcli.GetCoinOnly(ctx, &appcoinmwpb.Conds{
-			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: appID},
-			CoinTypeID: &basetypes.StringVal{Op: cruder.EQ, Value: good.CoinTypeID},
-		})
-		if err != nil {
-			return nil, err
-		}
-		if coin == nil {
-			return nil, fmt.Errorf("invalid coin")
-		}
-	}
-
-	req := &commmwpb.CommissionReq{
-		AppID:      &appID,
-		UserID:     &userID,
-		GoodID:     goodID,
-		SettleType: &settleType,
-		StartAt:    startAt,
-	}
-
-	valueStr := value.String()
-
-	switch settleType {
-	case commmgrpb.SettleType_GoodOrderPercent:
-		fallthrough //nolint
-	case commmgrpb.SettleType_GoodOrderValuePercent:
-		req.Percent = &valueStr
-	case commmgrpb.SettleType_LimitedOrderPercent:
-		fallthrough //nolint
-	case commmgrpb.SettleType_AmountThreshold:
-		fallthrough //nolint
-	case commmgrpb.SettleType_NoCommission:
-		return nil, fmt.Errorf("not implemented")
-	default:
-		return nil, fmt.Errorf("unknown settle type")
-	}
-
-	info, err := commmwcli.CreateCommission(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-
-	comm, err := GetCommission(ctx, info.ID, settleType)
-	if err != nil {
-		return nil, err
-	}
-
 	lang, err := applangmwcli.GetLangOnly(ctx, &applangmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: appID},
 		Main:  &basetypes.BoolVal{Op: cruder.EQ, Value: true},

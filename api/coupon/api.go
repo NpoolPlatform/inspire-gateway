@@ -3,7 +3,7 @@ package coupon
 import (
 	"context"
 
-	coupon "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon/coupon"
+	coupon "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"

@@ -1,4 +1,4 @@
-package archivement
+package achievement
 
 import (
 	"context"
@@ -8,16 +8,16 @@ import (
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 
-	archivementdetailmgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/archivement/detail"
-	archivementgeneralmgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/archivement/general"
-	archivementdetailmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/archivement/detail"
-	archivementgeneralmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/archivement/general"
+	achievementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement"
+	statementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/statement"
+	achievementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement"
+	statementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement"
 
 	regmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
-	regmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
+	regmgrpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
-	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
+	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 
 	coininfocli "github.com/NpoolPlatform/chain-middleware/pkg/client/coin"
@@ -27,7 +27,7 @@ import (
 	goodspb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
 
 	coininfopb "github.com/NpoolPlatform/message/npool/chain/mw/v1/coin"
-	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/archivement"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/achievement"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
@@ -38,10 +38,10 @@ import (
 	"github.com/google/uuid"
 )
 
-func GetGoodArchivements(
+func GetGoodAchievements(
 	ctx context.Context, appID, userID string, offset, limit int32,
 ) (
-	infos []*npool.UserArchivement, total uint32, err error,
+	infos []*npool.UserAchievement, total uint32, err error,
 ) {
 	if limit == 0 {
 		limit = 1000
@@ -71,13 +71,13 @@ func GetGoodArchivements(
 		uids = append(uids, iv.InviteeID)
 	}
 
-	return getUserArchivements(ctx, appID, userID, uids, ivMap, offset, limit)
+	return getUserAchievements(ctx, appID, userID, uids, ivMap, offset, limit)
 }
 
-func GetUserGoodArchivements(
+func GetUserGoodAchievements(
 	ctx context.Context, appID string, userIDs []string, offset, limit int32,
 ) (
-	infos []*npool.UserArchivement, total uint32, err error,
+	infos []*npool.UserAchievement, total uint32, err error,
 ) {
 	if limit == 0 {
 		limit = 1000
@@ -98,7 +98,7 @@ func GetUserGoodArchivements(
 	}
 	if uint32(offset) > total {
 		if len(invitations) == 0 {
-			return []*npool.UserArchivement{}, 0, nil
+			return []*npool.UserAchievement{}, 0, nil
 		}
 	}
 
@@ -111,17 +111,17 @@ func GetUserGoodArchivements(
 		ivMap[iv.InviteeID] = iv
 	}
 
-	return getUserArchivements(ctx, appID, uuid.UUID{}.String(), userIDs, ivMap, offset, limit)
+	return getUserAchievements(ctx, appID, uuid.UUID{}.String(), userIDs, ivMap, offset, limit)
 }
 
 // nolint
-func getUserArchivements(
+func getUserAchievements(
 	ctx context.Context,
 	appID, userID string, uids []string,
 	ivMap map[string]*regmgrpb.Registration,
 	offset, limit int32,
 ) (
-	infos []*npool.UserArchivement, total uint32, err error,
+	infos []*npool.UserAchievement, total uint32, err error,
 ) {
 	inviteesMap := map[string]uint32{}
 	inviteesOfs := int32(0)
@@ -160,8 +160,8 @@ func getUserArchivements(
 		inviteesOfs += limit
 	}
 
-	// 2 Get all users's archivement
-	generals, _, err := archivementgeneralmgrcli.GetGenerals(ctx, &archivementgeneralmgrpb.Conds{
+	// 2 Get all users's achievement
+	generals, _, err := achievementmwcli.GetGenerals(ctx, &achievementmwpb.Conds{
 		AppID: &commonpb.StringVal{
 			Op:    cruder.EQ,
 			Value: appID,
@@ -288,7 +288,7 @@ func getUserArchivements(
 	}
 
 	// 5 Merge info
-	archivements := map[string]*npool.UserArchivement{}
+	achievements := map[string]*npool.UserAchievement{}
 	for _, user := range users {
 		invitedAt := uint32(0)
 		var inviterID string
@@ -299,7 +299,7 @@ func getUserArchivements(
 			inviterID = iv.InviterID
 		}
 
-		archivements[user.ID] = &npool.UserArchivement{
+		achievements[user.ID] = &npool.UserAchievement{
 			InviterID:     inviterID,
 			UserID:        user.ID,
 			Username:      user.Username,
@@ -315,7 +315,7 @@ func getUserArchivements(
 	}
 
 	for _, general := range generals {
-		archivement, ok := archivements[general.UserID]
+		achievement, ok := achievements[general.UserID]
 		if !ok {
 			continue
 		}
@@ -343,7 +343,7 @@ func getUserArchivements(
 			break
 		}
 
-		arch := &npool.GoodArchivement{
+		arch := &npool.GoodAchievement{
 			GoodID:            general.GoodID,
 			GoodName:          good.GoodName,
 			GoodUnit:          good.Unit,
@@ -360,14 +360,14 @@ func getUserArchivements(
 			SelfCommission:    general.SelfCommission,
 		}
 
-		archivement.Archivements = append(archivement.Archivements, arch)
-		archivements[general.UserID] = archivement
+		achievement.Achievements = append(achievement.Achievements, arch)
+		achievements[general.UserID] = achievement
 	}
 
-	for _, archivement := range archivements {
+	for _, achievement := range achievements {
 	nextCoin:
 		for goodID, good := range archGoodMap {
-			for _, iarch := range archivement.Archivements {
+			for _, iarch := range achievement.Achievements {
 				if iarch.GoodID == goodID {
 					continue nextCoin
 				}
@@ -376,7 +376,7 @@ func getUserArchivements(
 			percent := decimal.NewFromInt(0)
 
 			for _, comm := range comms {
-				if archivement.UserID != comm.UserID || goodID != comm.GetGoodID() {
+				if achievement.UserID != comm.UserID || goodID != comm.GetGoodID() {
 					continue
 				}
 				percent, err = decimal.NewFromString(comm.GetPercent())
@@ -391,7 +391,7 @@ func getUserArchivements(
 				continue
 			}
 
-			arch := &npool.GoodArchivement{
+			arch := &npool.GoodAchievement{
 				GoodID:            goodID,
 				GoodName:          good.GoodName,
 				GoodUnit:          good.Unit,
@@ -406,16 +406,16 @@ func getUserArchivements(
 				SelfCommission:    decimal.NewFromInt(0).String(),
 			}
 
-			archivement.Archivements = append(archivement.Archivements, arch)
+			achievement.Achievements = append(achievement.Achievements, arch)
 		}
 	}
 
 	// 6 Get my details for invitees' contribution
-	details := []*archivementdetailmgrpb.Detail{}
+	details := []*statementmwpb.Detail{}
 	detailOfs := int32(0)
 
 	for {
-		ds, _, err := archivementdetailmgrcli.GetDetails(ctx, &archivementdetailmgrpb.Conds{
+		ds, _, err := statementmwcli.GetDetails(ctx, &statementmwpb.Conds{
 			AppID: &commonpb.StringVal{
 				Op:    cruder.EQ,
 				Value: appID,
@@ -438,12 +438,12 @@ func getUserArchivements(
 	}
 
 	for _, detail := range details {
-		arch, ok := archivements[detail.DirectContributorID]
+		arch, ok := achievements[detail.DirectContributorID]
 		if !ok {
 			continue
 		}
 
-		for _, ar := range arch.Archivements {
+		for _, ar := range arch.Achievements {
 			if ar.GoodID != detail.GoodID {
 				continue
 			}
@@ -456,7 +456,7 @@ func getUserArchivements(
 		}
 	}
 
-	for _, ar := range archivements {
+	for _, ar := range achievements {
 		infos = append(infos, ar)
 	}
 

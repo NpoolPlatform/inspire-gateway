@@ -25,7 +25,7 @@ import (
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
 	mgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/event"
-	coupmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/coupon"
+	coupmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

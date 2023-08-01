@@ -11,7 +11,7 @@ import (
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/coupon"
+	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

@@ -10,11 +10,11 @@ import (
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
 	allocatedmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/coupon/allocated"
 	mgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/event"
-	coupmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/coupon"
+	coupmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
-	coupmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/coupon"
+	coupmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"

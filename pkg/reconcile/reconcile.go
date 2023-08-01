@@ -8,8 +8,8 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
-	accountingmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/accounting"
-	accountingmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/accounting"
+	calculatemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/calculate"
+	calculatemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/calculate"
 
 	ledgermwcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger/v2"
 	ledgerdetailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/detail"
@@ -70,7 +70,7 @@ func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolin
 		"USDCurrency", order.PaymentCoinUSDCurrency,
 	)
 
-	comms, err := accountingmwcli.Accounting(ctx, &accountingmwpb.AccountingRequest{
+	comms, err := calculatemwcli.Calculate(ctx, &calculatemwpb.CalculateRequest{
 		AppID:                  order.AppID,
 		UserID:                 order.UserID,
 		GoodID:                 order.GoodID,
