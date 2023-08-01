@@ -4,30 +4,33 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-
-	calculatemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/calculate"
-	calculatemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/calculate"
-
-	ledgermwcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger/v2"
-	ledgerdetailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/detail"
-
-	ordermwpb "github.com/NpoolPlatform/message/npool/order/mw/v1/order"
-	ordercli "github.com/NpoolPlatform/order-middleware/pkg/client/order"
-
 	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	statementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/statement"
+	calculatemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/calculate"
+	ledgermwcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger/v2"
+	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
-
+	statementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement"
+	calculatemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/calculate"
+	ledgerdetailmgrpb "github.com/NpoolPlatform/message/npool/ledger/mgr/v1/ledger/detail"
 	ordermgrpb "github.com/NpoolPlatform/message/npool/order/mgr/v1/order"
+	ordermwpb "github.com/NpoolPlatform/message/npool/order/mw/v1/order"
+	ordermwcli "github.com/NpoolPlatform/order-middleware/pkg/client/order"
 
 	"github.com/shopspring/decimal"
 
 	"github.com/NpoolPlatform/message/npool"
 )
 
-func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolint
+type reconcileHandler struct {
+	*Handler
+}
+
+func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolint
 	good, err := goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
 		AppID:  &npool.StringVal{Op: cruder.EQ, Value: order.AppID},
 		GoodID: &npool.StringVal{Op: cruder.EQ, Value: order.GoodID},
@@ -70,7 +73,8 @@ func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolin
 		"USDCurrency", order.PaymentCoinUSDCurrency,
 	)
 
-	comms, err := calculatemwcli.Calculate(ctx, &calculatemwpb.CalculateRequest{
+	settleType := types.SettleType(types.SettleType_value[good.CommissionSettleType.String()])
+	statements, err := calculatemwcli.Calculate(ctx, &calculatemwpb.CalculateRequest{
 		AppID:                  order.AppID,
 		UserID:                 order.UserID,
 		GoodID:                 order.GoodID,
@@ -82,7 +86,7 @@ func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolin
 		Units:                  order.Units,
 		PaymentAmount:          paymentAmountS,
 		GoodValue:              goodValue,
-		SettleType:             good.CommissionSettleType,
+		SettleType:             settleType,
 		HasCommission:          order.OrderType == ordermgrpb.OrderType_Normal,
 		OrderCreatedAt:         order.CreatedAt,
 	})
@@ -102,8 +106,44 @@ func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolin
 		return err
 	}
 
-	if len(comms) == 0 {
+	if len(statements) == 0 {
 		return nil
+	}
+
+	statementReqs := []*statementmwpb.StatementReq{}
+	for _, statement := range statements {
+		statementReqs = append(statementReqs, &statementmwpb.StatementReq{
+			AppID:                  &statement.AppID,
+			UserID:                 &statement.UserID,
+			DirectContributorID:    &statement.DirectContributorID,
+			GoodID:                 &statement.GoodID,
+			OrderID:                &statement.OrderID,
+			SelfOrder:              &statement.SelfOrder,
+			PaymentID:              &statement.PaymentID,
+			CoinTypeID:             &statement.CoinTypeID,
+			PaymentCoinTypeID:      &statement.PaymentCoinTypeID,
+			PaymentCoinUSDCurrency: &statement.PaymentCoinUSDCurrency,
+			Units:                  &statement.Units,
+			Amount:                 &statement.Amount,
+			USDAmount:              &statement.USDAmount,
+			Commission:             &statement.Commission,
+		})
+	}
+
+	_, err = statementmwcli.CreateStatements(ctx, statementReqs)
+	if err != nil {
+		logger.Sugar().Infow(
+			"reconcileOrder",
+			"AppID", order.AppID,
+			"UserID", order.UserID,
+			"OrderID", order.ID,
+			"PaymentAmount", paymentAmountS,
+			"GoodValue", goodValue,
+			"SettleType", good.CommissionSettleType,
+			"CoinTypeID", good.CoinTypeID,
+			"PaymentCoinTypeID", order.PaymentCoinTypeID,
+			"Error", err,
+		)
 	}
 
 	details := []*ledgerdetailmgrpb.DetailReq{}
@@ -122,13 +162,13 @@ func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolin
 		"PaymentCoinTypeID", order.PaymentCoinTypeID,
 	)
 
-	for _, comm := range comms {
+	for _, statement := range statements {
 		logger.Sugar().Infow(
 			"reconcileOrder",
-			"AppID", comm.AppID,
-			"UserID", comm.UserID,
-			"Amount", comm.Amount,
-			"DirectContributorUserID", comm.DirectContributorUserID,
+			"AppID", statement.AppID,
+			"UserID", statement.UserID,
+			"Amount", statement.Amount,
+			"DirectContributorUserID", statement.DirectContributorID,
 			"OrderID", order.ID,
 			"OrderUserID", order.UserID,
 		)
@@ -137,17 +177,17 @@ func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolin
 			`{"PaymentID":"%v","OrderID":"%v","DirectContributorID":"%v","OrderUserID":"%v"}`,
 			order.PaymentID,
 			order.ID,
-			comm.GetDirectContributorUserID(),
+			statement.GetDirectContributorID(),
 			order.UserID,
 		)
 
 		details = append(details, &ledgerdetailmgrpb.DetailReq{
 			AppID:      &order.AppID,
-			UserID:     &comm.UserID,
+			UserID:     &statement.UserID,
 			CoinTypeID: &order.PaymentCoinTypeID,
 			IOType:     &ioType,
 			IOSubType:  &ioSubType,
-			Amount:     &comm.Amount,
+			Amount:     &statement.Amount,
 			IOExtra:    &ioExtra,
 		})
 	}
@@ -173,88 +213,62 @@ func reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolin
 	return nil
 }
 
-func reconcileOrders(ctx context.Context, conds *ordermwpb.Conds, offset, limit int32) (bool, error) {
-	orders, _, err := ordercli.GetOrders(ctx, conds, offset, limit)
-	if err != nil {
-		return false, err
-	}
-
-	logger.Sugar().Infow(
-		"reconcileOrders",
-		"Orders", len(orders),
-	)
-
-	if len(orders) == 0 {
-		return true, nil
-	}
-
-	for _, order := range orders {
-		if err := reconcileOrder(ctx, order); err != nil {
-			logger.Sugar().Errorw(
-				"reconcileOrders",
-				"AppID", order.AppID,
-				"UserID", order.UserID,
-				"GoodID", order.GoodID,
-				"OrderID", order.ID,
-				"Error", err,
-			)
-			return true, err
-		}
-	}
-
-	return false, nil
-}
-
-func reconcileTypedOrders(ctx context.Context, appID, userID, goodID string, orderType ordermgrpb.OrderType) error {
-	logger.Sugar().Infow(
-		"reconcileTypedOrders",
-		"AppID", appID,
-		"UserID", userID,
-		"GoodID", goodID,
-		"OrderType", orderType,
-	)
-
+func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordermgrpb.OrderType) error {
 	offset := int32(0)
-	const limit = int32(100)
-
+	limit := constant.DefaultRowLimit
 	for {
-		finish, err := reconcileOrders(ctx, &ordermwpb.Conds{
-			AppID:  &npool.StringVal{Op: cruder.EQ, Value: appID},
-			UserID: &npool.StringVal{Op: cruder.EQ, Value: userID},
-			GoodID: &npool.StringVal{Op: cruder.EQ, Value: goodID},
-			Type:   &npool.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
-			States: &npool.Uint32SliceVal{
-				Op: cruder.IN,
-				Value: []uint32{
-					uint32(ordermgrpb.OrderState_Paid),
-					uint32(ordermgrpb.OrderState_InService),
-					uint32(ordermgrpb.OrderState_Expired),
+		orders, _, err := ordermwcli.GetOrders(
+			ctx,
+			&ordermwpb.Conds{
+				AppID:  &npool.StringVal{Op: cruder.EQ, Value: *h.AppID},
+				GoodID: &npool.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+				Type:   &npool.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
+				States: &npool.Uint32SliceVal{
+					Op: cruder.IN,
+					Value: []uint32{
+						uint32(ordermgrpb.OrderState_Paid),
+						uint32(ordermgrpb.OrderState_InService),
+						uint32(ordermgrpb.OrderState_Expired),
+					},
 				},
 			},
-		}, offset, limit)
+			offset,
+			limit,
+		)
 		if err != nil {
-			logger.Sugar().Errorw(
-				"reconcileTypeOrders",
-				"AppID", appID,
-				"UserID", userID,
-				"Type", orderType,
-				"Error", err,
-			)
 			return err
 		}
-		if finish {
+		if len(orders) == 0 {
 			break
 		}
 
-		offset += limit
+		for _, order := range orders {
+			if err := h.reconcileOrder(ctx, order); err != nil {
+				logger.Sugar().Errorw(
+					"reconcileOrders",
+					"AppID", *h.AppID,
+					"GoodID", *h.GoodID,
+					"OrderID", order.ID,
+					"Err", err,
+				)
+			}
+		}
 	}
-
 	return nil
 }
 
-func Reconcile(ctx context.Context, appID, userID, goodID string) error {
-	if err := reconcileTypedOrders(ctx, appID, userID, goodID, ordermgrpb.OrderType_Normal); err != nil {
+func (h *Handler) Reconcile(ctx context.Context) error {
+	if h.AppID == nil {
+		return fmt.Errorf("invalid appid")
+	}
+	if h.GoodID == nil {
+		return fmt.Errorf("invalid goodid")
+	}
+	handler := &reconcileHandler{
+		Handler: h,
+	}
+	if err := handler.reconcileOrders(ctx, ordermgrpb.OrderType_Normal); err != nil {
 		return err
 	}
-	return reconcileTypedOrders(ctx, appID, userID, goodID, ordermgrpb.OrderType_Offline)
+	return handler.reconcileOrders(ctx, ordermgrpb.OrderType_Offline)
 }
