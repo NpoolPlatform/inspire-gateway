@@ -20,6 +20,10 @@ type Handler struct {
 	SettleMode      *types.SettleMode
 	AmountOrPercent *string
 	StartAt         *uint32
+	EndAt           *uint32
+	FromGoodID      *string
+	ToGoodID        *string
+	ScalePercent    *string
 	Offset          int32
 	Limit           int32
 }
@@ -135,6 +139,52 @@ func WithAmountOrPercent(amount *string) func(context.Context, *Handler) error {
 func WithStartAt(value *uint32) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.StartAt = value
+		return nil
+	}
+}
+
+func WithEndAt(value *uint32) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.EndAt = value
+		return nil
+	}
+}
+
+func WithFromGoodID(id *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.FromGoodID = id
+		return nil
+	}
+}
+
+func WithToGoodID(id *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.ToGoodID = id
+		return nil
+	}
+}
+
+func WithScalePercent(percent *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if percent == nil {
+			return nil
+		}
+		if _, err := decimal.NewFromString(*percent); err != nil {
+			return err
+		}
+		h.ScalePercent = percent
 		return nil
 	}
 }

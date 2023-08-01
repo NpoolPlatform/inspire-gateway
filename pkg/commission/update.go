@@ -4,61 +4,78 @@ import (
 	"context"
 	"fmt"
 
-	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
-
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
-	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
+	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
 	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
+	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 )
 
-func UpdateCommission(
-	ctx context.Context,
-	id, appID string,
-	settleType commmgrpb.SettleType,
-	value *string,
-	startAt *uint32,
-) (
-	*npool.Commission,
-	error,
-) {
-	info, err := commmwcli.GetCommission(ctx, id, settleType)
+type updateHandler struct {
+	*Handler
+	info *commmwpb.Commission
+}
+
+func (h *updateHandler) validateInviter(ctx context.Context) error {
+	if h.UserID == nil {
+		return fmt.Errorf("invalid userid")
+	}
+
+	exist, err := registrationmwcli.ExistRegistrationConds(
+		ctx,
+		&registrationmwpb.Conds{
+			AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			InviterID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+			InviteeID: &basetypes.StringVal{Op: cruder.EQ, Value: h.info.UserID},
+		},
+	)
+	if err != nil {
+		return err
+	}
+	if !exist {
+		return fmt.Errorf("permission denied")
+	}
+	return nil
+}
+
+func (h *Handler) UpdateCommission(ctx context.Context) (*npool.Commission, error) {
+	if h.ID == nil {
+		return nil, fmt.Errorf("invalid id")
+	}
+	if h.AppID == nil {
+		return nil, fmt.Errorf("invalid appid")
+	}
+
+	info, err := commmwcli.GetCommission(ctx, *h.ID)
 	if err != nil {
 		return nil, err
 	}
 	if info == nil {
 		return nil, fmt.Errorf("invalid commission")
 	}
-	if info.AppID != appID {
+	if info.AppID != *h.AppID {
 		return nil, fmt.Errorf("permission denied")
 	}
 
-	req := &commmwpb.CommissionReq{
-		ID:         &id,
-		SettleType: &settleType,
-		StartAt:    startAt,
+	handler := &updateHandler{
+		Handler: h,
+		info:    info,
+	}
+	if err := handler.validateInviter(ctx); err != nil {
+		return nil, err
 	}
 
-	if value != nil {
-		switch info.SettleType {
-		case commmgrpb.SettleType_GoodOrderPercent:
-			fallthrough //nolint
-		case commmgrpb.SettleType_GoodOrderValuePercent:
-			req.Percent = value
-		case commmgrpb.SettleType_LimitedOrderPercent:
-			fallthrough //nolint
-		case commmgrpb.SettleType_AmountThreshold:
-			fallthrough //nolint
-		case commmgrpb.SettleType_NoCommission:
-			return nil, fmt.Errorf("not implemented")
-		default:
-			return nil, fmt.Errorf("unknown settle type")
-		}
-	}
-
-	_, err = commmwcli.UpdateCommission(ctx, req)
+	_, err = commmwcli.UpdateCommission(ctx, &commmwpb.CommissionReq{
+		ID:              h.ID,
+		SettleType:      h.SettleType,
+		StartAt:         h.StartAt,
+		AmountOrPercent: h.AmountOrPercent,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return GetCommission(ctx, id, info.SettleType)
+	return h.GetCommission(ctx)
 }
