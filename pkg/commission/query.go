@@ -51,9 +51,7 @@ func (h *queryHandler) getUsers(ctx context.Context) error {
 func (h *queryHandler) getGoods(ctx context.Context) error {
 	goodIDs := []string{}
 	for _, comm := range h.comms {
-		if comm.GoodID != nil {
-			goodIDs = append(goodIDs, *comm.GoodID)
-		}
+		goodIDs = append(goodIDs, comm.GoodID)
 	}
 	if len(goodIDs) == 0 {
 		return nil
@@ -125,21 +123,19 @@ func (h *queryHandler) formalize() {
 			UpdatedAt:       comm.UpdatedAt,
 		}
 
-		if comm.GoodID != nil {
-			good, ok := h.goods[*comm.GoodID]
-			if !ok {
-				continue
-			}
-			coin, ok := h.coins[good.CoinTypeID]
-			if !ok {
-				continue
-			}
-
-			info.GoodName = &good.GoodName
-			info.CoinTypeID = &good.CoinTypeID
-			info.CoinName = &coin.Name
-			info.CoinLogo = &coin.Logo
+		good, ok := h.goods[comm.GoodID]
+		if !ok {
+			continue
 		}
+		coin, ok := h.coins[good.CoinTypeID]
+		if !ok {
+			continue
+		}
+
+		info.GoodName = good.GoodName
+		info.CoinTypeID = good.CoinTypeID
+		info.CoinName = coin.Name
+		info.CoinLogo = coin.Logo
 		h.infos = append(h.infos, info)
 	}
 }

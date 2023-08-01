@@ -106,7 +106,7 @@ func (h *createHandler) notifyCreateCommission(ctx context.Context) {
 			&commmwpb.Commission{
 				AppID:           *h.AppID,
 				UserID:          *h.UserID,
-				GoodID:          h.GoodID,
+				GoodID:          *h.GoodID,
 				SettleType:      *h.SettleType,
 				SettleMode:      *h.SettleMode,
 				StartAt:         *h.StartAt,
