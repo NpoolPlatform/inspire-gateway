@@ -2,17 +2,24 @@ package registration
 
 import (
 	"context"
+	"fmt"
 
 	regmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/invitation/registration"
-	regmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/registration"
+	regmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 )
 
-func UpdateRegistration(ctx context.Context, in *regmgrpb.RegistrationReq) (*npool.Registration, error) {
-	info, err := regmwcli.UpdateRegistration(ctx, in)
+func (h *Handler) UpdateRegistration(ctx context.Context) (*npool.Registration, error) {
+	if h.ID == nil {
+		return nil, fmt.Errorf("invalid id")
+	}
+	_, err := regmwcli.UpdateRegistration(ctx, &regmwpb.RegistrationReq{
+		ID:        h.ID,
+		InviterID: h.InviterID,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	return GetRegistration(ctx, info.ID)
+	return h.GetRegistration(ctx)
 }
