@@ -3,17 +3,25 @@ package event
 import (
 	"context"
 
+	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
-	mgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/event"
-
-	mgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/event"
+	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 )
 
-func CreateEvent(ctx context.Context, in *mgrpb.EventReq) (*npool.Event, error) {
-	info, err := mgrcli.CreateEvent(ctx, in)
+func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
+	info, err := eventmwcli.CreateEvent(ctx, &eventmwpb.EventReq{
+		AppID:          h.AppID,
+		EventType:      h.EventType,
+		CouponIDs:      h.CouponIDs,
+		Credits:        h.Credits,
+		CreditsPerUSD:  h.CreditsPerUSD,
+		MaxConsecutive: h.MaxConsecutive,
+		GoodID:         h.GoodID,
+		InviterLayers:  h.InviterLayers,
+	})
 	if err != nil {
 		return nil, err
 	}
-
-	return expand(ctx, info)
+	h.ID = &info.ID
+	return h.GetEvent(ctx)
 }
