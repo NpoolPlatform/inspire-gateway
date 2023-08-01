@@ -11,7 +11,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	constant "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
-	constant1 "github.com/NpoolPlatform/inspire-gateway/pkg/message/const"
+	servicename "github.com/NpoolPlatform/inspire-gateway/pkg/servicename"
 )
 
 const (
@@ -25,7 +25,7 @@ const (
 )
 
 func lockKey() string {
-	serviceID := config.GetStringValueWithNameSpace(constant1.ServiceName, keyServiceID)
+	serviceID := config.GetStringValueWithNameSpace(servicename.ServiceDomain, keyServiceID)
 	return fmt.Sprintf("migrator:%v", serviceID)
 }
 
