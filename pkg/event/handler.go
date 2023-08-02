@@ -134,6 +134,20 @@ func WithCreditsPerUSD(value *string) func(context.Context, *Handler) error {
 	}
 }
 
+func WithMaxConsecutive(consecutive *uint32) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.MaxConsecutive = consecutive
+		return nil
+	}
+}
+
+func WithInviterLayers(layers *uint32) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		h.InviterLayers = layers
+		return nil
+	}
+}
+
 func WithOffset(offset int32) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Offset = offset
