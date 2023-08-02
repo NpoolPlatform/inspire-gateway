@@ -87,6 +87,7 @@ func (h *createHandler) createCommission(ctx context.Context) error {
 		SettleMode:      h.SettleMode,
 		StartAt:         h.StartAt,
 		AmountOrPercent: h.AmountOrPercent,
+		Threshold:       h.Threshold,
 	}
 	info, err := commmwcli.CreateCommission(ctx, h.req)
 	if err != nil {

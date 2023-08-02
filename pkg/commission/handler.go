@@ -20,6 +20,7 @@ type Handler struct {
 	SettleType      *types.SettleType
 	SettleMode      *types.SettleMode
 	AmountOrPercent *string
+	Threshold       *string
 	StartAt         *uint32
 	EndAt           *uint32
 	FromGoodID      *string
@@ -149,6 +150,19 @@ func WithAmountOrPercent(amount *string) func(context.Context, *Handler) error {
 			return err
 		}
 		h.AmountOrPercent = amount
+		return nil
+	}
+}
+
+func WithThreshold(amount *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if amount == nil {
+			return nil
+		}
+		if _, err := decimal.NewFromString(*amount); err != nil {
+			return err
+		}
+		h.Threshold = amount
 		return nil
 	}
 }

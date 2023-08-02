@@ -62,6 +62,19 @@ func WithAppID(id *string) func(context.Context, *Handler) error {
 		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
+		h.AppID = id
+		return nil
+	}
+}
+
+func WithUserID(id *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
 		h.UserID = id
 		return nil
 	}
