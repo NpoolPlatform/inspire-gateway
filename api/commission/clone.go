@@ -1,3 +1,4 @@
+//nolint:dupl
 package commission
 
 import (
@@ -43,7 +44,6 @@ func (s *Server) CloneCommissions(ctx context.Context, in *npool.CloneCommission
 }
 
 func (s *Server) CloneAppCommissions(ctx context.Context, in *npool.CloneAppCommissionsRequest) (*npool.CloneAppCommissionsResponse, error) {
-
 	handler, err := commission1.NewHandler(
 		ctx,
 		commission1.WithAppID(&in.TargetAppID),

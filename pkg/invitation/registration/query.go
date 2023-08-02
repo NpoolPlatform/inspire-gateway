@@ -27,8 +27,7 @@ func (h *queryHandler) getUsers(ctx context.Context) error {
 
 	userIDs := []string{}
 	for _, registration := range h.registrations {
-		userIDs = append(userIDs, registration.InviterID)
-		userIDs = append(userIDs, registration.InviteeID)
+		userIDs = append(userIDs, registration.InviterID, registration.InviteeID)
 	}
 	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},

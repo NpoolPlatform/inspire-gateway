@@ -1,3 +1,4 @@
+//nolint:dupl
 package achievement
 
 import (
@@ -237,6 +238,9 @@ func (h *queryHandler) getCommissions(ctx context.Context) error {
 		if err != nil {
 			return err
 		}
+		if len(commissions) == 0 {
+			break
+		}
 		for _, commission := range commissions {
 			commissions, ok := h.commissions[commission.GoodID]
 			if !ok {
@@ -336,9 +340,9 @@ func (h *queryHandler) formalizeNew() {
 			if !ok {
 				break
 			}
-			for userID, _ := range commissions {
+			for userID := range commissions {
 				if _, ok := achievedGoods[userID]; ok {
-					continue nextCommission
+					break nextCommission
 				}
 
 				percent := decimal.NewFromInt(0).String()

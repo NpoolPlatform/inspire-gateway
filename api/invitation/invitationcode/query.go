@@ -3,39 +3,36 @@ package invitationcode
 import (
 	"context"
 
-	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/invitation/invitationcode"
-	invitationcodemgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	invitationcode1 "github.com/NpoolPlatform/inspire-gateway/pkg/invitation/invitationcode"
-
-	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
-
-	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/invitation/invitationcode"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/google/uuid"
 )
 
 func (s *Server) GetInvitationCodes(ctx context.Context, in *npool.GetInvitationCodesRequest) (*npool.GetInvitationCodesResponse, error) {
-	if _, err := uuid.Parse(in.GetAppID()); err != nil {
+	handler, err := invitationcode1.NewHandler(
+		ctx,
+		invitationcode1.WithAppID(&in.AppID),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetInvitationCodes",
+			"In", in,
+			"Err", err,
+		)
 		return &npool.GetInvitationCodesResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	limit := constant.DefaultRowLimit
-	if in.GetLimit() > 0 {
-		limit = in.GetLimit()
-	}
-
-	infos, total, err := invitationcode1.GetInvitationCodes(ctx, &invitationcodemgrpb.Conds{
-		AppID: &commonpb.StringVal{
-			Op:    cruder.EQ,
-			Value: in.GetAppID(),
-		},
-	}, in.GetOffset(), limit)
+	infos, total, err := handler.GetInvitationCodes(ctx)
 	if err != nil {
+		logger.Sugar().Errorw(
+			"GetInvitationCodes",
+			"In", in,
+			"Err", err,
+		)
 		return &npool.GetInvitationCodesResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
@@ -45,24 +42,34 @@ func (s *Server) GetInvitationCodes(ctx context.Context, in *npool.GetInvitation
 	}, nil
 }
 
-func (s *Server) GetAppInvitationCodes(
-	ctx context.Context,
-	in *npool.GetAppInvitationCodesRequest,
-) (
-	*npool.GetAppInvitationCodesResponse,
-	error,
-) {
-	resp, err := s.GetInvitationCodes(ctx, &npool.GetInvitationCodesRequest{
-		AppID:  in.GetTargetAppID(),
-		Offset: in.GetOffset(),
-		Limit:  in.GetLimit(),
-	})
+func (s *Server) GetAppInvitationCodes(ctx context.Context, in *npool.GetAppInvitationCodesRequest) (*npool.GetAppInvitationCodesResponse, error) {
+	handler, err := invitationcode1.NewHandler(
+		ctx,
+		invitationcode1.WithAppID(&in.TargetAppID),
+		invitationcode1.WithOffset(in.GetOffset()),
+		invitationcode1.WithLimit(in.GetLimit()),
+	)
 	if err != nil {
+		logger.Sugar().Errorw(
+			"GetAppInvitationCodes",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.GetAppInvitationCodesResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	infos, total, err := handler.GetInvitationCodes(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetAppInvitationCodes",
+			"In", in,
+			"Err", err,
+		)
 		return &npool.GetAppInvitationCodesResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
 	return &npool.GetAppInvitationCodesResponse{
-		Infos: resp.Infos,
-		Total: resp.Total,
+		Infos: infos,
+		Total: total,
 	}, nil
 }

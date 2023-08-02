@@ -1,3 +1,4 @@
+//nolint:dupl
 package commission
 
 import (
@@ -164,6 +165,9 @@ func (h *Handler) GetCommission(ctx context.Context) (*npool.Commission, error) 
 	if err := handler.getUsers(ctx); err != nil {
 		return nil, err
 	}
+	if err := handler.getGoods(ctx); err != nil {
+		return nil, err
+	}
 	if err := handler.getCoins(ctx); err != nil {
 		return nil, err
 	}
@@ -205,6 +209,9 @@ func (h *Handler) GetCommissions(ctx context.Context) ([]*npool.Commission, uint
 		infos:   []*npool.Commission{},
 	}
 	if err := handler.getUsers(ctx); err != nil {
+		return nil, 0, err
+	}
+	if err := handler.getGoods(ctx); err != nil {
 		return nil, 0, err
 	}
 	if err := handler.getCoins(ctx); err != nil {

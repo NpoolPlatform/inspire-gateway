@@ -97,7 +97,7 @@ func (h *createHandler) createCommission(ctx context.Context) error {
 	return nil
 }
 
-func (h *createHandler) notifyCreateCommission(ctx context.Context) {
+func (h *createHandler) notifyCreateCommission() {
 	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
 		return publisher.Update(
 			basetypes.MsgID_CreateCommissionReq.String(),
@@ -141,6 +141,6 @@ func (h *Handler) CreateCommission(ctx context.Context) (*npool.Commission, erro
 	if err != nil {
 		return nil, err
 	}
-	handler.notifyCreateCommission(ctx)
+	handler.notifyCreateCommission()
 	return info, nil
 }
