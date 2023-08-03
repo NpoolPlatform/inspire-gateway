@@ -14,12 +14,11 @@ func (h *Handler) GetCoupons(ctx context.Context) ([]*couponmwpb.Coupon, uint32,
 	if h.AppID == nil {
 		return nil, 0, fmt.Errorf("invalid appid")
 	}
-	return couponmwcli.GetCoupons(
-		ctx,
-		&couponmwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		},
-		h.Offset,
-		h.Limit,
-	)
+	conds := &couponmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+	}
+	if h.CouponType != nil {
+		conds.CouponType = &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.CouponType)}
+	}
+	return couponmwcli.GetCoupons(ctx, conds, h.Offset, h.Limit)
 }
