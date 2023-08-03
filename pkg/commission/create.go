@@ -21,11 +21,14 @@ import (
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
 	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
+
+	"github.com/shopspring/decimal"
 )
 
 type createHandler struct {
 	*Handler
 	user       *usermwpb.User
+	inviter    *registrationmwpb.Registration
 	targetUser *usermwpb.User
 	req        *commmwpb.CommissionReq
 }
@@ -75,20 +78,64 @@ func (h *createHandler) getTargetUser(ctx context.Context) error {
 }
 
 func (h *createHandler) validateRegistration(ctx context.Context) error {
-	if !h.CheckAffiliate {
-		return nil
-	}
-	exist, err := registrationmwcli.ExistRegistrationConds(ctx, &registrationmwpb.Conds{
+	info, err := registrationmwcli.GetRegistrationOnly(ctx, &registrationmwpb.Conds{
 		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		InviterID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
 		InviteeID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
 	})
 	if err != nil {
 		return err
 	}
-	if !exist {
+	h.inviter = info
+	if !h.CheckAffiliate {
+		return nil
+	}
+	if h.UserID == nil {
 		return fmt.Errorf("permission denied")
 	}
+	if info == nil {
+		return fmt.Errorf("permission denied")
+	}
+	if info.InviterID != *h.UserID {
+		return fmt.Errorf("permission denied")
+	}
+	return nil
+}
+
+func (h *createHandler) validateCommission(ctx context.Context) error {
+	if h.AmountOrPercent == nil {
+		return fmt.Errorf("invalid amountorpercent")
+	}
+	commission, err := decimal.NewFromString(*h.AmountOrPercent)
+	if err != nil {
+		return err
+	}
+	if commission.Cmp(decimal.NewFromInt(0)) <= 0 {
+		return fmt.Errorf("invalid amountorpercent")
+	}
+	if h.CheckAffiliate && h.inviter == nil {
+		return fmt.Errorf("permission denied")
+	}
+
+	info, err := commmwcli.GetCommissionOnly(ctx, &commmwpb.Conds{
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		EndAt:  &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
+	})
+	if err != nil {
+		return nil
+	}
+	if info == nil {
+		return fmt.Errorf("invalid inviter commission")
+	}
+
+	commission1, err := decimal.NewFromString(info.AmountOrPercent)
+	if err != nil {
+		return err
+	}
+	if commission.Cmp(commission1) > 0 {
+		return fmt.Errorf("invalid invitee commission")
+	}
+
 	return nil
 }
 
@@ -179,6 +226,9 @@ func (h *Handler) CreateCommission(ctx context.Context) (*npool.Commission, erro
 		return nil, err
 	}
 	if err := handler.validateRegistration(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.validateCommission(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.validateGood(ctx); err != nil {
