@@ -141,6 +141,8 @@ func (h *Handler) GetEvent(ctx context.Context) (*npool.Event, error) {
 	handler := &queryHandler{
 		Handler: h,
 		events:  []*eventmwpb.Event{info},
+		goods:   map[string]*appgoodmwpb.Good{},
+		coupons: map[string]*couponmwpb.Coupon{},
 	}
 	handler.AppID = &info.AppID
 	if err := handler.getApp(ctx); err != nil {
@@ -182,6 +184,8 @@ func (h *Handler) GetEvents(ctx context.Context) ([]*npool.Event, uint32, error)
 	handler := &queryHandler{
 		Handler: h,
 		events:  infos,
+		goods:   map[string]*appgoodmwpb.Good{},
+		coupons: map[string]*couponmwpb.Coupon{},
 	}
 	if err := handler.getApp(ctx); err != nil {
 		return nil, 0, err
