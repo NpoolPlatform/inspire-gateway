@@ -54,15 +54,10 @@ type queryHandler struct {
 }
 
 func (h *queryHandler) getInvitees(ctx context.Context) error {
-	registrations, _, err := registrationmwcli.GetRegistrations(
-		ctx,
-		&registrationmwpb.Conds{
-			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			InviterIDs: &basetypes.StringSliceVal{Op: cruder.EQ, Value: h.inviteIDs},
-		},
-		h.Offset,
-		h.Limit,
-	)
+	registrations, _, err := registrationmwcli.GetRegistrations(ctx, &registrationmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		InviterIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+	}, h.Offset, h.Limit)
 	if err != nil {
 		return err
 	}
@@ -74,15 +69,10 @@ func (h *queryHandler) getInvitees(ctx context.Context) error {
 }
 
 func (h *queryHandler) getSuperiores(ctx context.Context) error {
-	registrations, _, err := registrationmwcli.GetSuperiores(
-		ctx,
-		&registrationmwpb.Conds{
-			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			InviteeIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
-		},
-		h.Offset,
-		h.Limit,
-	)
+	registrations, _, err := registrationmwcli.GetSuperiores(ctx, &registrationmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		InviteeIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+	}, h.Offset, h.Limit)
 	if err != nil {
 		return err
 	}
@@ -112,15 +102,10 @@ func (h *queryHandler) getInviteesCount(ctx context.Context) error {
 	limit := constant.DefaultRowLimit
 
 	for {
-		registrations, _, err := registrationmwcli.GetRegistrations(
-			ctx,
-			&registrationmwpb.Conds{
-				AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-				InviterIDs: &basetypes.StringSliceVal{Op: cruder.EQ, Value: h.inviteIDs},
-			},
-			offset,
-			limit,
-		)
+		registrations, _, err := registrationmwcli.GetRegistrations(ctx, &registrationmwpb.Conds{
+			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			InviterIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+		}, offset, limit)
 		if err != nil {
 			return err
 		}
@@ -131,21 +116,17 @@ func (h *queryHandler) getInviteesCount(ctx context.Context) error {
 		for _, registration := range registrations {
 			h.inviteesCount[registration.InviterID] += 1
 		}
+		offset += limit
 	}
 
 	return nil
 }
 
 func (h *queryHandler) getAchievements(ctx context.Context) error {
-	achievements, total, err := achievementmwcli.GetAchievements(
-		ctx,
-		&achievementmwpb.Conds{
-			AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			UserIDs: &basetypes.StringSliceVal{Op: cruder.EQ, Value: h.inviteIDs},
-		},
-		0,
-		int32(len(h.inviteIDs)),
-	)
+	achievements, total, err := achievementmwcli.GetAchievements(ctx, &achievementmwpb.Conds{
+		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		UserIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+	}, 0, int32(len(h.inviteIDs)))
 	if err != nil {
 		return err
 	}
@@ -161,15 +142,10 @@ func (h *queryHandler) getCoins(ctx context.Context) error {
 	for _, achievement := range h.achievements {
 		coinTypeIDs = append(coinTypeIDs, achievement.CoinTypeID)
 	}
-	coins, _, err := appcoinmwcli.GetCoins(
-		ctx,
-		&appcoinmwpb.Conds{
-			AppID:       &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			CoinTypeIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: coinTypeIDs},
-		},
-		0,
-		int32(len(coinTypeIDs)),
-	)
+	coins, _, err := appcoinmwcli.GetCoins(ctx, &appcoinmwpb.Conds{
+		AppID:       &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		CoinTypeIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: coinTypeIDs},
+	}, 0, int32(len(coinTypeIDs)))
 	if err != nil {
 		return err
 	}
@@ -180,15 +156,10 @@ func (h *queryHandler) getCoins(ctx context.Context) error {
 }
 
 func (h *queryHandler) getUsers(ctx context.Context) error {
-	users, _, err := usermwcli.GetUsers(
-		ctx,
-		&usermwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			IDs:   &basetypes.StringSliceVal{Op: cruder.EQ, Value: h.inviteIDs},
-		},
-		0,
-		int32(len(h.inviteIDs)),
-	)
+	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		IDs:   &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+	}, 0, int32(len(h.inviteIDs)))
 	if err != nil {
 		return err
 	}
@@ -203,15 +174,10 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 	for _, achievement := range h.achievements {
 		goodIDs = append(goodIDs, achievement.GoodID)
 	}
-	goods, _, err := appgoodmwcli.GetGoods(
-		ctx,
-		&appgoodmgrpb.Conds{
-			AppID:   &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			GoodIDs: &commonpb.StringSliceVal{Op: cruder.IN, Value: goodIDs},
-		},
-		0,
-		int32(len(goodIDs)),
-	)
+	goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmgrpb.Conds{
+		AppID:   &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		GoodIDs: &commonpb.StringSliceVal{Op: cruder.IN, Value: goodIDs},
+	}, 0, int32(len(goodIDs)))
 	if err != nil {
 		return err
 	}
@@ -226,15 +192,10 @@ func (h *queryHandler) getCommissions(ctx context.Context) error {
 	limit := constant.DefaultRowLimit
 
 	for {
-		commissions, _, err := commmwcli.GetCommissions(
-			ctx,
-			&commmwpb.Conds{
-				AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-				UserIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
-			},
-			offset,
-			limit,
-		)
+		commissions, _, err := commmwcli.GetCommissions(ctx, &commmwpb.Conds{
+			AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			UserIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+		}, offset, limit)
 		if err != nil {
 			return err
 		}
@@ -395,15 +356,10 @@ func (h *queryHandler) getStatements(ctx context.Context) error {
 	offset := int32(0)
 	limit := constant.DefaultRowLimit
 	for {
-		statements, _, err := statementmwcli.GetStatements(
-			ctx,
-			&statementmwpb.Conds{
-				AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-				UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
-			},
-			offset,
-			limit,
-		)
+		statements, _, err := statementmwcli.GetStatements(ctx, &statementmwpb.Conds{
+			AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		}, offset, limit)
 		if err != nil {
 			return err
 		}
