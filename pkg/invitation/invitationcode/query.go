@@ -78,6 +78,7 @@ func (h *Handler) GetInvitationCode(ctx context.Context) (*npool.InvitationCode,
 	handler := &queryHandler{
 		Handler: h,
 		codes:   []*invitationcodemwpb.InvitationCode{info},
+		users:   map[string]*usermwpb.User{},
 	}
 	if err := handler.getUsers(ctx); err != nil {
 		return nil, err
@@ -106,6 +107,7 @@ func (h *Handler) GetInvitationCodes(ctx context.Context) ([]*npool.InvitationCo
 	handler := &queryHandler{
 		Handler: h,
 		codes:   infos,
+		users:   map[string]*usermwpb.User{},
 	}
 	if err := handler.getUsers(ctx); err != nil {
 		return nil, 0, err

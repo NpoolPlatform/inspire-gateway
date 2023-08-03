@@ -87,6 +87,7 @@ func (h *Handler) GetRegistration(ctx context.Context) (*npool.Registration, err
 	handler := &queryHandler{
 		Handler:       h,
 		registrations: []*regmwpb.Registration{info},
+		users:         map[string]*usermwpb.User{},
 	}
 	if err := handler.getUsers(ctx); err != nil {
 		return nil, err
@@ -115,6 +116,7 @@ func (h *Handler) GetRegistrations(ctx context.Context) ([]*npool.Registration, 
 	handler := &queryHandler{
 		Handler:       h,
 		registrations: infos,
+		users:         map[string]*usermwpb.User{},
 	}
 	if err := handler.getUsers(ctx); err != nil {
 		return nil, 0, err
