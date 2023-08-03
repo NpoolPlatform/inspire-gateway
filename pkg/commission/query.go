@@ -90,7 +90,7 @@ func (h *queryHandler) getCoins(ctx context.Context) error {
 	}
 
 	for _, coin := range coins {
-		h.coins[coin.ID] = coin
+		h.coins[coin.CoinTypeID] = coin
 	}
 	return nil
 }
