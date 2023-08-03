@@ -3,6 +3,7 @@ package commission
 import (
 	"context"
 	"fmt"
+	"time"
 
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
@@ -169,6 +170,12 @@ func WithThreshold(amount *string) func(context.Context, *Handler) error {
 
 func WithStartAt(value *uint32) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			return nil
+		}
+		if *value == 0 {
+			*value = uint32(time.Now().Unix())
+		}
 		h.StartAt = value
 		return nil
 	}
