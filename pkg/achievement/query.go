@@ -82,16 +82,25 @@ func (h *queryHandler) getSuperiores(ctx context.Context) error {
 		h.inviteIDs = append(h.inviteIDs, registration.InviterID)
 	}
 	h.total = total
-	registrations, _, err = registrationmwcli.GetRegistrations(ctx, &registrationmwpb.Conds{
-		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		InviterIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
-	}, 0, int32(len(h.inviteIDs)))
-	if err != nil {
-		return err
-	}
-	for _, registration := range registrations {
-		h.registrations[registration.InviteeID] = registration
-		h.inviteIDs = append(h.inviteIDs, registration.InviterID)
+
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+	for {
+		registrations, _, err = registrationmwcli.GetRegistrations(ctx, &registrationmwpb.Conds{
+			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			InviterIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(registrations) == 0 {
+			break
+		}
+		for _, registration := range registrations {
+			h.registrations[registration.InviteeID] = registration
+			h.inviteIDs = append(h.inviteIDs, registration.InviterID)
+		}
+		offset += limit
 	}
 	return nil
 }
@@ -125,7 +134,6 @@ func (h *queryHandler) getInviteesCount(ctx context.Context) error {
 		if len(registrations) == 0 {
 			break
 		}
-
 		for _, registration := range registrations {
 			h.inviteesCount[registration.InviterID] += 1
 		}
@@ -136,15 +144,24 @@ func (h *queryHandler) getInviteesCount(ctx context.Context) error {
 }
 
 func (h *queryHandler) getAchievements(ctx context.Context) error {
-	achievements, _, err := achievementmwcli.GetAchievements(ctx, &achievementmwpb.Conds{
-		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		UserIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
-	}, 0, int32(len(h.inviteIDs)))
-	if err != nil {
-		return err
-	}
-	for _, achievement := range achievements {
-		h.achievements[achievement.UserID] = achievement
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+
+	for {
+		achievements, _, err := achievementmwcli.GetAchievements(ctx, &achievementmwpb.Conds{
+			AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			UserIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(achievements) == 0 {
+			break
+		}
+		for _, achievement := range achievements {
+			h.achievements[achievement.UserID] = achievement
+		}
+		offset += limit
 	}
 	return nil
 }
