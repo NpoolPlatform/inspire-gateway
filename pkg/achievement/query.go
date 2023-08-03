@@ -54,7 +54,7 @@ type queryHandler struct {
 }
 
 func (h *queryHandler) getInvitees(ctx context.Context) error {
-	registrations, _, err := registrationmwcli.GetRegistrations(ctx, &registrationmwpb.Conds{
+	registrations, total, err := registrationmwcli.GetRegistrations(ctx, &registrationmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		InviterIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
 	}, h.Offset, h.Limit)
@@ -65,11 +65,12 @@ func (h *queryHandler) getInvitees(ctx context.Context) error {
 		h.registrations[registration.InviteeID] = registration
 		h.inviteIDs = append(h.inviteIDs, registration.InviteeID)
 	}
+	h.total = total
 	return nil
 }
 
 func (h *queryHandler) getSuperiores(ctx context.Context) error {
-	registrations, _, err := registrationmwcli.GetSuperiores(ctx, &registrationmwpb.Conds{
+	registrations, total, err := registrationmwcli.GetSuperiores(ctx, &registrationmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		InviteeIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
 	}, h.Offset, h.Limit)
@@ -78,7 +79,19 @@ func (h *queryHandler) getSuperiores(ctx context.Context) error {
 	}
 	for _, registration := range registrations {
 		h.registrations[registration.InviteeID] = registration
-		h.inviteIDs = append(h.inviteIDs, registration.InviteeID)
+		h.inviteIDs = append(h.inviteIDs, registration.InviterID)
+	}
+	h.total = total
+	registrations, _, err = registrationmwcli.GetRegistrations(ctx, &registrationmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		InviterIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+	}, 0, int32(len(h.inviteIDs)))
+	if err != nil {
+		return err
+	}
+	for _, registration := range registrations {
+		h.registrations[registration.InviteeID] = registration
+		h.inviteIDs = append(h.inviteIDs, registration.InviterID)
 	}
 	return nil
 }
@@ -123,7 +136,7 @@ func (h *queryHandler) getInviteesCount(ctx context.Context) error {
 }
 
 func (h *queryHandler) getAchievements(ctx context.Context) error {
-	achievements, total, err := achievementmwcli.GetAchievements(ctx, &achievementmwpb.Conds{
+	achievements, _, err := achievementmwcli.GetAchievements(ctx, &achievementmwpb.Conds{
 		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		UserIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
 	}, 0, int32(len(h.inviteIDs)))
@@ -133,7 +146,6 @@ func (h *queryHandler) getAchievements(ctx context.Context) error {
 	for _, achievement := range achievements {
 		h.achievements[achievement.UserID] = achievement
 	}
-	h.total = total
 	return nil
 }
 
