@@ -4,38 +4,49 @@ import (
 	"context"
 	"fmt"
 
-	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
-	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
+	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
+	commissionmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
-	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
-	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
+	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 )
 
 type updateHandler struct {
 	*Handler
-	info *commmwpb.Commission
+	info *commissionmwpb.Commission
 }
 
-func (h *updateHandler) validateInviter(ctx context.Context) error {
-	if h.UserID == nil {
-		return fmt.Errorf("invalid userid")
+func (h *updateHandler) validateCommissions(ctx context.Context) error {
+	if h.StartAt == nil {
+		return nil
 	}
 
-	exist, err := registrationmwcli.ExistRegistrationConds(
-		ctx,
-		&registrationmwpb.Conds{
-			AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			InviterID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
-			InviteeID: &basetypes.StringVal{Op: cruder.EQ, Value: h.info.UserID},
-		},
-	)
-	if err != nil {
-		return err
+	commissions := []*commissionmwpb.Commission{}
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+
+	for {
+		_commissions, _, err := commissionmwcli.GetCommissions(ctx, &commissionmwpb.Conds{
+			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			UserID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.info.UserID},
+			GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.info.GoodID},
+			EndAt:      &basetypes.Uint32Val{Op: cruder.NEQ, Value: 0},
+			SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(h.info.SettleType)},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(_commissions) == 0 {
+			break
+		}
+		commissions = append(commissions, _commissions...)
+		offset += limit
 	}
-	if !exist {
-		return fmt.Errorf("permission denied")
+	for _, commission := range commissions {
+		if commission.EndAt > *h.StartAt {
+			return fmt.Errorf("invalid startat")
+		}
 	}
 	return nil
 }
@@ -48,7 +59,7 @@ func (h *Handler) UpdateCommission(ctx context.Context) (*npool.Commission, erro
 		return nil, fmt.Errorf("invalid appid")
 	}
 
-	info, err := commmwcli.GetCommission(ctx, *h.ID)
+	info, err := commissionmwcli.GetCommission(ctx, *h.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -63,16 +74,14 @@ func (h *Handler) UpdateCommission(ctx context.Context) (*npool.Commission, erro
 		Handler: h,
 		info:    info,
 	}
-	if err := handler.validateInviter(ctx); err != nil {
+	if err := handler.validateCommissions(ctx); err != nil {
 		return nil, err
 	}
 
-	_, err = commmwcli.UpdateCommission(ctx, &commmwpb.CommissionReq{
-		ID:              h.ID,
-		SettleType:      h.SettleType,
-		StartAt:         h.StartAt,
-		AmountOrPercent: h.AmountOrPercent,
-		Threshold:       h.Threshold,
+	_, err = commissionmwcli.UpdateCommission(ctx, &commissionmwpb.CommissionReq{
+		ID:        h.ID,
+		StartAt:   h.StartAt,
+		Threshold: h.Threshold,
 	})
 	if err != nil {
 		return nil, err
