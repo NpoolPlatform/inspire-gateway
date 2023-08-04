@@ -10,7 +10,8 @@ import (
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
 	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
-	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
+	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
+	commissionmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
 	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
@@ -18,16 +19,21 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
 	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
+	goodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
-	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
+	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
+
+	"github.com/shopspring/decimal"
 )
 
 type createHandler struct {
 	*Handler
 	user       *usermwpb.User
+	inviter    *registrationmwpb.Registration
 	targetUser *usermwpb.User
-	req        *commmwpb.CommissionReq
+	req        *commissionmwpb.CommissionReq
+	good       *goodmwpb.Good
 }
 
 func (h *createHandler) _getUser(ctx context.Context, userID string) (*usermwpb.User, error) {
@@ -75,19 +81,120 @@ func (h *createHandler) getTargetUser(ctx context.Context) error {
 }
 
 func (h *createHandler) validateRegistration(ctx context.Context) error {
-	if !h.CheckAffiliate {
-		return nil
-	}
-	exist, err := registrationmwcli.ExistRegistrationConds(ctx, &registrationmwpb.Conds{
+	info, err := registrationmwcli.GetRegistrationOnly(ctx, &registrationmwpb.Conds{
 		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		InviterID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
 		InviteeID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
 	})
 	if err != nil {
 		return err
 	}
-	if !exist {
+	h.inviter = info
+	if !h.CheckAffiliate {
+		if info != nil {
+			h.UserID = &info.InviterID
+		}
+		return nil
+	}
+	if h.UserID == nil {
 		return fmt.Errorf("permission denied")
+	}
+	if info == nil {
+		return fmt.Errorf("permission denied")
+	}
+	if info.InviterID != *h.UserID {
+		return fmt.Errorf("permission denied")
+	}
+	return nil
+}
+
+func (h *createHandler) validateInviter(ctx context.Context) error {
+	if h.AmountOrPercent == nil {
+		return fmt.Errorf("invalid amountorpercent")
+	}
+	commission, err := decimal.NewFromString(*h.AmountOrPercent)
+	if err != nil {
+		return err
+	}
+	if commission.Cmp(decimal.NewFromInt(0)) <= 0 {
+		return fmt.Errorf("invalid amountorpercent")
+	}
+	if h.inviter == nil {
+		if h.CheckAffiliate {
+			return fmt.Errorf("permission denied")
+		}
+		// That means we don't have a inviter
+		return nil
+	}
+
+	info, err := commissionmwcli.GetCommissionOnly(ctx, &commissionmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		UserID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
+		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(h.good.CommissionSettleType)},
+	})
+	if err != nil {
+		return nil
+	}
+	if info == nil {
+		return fmt.Errorf("invalid inviter commission")
+	}
+
+	commission1, err := decimal.NewFromString(info.AmountOrPercent)
+	if err != nil {
+		return err
+	}
+	if commission.Cmp(commission1) > 0 {
+		return fmt.Errorf("invalid invitee commission")
+	}
+
+	return nil
+}
+
+func (h *createHandler) validateInvitees(ctx context.Context) error {
+	invitees := []*registrationmwpb.Registration{}
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+
+	for {
+		_invitees, _, err := registrationmwcli.GetRegistrations(ctx, &registrationmwpb.Conds{
+			AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			InviterID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(_invitees) == 0 {
+			break
+		}
+		invitees = append(invitees, _invitees...)
+		offset += limit
+	}
+	userIDs := []string{}
+	for _, invitee := range invitees {
+		userIDs = append(userIDs, invitee.InviteeID)
+	}
+	commissions, _, err := commissionmwcli.GetCommissions(ctx, &commissionmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		UserIDs:    &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
+		GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
+		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(h.good.CommissionSettleType)},
+	}, 0, int32(len(userIDs)))
+	if err != nil {
+		return err
+	}
+	commission, err := decimal.NewFromString(*h.AmountOrPercent)
+	if err != nil {
+		return err
+	}
+	for _, _commission := range commissions {
+		value, err := decimal.NewFromString(_commission.AmountOrPercent)
+		if err != nil {
+			return err
+		}
+		if commission.Cmp(value) < 0 {
+			return fmt.Errorf("invalid inviter commission")
+		}
 	}
 	return nil
 }
@@ -119,11 +226,12 @@ func (h *createHandler) validateGood(ctx context.Context) error {
 		return fmt.Errorf("invalid coin")
 	}
 
+	h.good = good
 	return nil
 }
 
 func (h *createHandler) createCommission(ctx context.Context) error {
-	h.req = &commmwpb.CommissionReq{
+	h.req = &commissionmwpb.CommissionReq{
 		AppID:           h.AppID,
 		UserID:          h.TargetUserID,
 		GoodID:          h.GoodID,
@@ -133,7 +241,7 @@ func (h *createHandler) createCommission(ctx context.Context) error {
 		AmountOrPercent: h.AmountOrPercent,
 		Threshold:       h.Threshold,
 	}
-	info, err := commmwcli.CreateCommission(ctx, h.req)
+	info, err := commissionmwcli.CreateCommission(ctx, h.req)
 	if err != nil {
 		return err
 	}
@@ -148,7 +256,7 @@ func (h *createHandler) notifyCreateCommission() {
 			nil,
 			nil,
 			nil,
-			&commmwpb.Commission{
+			&commissionmwpb.Commission{
 				AppID:           *h.AppID,
 				UserID:          *h.TargetUserID,
 				GoodID:          *h.GoodID,
@@ -182,6 +290,12 @@ func (h *Handler) CreateCommission(ctx context.Context) (*npool.Commission, erro
 		return nil, err
 	}
 	if err := handler.validateGood(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.validateInviter(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.validateInvitees(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.createCommission(ctx); err != nil {
