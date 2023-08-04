@@ -9,7 +9,7 @@ import (
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
-	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	commissionmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
 	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
@@ -18,8 +18,8 @@ import (
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
-	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
-	goodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
+	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
+	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
 	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
@@ -33,7 +33,7 @@ type createHandler struct {
 	inviter    *registrationmwpb.Registration
 	targetUser *usermwpb.User
 	req        *commissionmwpb.CommissionReq
-	good       *goodmwpb.Good
+	good       *appgoodmwpb.Good
 }
 
 func (h *createHandler) _getUser(ctx context.Context, userID string) (*usermwpb.User, error) {
@@ -204,7 +204,7 @@ func (h *createHandler) validateGood(ctx context.Context) error {
 		return nil
 	}
 
-	good, err := goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
+	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmgrpb.Conds{
 		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.GoodID},
 	})

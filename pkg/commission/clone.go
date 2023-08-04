@@ -4,8 +4,30 @@ import (
 	"context"
 	"fmt"
 
-	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	commissionmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	commonpb "github.com/NpoolPlatform/message/npool"
+	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
 )
+
+type cloneHandler struct {
+	*Handler
+}
+
+func (h *cloneHandler) validateGoods(ctx context.Context) error {
+	goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmgrpb.Conds{
+		AppID:   &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		GoodIDs: &commonpb.StringSliceVal{Op: cruder.IN, Value: []string{*h.FromGoodID, *h.ToGoodID}},
+	}, int32(0), int32(2)) //nolint
+	if err != nil {
+		return err
+	}
+	if len(goods) < 2 { //nolint
+		return fmt.Errorf("invalid goodid")
+	}
+	return nil
+}
 
 func (h *Handler) CloneCommissions(ctx context.Context) error {
 	if h.AppID == nil {
@@ -17,11 +39,19 @@ func (h *Handler) CloneCommissions(ctx context.Context) error {
 	if h.ToGoodID == nil {
 		return fmt.Errorf("invalid togoodid")
 	}
+
+	handler := &cloneHandler{
+		Handler: h,
+	}
+	if err := handler.validateGoods(ctx); err != nil {
+		return err
+	}
+
 	scalePercent := "1"
 	if h.ScalePercent != nil {
 		scalePercent = *h.ScalePercent
 	}
-	return commmwcli.CloneCommissions(
+	return commissionmwcli.CloneCommissions(
 		ctx,
 		*h.AppID,
 		*h.FromGoodID,
