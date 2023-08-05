@@ -2,7 +2,9 @@ package event
 
 import (
 	"context"
+	"fmt"
 
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 
@@ -52,8 +54,12 @@ func WithAppID(id *string) func(context.Context, *Handler) error {
 		if id == nil {
 			return nil
 		}
-		if _, err := uuid.Parse(*id); err != nil {
+		exist, err := appmwcli.ExistApp(ctx, *id)
+		if err != nil {
 			return err
+		}
+		if !exist {
+			return fmt.Errorf("invalid appid")
 		}
 		h.AppID = id
 		return nil
