@@ -17,6 +17,8 @@ func (s *Server) GetCoupons(ctx context.Context, in *npool.GetCouponsRequest) (*
 		ctx,
 		allocated1.WithAppID(&in.AppID),
 		allocated1.WithUserID(&in.UserID),
+		allocated1.WithOffset(in.GetOffset()),
+		allocated1.WithLimit(in.GetLimit()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -47,6 +49,8 @@ func (s *Server) GetAppCoupons(ctx context.Context, in *npool.GetAppCouponsReque
 	handler, err := allocated1.NewHandler(
 		ctx,
 		allocated1.WithAppID(&in.AppID),
+		allocated1.WithOffset(in.GetOffset()),
+		allocated1.WithLimit(in.GetLimit()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
