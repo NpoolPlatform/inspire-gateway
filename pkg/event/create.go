@@ -2,13 +2,51 @@ package event
 
 import (
 	"context"
+	"fmt"
 
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
 	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	commonpb "github.com/NpoolPlatform/message/npool"
+	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
 	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 )
 
+type createHandler struct {
+	*Handler
+}
+
+func (h *createHandler) validateGood(ctx context.Context) error {
+	if h.GoodID == nil {
+		return nil
+	}
+	if h.AppID == nil {
+		return fmt.Errorf("invalid appid")
+	}
+
+	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmgrpb.Conds{
+		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+	})
+	if err != nil {
+		return err
+	}
+	if good == nil {
+		return fmt.Errorf("invalid goodid")
+	}
+
+	return nil
+}
+
 func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
+	handler := &createHandler{
+		Handler: h,
+	}
+	if err := handler.validateGood(ctx); err != nil {
+		return nil, err
+	}
+
 	info, err := eventmwcli.CreateEvent(ctx, &eventmwpb.EventReq{
 		AppID:          h.AppID,
 		EventType:      h.EventType,

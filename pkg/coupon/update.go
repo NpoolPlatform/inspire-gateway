@@ -26,6 +26,7 @@ func (h *Handler) UpdateCoupon(ctx context.Context) (*couponmwpb.Coupon, error) 
 			Name:             h.Name,
 			GoodID:           h.GoodID,
 			CouponConstraint: h.CouponConstraint,
+			Threshold:        h.Threshold,
 			Random:           h.Random,
 		},
 	)
