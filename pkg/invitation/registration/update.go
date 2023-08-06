@@ -39,6 +39,7 @@ func (h *Handler) UpdateRegistration(ctx context.Context) (*npool.Registration, 
 
 	_, err = regmwcli.UpdateRegistration(ctx, &regmwpb.RegistrationReq{
 		ID:        h.ID,
+		AppID:     &info.AppID,
 		InviterID: h.InviterID,
 	})
 	if err != nil {
