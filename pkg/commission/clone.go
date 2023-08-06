@@ -16,14 +16,15 @@ type cloneHandler struct {
 }
 
 func (h *cloneHandler) validateGoods(ctx context.Context) error {
+	const limit = 2
 	goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmgrpb.Conds{
 		AppID:   &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		GoodIDs: &commonpb.StringSliceVal{Op: cruder.IN, Value: []string{*h.FromGoodID, *h.ToGoodID}},
-	}, int32(0), int32(2)) //nolint
+	}, int32(0), int32(limit))
 	if err != nil {
 		return err
 	}
-	if len(goods) < 2 { //nolint
+	if len(goods) < limit {
 		return fmt.Errorf("invalid goodid")
 	}
 	return nil

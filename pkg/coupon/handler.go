@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	timedef "github.com/NpoolPlatform/go-service-framework/pkg/const/time"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 
@@ -169,7 +170,7 @@ func WithDurationDays(value *uint32) func(context.Context, *Handler) error {
 			return nil
 		}
 		if *value == 0 {
-			*value = 365 //nolint
+			*value = timedef.DaysPerYear
 		}
 		h.DurationDays = value
 		return nil
