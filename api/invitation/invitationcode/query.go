@@ -16,6 +16,8 @@ func (s *Server) GetInvitationCodes(ctx context.Context, in *npool.GetInvitation
 	handler, err := invitationcode1.NewHandler(
 		ctx,
 		invitationcode1.WithAppID(&in.AppID),
+		invitationcode1.WithOffset(in.GetOffset()),
+		invitationcode1.WithLimit(in.GetLimit()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
