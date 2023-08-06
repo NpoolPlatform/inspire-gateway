@@ -14,6 +14,7 @@ func (h *Handler) UpdateEvent(ctx context.Context) (*npool.Event, error) {
 		return nil, fmt.Errorf("invalid id")
 	}
 	_, err := eventmwcli.UpdateEvent(ctx, &eventmwpb.EventReq{
+		ID:             h.ID,
 		AppID:          h.AppID,
 		CouponIDs:      h.CouponIDs,
 		Credits:        h.Credits,
