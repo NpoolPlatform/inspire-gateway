@@ -253,6 +253,8 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType orderm
 				)
 			}
 		}
+
+		offset += limit
 	}
 	return nil
 }
