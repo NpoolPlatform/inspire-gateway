@@ -22,6 +22,9 @@ func (h *Handler) UpdateRegistration(ctx context.Context) (*npool.Registration, 
 	if err != nil {
 		return nil, err
 	}
+	if info == nil {
+		return nil, fmt.Errorf("invalid id")
+	}
 	if info.InviterID == *h.InviterID || info.InviteeID == *h.InviterID {
 		return nil, fmt.Errorf("invalid inviterid")
 	}
