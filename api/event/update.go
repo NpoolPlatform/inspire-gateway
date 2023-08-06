@@ -15,6 +15,7 @@ import (
 func (s *Server) UpdateEvent(ctx context.Context, in *npool.UpdateEventRequest) (*npool.UpdateEventResponse, error) {
 	handler, err := event1.NewHandler(
 		ctx,
+		event1.WithID(&in.ID),
 		event1.WithAppID(&in.AppID),
 		event1.WithCouponIDs(in.GetCouponIDs()),
 		event1.WithCredits(in.Credits),
