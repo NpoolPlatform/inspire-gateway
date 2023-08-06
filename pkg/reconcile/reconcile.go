@@ -12,6 +12,7 @@ import (
 	statementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/statement"
 	calculatemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/calculate"
 	ledgermwcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger/v2"
+	commonpb "github.com/NpoolPlatform/message/npool"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
 	statementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement"
@@ -21,9 +22,8 @@ import (
 	ordermwpb "github.com/NpoolPlatform/message/npool/order/mw/v1/order"
 	ordermwcli "github.com/NpoolPlatform/order-middleware/pkg/client/order"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-
-	"github.com/NpoolPlatform/message/npool"
 )
 
 type reconcileHandler struct {
@@ -32,8 +32,8 @@ type reconcileHandler struct {
 
 func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolint
 	good, err := goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
-		AppID:  &npool.StringVal{Op: cruder.EQ, Value: order.AppID},
-		GoodID: &npool.StringVal{Op: cruder.EQ, Value: order.GoodID},
+		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: order.AppID},
+		GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: order.GoodID},
 	})
 	if err != nil {
 		return err
@@ -112,10 +112,9 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 
 	statementReqs := []*statementmwpb.StatementReq{}
 	for _, statement := range statements {
-		statementReqs = append(statementReqs, &statementmwpb.StatementReq{
+		req := &statementmwpb.StatementReq{
 			AppID:                  &statement.AppID,
 			UserID:                 &statement.UserID,
-			DirectContributorID:    &statement.DirectContributorID,
 			GoodID:                 &statement.GoodID,
 			OrderID:                &statement.OrderID,
 			SelfOrder:              &statement.SelfOrder,
@@ -127,7 +126,11 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 			Amount:                 &statement.Amount,
 			USDAmount:              &statement.USDAmount,
 			Commission:             &statement.Commission,
-		})
+		}
+		if _, err := uuid.Parse(statement.DirectContributorID); err == nil {
+			req.DirectContributorID = &statement.DirectContributorID
+		}
+		statementReqs = append(statementReqs, req)
 	}
 
 	_, err = statementmwcli.CreateStatements(ctx, statementReqs)
@@ -220,10 +223,10 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType orderm
 		orders, _, err := ordermwcli.GetOrders(
 			ctx,
 			&ordermwpb.Conds{
-				AppID:  &npool.StringVal{Op: cruder.EQ, Value: *h.AppID},
-				GoodID: &npool.StringVal{Op: cruder.EQ, Value: *h.GoodID},
-				Type:   &npool.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
-				States: &npool.Uint32SliceVal{
+				AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
+				GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+				Type:   &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
+				States: &commonpb.Uint32SliceVal{
 					Op: cruder.IN,
 					Value: []uint32{
 						uint32(ordermgrpb.OrderState_Paid),
