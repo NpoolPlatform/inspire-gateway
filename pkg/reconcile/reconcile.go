@@ -147,6 +147,7 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 			"PaymentCoinTypeID", order.PaymentCoinTypeID,
 			"Error", err,
 		)
+		return err
 	}
 
 	details := []*ledgerdetailmgrpb.DetailReq{}
@@ -201,6 +202,10 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 			Amount:     &statement.Commission,
 			IOExtra:    &ioExtra,
 		})
+	}
+
+	if len(details) == 0 {
+		return nil
 	}
 
 	err = ledgermwcli.BookKeeping(ctx, details)
