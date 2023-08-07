@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	timedef "github.com/NpoolPlatform/go-service-framework/pkg/const/time"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
@@ -61,8 +62,12 @@ func WithAppID(id *string) func(context.Context, *Handler) error {
 		if id == nil {
 			return nil
 		}
-		if _, err := uuid.Parse(*id); err != nil {
+		exist, err := appmwcli.ExistApp(ctx, *id)
+		if err != nil {
 			return err
+		}
+		if !exist {
+			return fmt.Errorf("invalid appid")
 		}
 		h.AppID = id
 		return nil
