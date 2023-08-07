@@ -166,6 +166,14 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 	)
 
 	for _, statement := range statements {
+		commission, err := decimal.NewFromString(statement.Commission)
+		if err != nil {
+			return err
+		}
+		if commission.Cmp(decimal.NewFromInt(0)) <= 0 {
+			continue
+		}
+
 		logger.Sugar().Infow(
 			"reconcileOrder",
 			"AppID", statement.AppID,
@@ -190,7 +198,7 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 			CoinTypeID: &order.PaymentCoinTypeID,
 			IOType:     &ioType,
 			IOSubType:  &ioSubType,
-			Amount:     &statement.Amount,
+			Amount:     &statement.Commission,
 			IOExtra:    &ioExtra,
 		})
 	}
