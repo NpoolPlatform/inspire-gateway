@@ -9,7 +9,7 @@ require (
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230629111059-d8280578df85
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230713042541-12fa919fa92a
 	github.com/NpoolPlatform/good-middleware v0.0.0-20230803072154-2dfb2182e6ae
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230806064453-1eeb61473bde
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230807024341-07096c3a9fe0
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
 	github.com/NpoolPlatform/message v0.0.0-20230807022359-7033bb822305
