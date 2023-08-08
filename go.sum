@@ -71,8 +71,6 @@ github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9 h1
 github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9/go.mod h1:nmVvmSGYuOBGZ4RWeTZ8ny5Kw6Nx8uwQPblmJ/x1wYs=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb h1:IAQOJ0xQWdJS1BnimNdM6GZMLgTL/FnIa8C8K4xffUA=
 github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb/go.mod h1:zvvqlRwbOdTUauPQ9dFDhDuxa91ILV0CQfVdPBZj+eA=
-github.com/NpoolPlatform/message v0.0.0-20230808021622-00e4fe99d946 h1:WcLZ2oyl5n5eZWdo9Hl2I4Z3Uz7HB8Fjmz1/U5neSVQ=
-github.com/NpoolPlatform/message v0.0.0-20230808021622-00e4fe99d946/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 github.com/NpoolPlatform/message v0.0.0-20230808080218-4d13367b77ce h1:7BCHNNe82jh3XHxe4p1c2Z2NAfJSnwxMOcX3JgV+Bfg=
 github.com/NpoolPlatform/message v0.0.0-20230808080218-4d13367b77ce/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20230629102531-6aa588cd8391 h1:gdazH8BnsBGadpL6t4p5Bi2w6jvzPHiDakPQI/FK4Lw=
