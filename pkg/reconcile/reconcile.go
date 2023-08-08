@@ -67,13 +67,11 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		"OrderID", order.ID,
 		"PaymentAmount", paymentAmountS,
 		"GoodValue", goodValue,
-		"SettleType", good.CommissionSettleType,
 		"CoinTypeID", good.CoinTypeID,
 		"PaymentCoinTypeID", order.PaymentCoinTypeID,
 		"USDCurrency", order.PaymentCoinUSDCurrency,
 	)
 
-	settleType := types.SettleType(types.SettleType_value[good.CommissionSettleType.String()])
 	statements, err := calculatemwcli.Calculate(ctx, &calculatemwpb.CalculateRequest{
 		AppID:                  order.AppID,
 		UserID:                 order.UserID,
@@ -86,7 +84,7 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		Units:                  order.Units,
 		PaymentAmount:          paymentAmountS,
 		GoodValue:              goodValue,
-		SettleType:             settleType,
+		SettleType:             types.SettleType_GoodOrderPayment,
 		HasCommission:          order.OrderType == ordermgrpb.OrderType_Normal,
 		OrderCreatedAt:         order.CreatedAt,
 	})
@@ -98,7 +96,6 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 			"OrderID", order.ID,
 			"PaymentAmount", paymentAmountS,
 			"GoodValue", goodValue,
-			"SettleType", good.CommissionSettleType,
 			"CoinTypeID", good.CoinTypeID,
 			"PaymentCoinTypeID", order.PaymentCoinTypeID,
 			"Error", err,
@@ -142,7 +139,6 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 			"OrderID", order.ID,
 			"PaymentAmount", paymentAmountS,
 			"GoodValue", goodValue,
-			"SettleType", good.CommissionSettleType,
 			"CoinTypeID", good.CoinTypeID,
 			"PaymentCoinTypeID", order.PaymentCoinTypeID,
 			"Error", err,
@@ -161,7 +157,6 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		"OrderID", order.ID,
 		"PaymentAmount", paymentAmountS,
 		"GoodValue", goodValue,
-		"SettleType", good.CommissionSettleType,
 		"CoinTypeID", good.CoinTypeID,
 		"PaymentCoinTypeID", order.PaymentCoinTypeID,
 	)
@@ -218,7 +213,6 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 			"OrderID", order.ID,
 			"PaymentAmount", paymentAmountS,
 			"GoodValue", goodValue,
-			"SettleType", good.CommissionSettleType,
 			"CoinTypeID", good.CoinTypeID,
 			"PaymentCoinTypeID", order.PaymentCoinTypeID,
 			"Error", err,

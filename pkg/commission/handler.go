@@ -13,23 +13,24 @@ import (
 )
 
 type Handler struct {
-	ID              *string
-	AppID           *string
-	UserID          *string
-	TargetUserID    *string
-	GoodID          *string
-	SettleType      *types.SettleType
-	SettleMode      *types.SettleMode
-	AmountOrPercent *string
-	Threshold       *string
-	StartAt         *uint32
-	EndAt           *uint32
-	FromGoodID      *string
-	ToGoodID        *string
-	ScalePercent    *string
-	CheckAffiliate  bool
-	Offset          int32
-	Limit           int32
+	ID               *string
+	AppID            *string
+	UserID           *string
+	TargetUserID     *string
+	GoodID           *string
+	SettleType       *types.SettleType
+	SettleMode       *types.SettleMode
+	SettleAmountType *types.SettleAmountType
+	AmountOrPercent  *string
+	Threshold        *string
+	StartAt          *uint32
+	EndAt            *uint32
+	FromGoodID       *string
+	ToGoodID         *string
+	ScalePercent     *string
+	CheckAffiliate   bool
+	Offset           int32
+	Limit            int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -115,13 +116,29 @@ func WithSettleType(settleType *types.SettleType) func(context.Context, *Handler
 			return nil
 		}
 		switch *settleType {
-		case types.SettleType_GoodOrderPercent:
+		case types.SettleType_GoodOrderPayment:
 		case types.SettleType_TechniqueFeePercent:
 		case types.SettleType_NoCommission:
 		default:
 			return fmt.Errorf("invalid settletype")
 		}
 		h.SettleType = settleType
+		return nil
+	}
+}
+
+func WithSettleAmountType(settleAmountType *types.SettleAmountType) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if settleAmountType == nil {
+			return nil
+		}
+		switch *settleAmountType {
+		case types.SettleAmountType_SettleByPercent:
+		case types.SettleAmountType_SettleByAmount:
+		default:
+			return fmt.Errorf("invalid settleamounttype")
+		}
+		h.SettleAmountType = settleAmountType
 		return nil
 	}
 }

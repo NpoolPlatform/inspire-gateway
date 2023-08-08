@@ -125,8 +125,9 @@ func Migrate(ctx context.Context) error {
 				SetAmountOrPercent(gop.Percent).
 				SetStartAt(gop.StartAt).
 				SetEndAt(gop.EndAt).
-				SetSettleType(types.SettleType_GoodOrderPercent.String()).
+				SetSettleType(types.SettleType_GoodOrderPayment.String()).
 				SetSettleMode(types.SettleMode_SettleWithGoodValue.String()).
+				SetSettleAmountType(types.SettleAmountType_SettleByPercent.String()).
 				SetSettleInterval(types.SettleInterval_SettleEveryOrder.String()).
 				SetThreshold(decimal.NewFromInt(0)).
 				SetOrderLimit(0).

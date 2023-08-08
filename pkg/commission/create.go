@@ -16,10 +16,10 @@ import (
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
 	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
-	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
 	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
@@ -33,7 +33,6 @@ type createHandler struct {
 	inviter    *registrationmwpb.Registration
 	targetUser *usermwpb.User
 	req        *commissionmwpb.CommissionReq
-	good       *appgoodmwpb.Good
 }
 
 func (h *createHandler) _getUser(ctx context.Context, userID string) (*usermwpb.User, error) {
@@ -129,8 +128,9 @@ func (h *createHandler) validateInviter(ctx context.Context) error {
 	info, err := commissionmwcli.GetCommissionOnly(ctx, &commissionmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		UserID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
 		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
-		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(h.good.CommissionSettleType)},
+		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(types.SettleType_GoodOrderPayment)},
 	})
 	if err != nil {
 		return nil
@@ -178,7 +178,7 @@ func (h *createHandler) validateInvitees(ctx context.Context) error {
 		UserIDs:    &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
 		GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
 		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
-		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(h.good.CommissionSettleType)},
+		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(types.SettleType_GoodOrderPayment)},
 	}, 0, int32(len(userIDs)))
 	if err != nil {
 		return err
@@ -225,21 +225,20 @@ func (h *createHandler) validateGood(ctx context.Context) error {
 	if coin == nil {
 		return fmt.Errorf("invalid coin")
 	}
-
-	h.good = good
 	return nil
 }
 
 func (h *createHandler) createCommission(ctx context.Context) error {
 	h.req = &commissionmwpb.CommissionReq{
-		AppID:           h.AppID,
-		UserID:          h.TargetUserID,
-		GoodID:          h.GoodID,
-		SettleType:      h.SettleType,
-		SettleMode:      h.SettleMode,
-		StartAt:         h.StartAt,
-		AmountOrPercent: h.AmountOrPercent,
-		Threshold:       h.Threshold,
+		AppID:            h.AppID,
+		UserID:           h.TargetUserID,
+		GoodID:           h.GoodID,
+		SettleType:       h.SettleType,
+		SettleMode:       h.SettleMode,
+		SettleAmountType: h.SettleAmountType,
+		StartAt:          h.StartAt,
+		AmountOrPercent:  h.AmountOrPercent,
+		Threshold:        h.Threshold,
 	}
 	info, err := commissionmwcli.CreateCommission(ctx, h.req)
 	if err != nil {
@@ -257,13 +256,14 @@ func (h *createHandler) notifyCreateCommission() {
 			nil,
 			nil,
 			&commissionmwpb.Commission{
-				AppID:           *h.AppID,
-				UserID:          *h.TargetUserID,
-				GoodID:          *h.GoodID,
-				SettleType:      *h.SettleType,
-				SettleMode:      *h.SettleMode,
-				StartAt:         *h.StartAt,
-				AmountOrPercent: *h.AmountOrPercent,
+				AppID:            *h.AppID,
+				UserID:           *h.TargetUserID,
+				GoodID:           *h.GoodID,
+				SettleType:       *h.SettleType,
+				SettleMode:       *h.SettleMode,
+				SettleAmountType: *h.SettleAmountType,
+				StartAt:          *h.StartAt,
+				AmountOrPercent:  *h.AmountOrPercent,
 			},
 		)
 	}); err != nil {
