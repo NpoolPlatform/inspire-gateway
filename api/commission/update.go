@@ -17,7 +17,6 @@ func (s *Server) UpdateCommission(ctx context.Context, in *npool.UpdateCommissio
 		ctx,
 		commission1.WithID(&in.ID),
 		commission1.WithAppID(&in.AppID),
-		commission1.WithAmountOrPercent(in.AmountOrPercent),
 		commission1.WithStartAt(in.StartAt),
 		commission1.WithThreshold(in.Threshold),
 	)
