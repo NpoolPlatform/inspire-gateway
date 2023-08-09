@@ -247,12 +247,12 @@ func (h *queryHandler) getCommissions(ctx context.Context) error {
 func (h *queryHandler) formalizeUsers() {
 	for _, user := range h.users {
 		invitedAt := uint32(0)
-		var inviterID string
+		var inviterID *string
 
 		registration, ok := h.registrations[user.ID]
 		if ok {
 			invitedAt = registration.CreatedAt
-			inviterID = registration.InviterID
+			inviterID = &registration.InviterID
 		}
 
 		h.infoMap[user.ID] = &npool.Achievement{
