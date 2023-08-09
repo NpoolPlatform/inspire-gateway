@@ -20,6 +20,7 @@ type Handler struct {
 	GoodID           *string
 	SettleType       *types.SettleType
 	SettleMode       *types.SettleMode
+	SettleInterval   *types.SettleInterval
 	SettleAmountType *types.SettleAmountType
 	AmountOrPercent  *string
 	Threshold        *string
@@ -155,6 +156,24 @@ func WithSettleMode(settleMode *types.SettleMode) func(context.Context, *Handler
 			return fmt.Errorf("invalid settlemode")
 		}
 		h.SettleMode = settleMode
+		return nil
+	}
+}
+
+func WithSettleInterval(settleInterval *types.SettleInterval) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if settleInterval == nil {
+			return nil
+		}
+		switch *settleInterval {
+		case types.SettleInterval_SettleAggregate:
+		case types.SettleInterval_SettleYearly:
+		case types.SettleInterval_SettleMonthly:
+		case types.SettleInterval_SettleEveryOrder:
+		default:
+			return fmt.Errorf("invalid settleinterval")
+		}
+		h.SettleInterval = settleInterval
 		return nil
 	}
 }
