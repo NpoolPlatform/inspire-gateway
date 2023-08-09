@@ -70,6 +70,20 @@ func (h *queryHandler) getInvitees(ctx context.Context) error {
 }
 
 func (h *queryHandler) getSuperiores(ctx context.Context) error {
+	if h.Limit < int32(len(h.inviteIDs)) {
+		return fmt.Errorf("limit should be greater than userids")
+	}
+
+	resetInviteIDs := false
+	if h.Offset == 0 {
+		h.Limit -= int32(len(h.inviteIDs))
+	} else if h.Offset < int32(len(h.inviteIDs)) {
+		return fmt.Errorf("offset should be greater than userids")
+	} else {
+		h.Offset -= int32(len(h.inviteIDs))
+		resetInviteIDs = true
+	}
+
 	registrations, total, err := registrationmwcli.GetSuperiores(ctx, &registrationmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		InviteeIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
@@ -77,11 +91,17 @@ func (h *queryHandler) getSuperiores(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	for _, registration := range registrations {
-		h.registrations[registration.InviteeID] = registration
-		h.inviteIDs = append(h.inviteIDs, registration.InviterID)
+
+	h.total = total + uint32(len(h.inviteIDs))
+	if resetInviteIDs {
+		h.inviteIDs = []string{}
 	}
-	h.total = total
+	if h.Limit > 0 {
+		for _, registration := range registrations {
+			h.registrations[registration.InviteeID] = registration
+			h.inviteIDs = append(h.inviteIDs, registration.InviterID)
+		}
+	}
 
 	offset := int32(0)
 	limit := constant.DefaultRowLimit
@@ -454,6 +474,9 @@ func (h *Handler) GetAchievements(ctx context.Context) ([]*npool.Achievement, ui
 	}
 	if err := handler.getRegistrations(ctx); err != nil {
 		return nil, 0, err
+	}
+	if len(handler.registrations) == 0 {
+		return nil, handler.total, nil
 	}
 	if err := handler.getInviteesCount(ctx); err != nil {
 		return nil, 0, err
