@@ -114,7 +114,7 @@ func (h *createHandler) validateInviter(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	if commission.Cmp(decimal.NewFromInt(0)) <= 0 {
+	if commission.Cmp(decimal.NewFromInt(0)) < 0 {
 		return fmt.Errorf("invalid amountorpercent")
 	}
 	if h.inviter == nil {

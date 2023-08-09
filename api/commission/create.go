@@ -24,6 +24,7 @@ func (s *Server) CreateCommission(ctx context.Context, in *npool.CreateCommissio
 		commission1.WithAmountOrPercent(&in.AmountOrPercent),
 		commission1.WithStartAt(&in.StartAt),
 		commission1.WithSettleMode(&in.SettleMode),
+		commission1.WithSettleInterval(&in.SettleInterval),
 		commission1.WithThreshold(in.Threshold),
 	)
 	if err != nil {
