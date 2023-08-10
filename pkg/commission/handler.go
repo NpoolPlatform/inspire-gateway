@@ -119,7 +119,6 @@ func WithSettleType(settleType *types.SettleType) func(context.Context, *Handler
 		switch *settleType {
 		case types.SettleType_GoodOrderPayment:
 		case types.SettleType_TechniqueServiceFee:
-		case types.SettleType_NoCommission:
 		default:
 			return fmt.Errorf("invalid settletype")
 		}
