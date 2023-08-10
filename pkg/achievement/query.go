@@ -54,6 +54,20 @@ type queryHandler struct {
 }
 
 func (h *queryHandler) getInvitees(ctx context.Context) error {
+	if h.Limit < int32(len(h.inviteIDs)) {
+		return fmt.Errorf("limit should be greater than userids")
+	}
+
+	resetInviteIDs := false
+	if h.Offset == 0 {
+		h.Limit -= int32(len(h.inviteIDs))
+	} else if h.Offset < int32(len(h.inviteIDs)) {
+		return fmt.Errorf("offset should be greater than userids")
+	} else {
+		h.Offset -= int32(len(h.inviteIDs))
+		resetInviteIDs = true
+	}
+
 	registrations, total, err := registrationmwcli.GetRegistrations(ctx, &registrationmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		InviterIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
@@ -62,7 +76,13 @@ func (h *queryHandler) getInvitees(ctx context.Context) error {
 		return err
 	}
 	h.total = total + uint32(len(h.inviteIDs))
-	for _, registration := range registrations {
+	if resetInviteIDs {
+		h.inviteIDs = []string{}
+	}
+	for i, registration := range registrations {
+		if int32(i) >= h.Limit {
+			break
+		}
 		h.registrations[registration.InviteeID] = registration
 		h.inviteIDs = append(h.inviteIDs, registration.InviteeID)
 	}
@@ -96,11 +116,12 @@ func (h *queryHandler) getSuperiores(ctx context.Context) error {
 	if resetInviteIDs {
 		h.inviteIDs = []string{}
 	}
-	if h.Limit > 0 {
-		for _, registration := range registrations {
-			h.registrations[registration.InviteeID] = registration
-			h.inviteIDs = append(h.inviteIDs, registration.InviterID)
+	for i, registration := range registrations {
+		if int32(i) >= h.Limit {
+			break
 		}
+		h.registrations[registration.InviteeID] = registration
+		h.inviteIDs = append(h.inviteIDs, registration.InviterID)
 	}
 
 	offset := int32(0)
@@ -140,6 +161,10 @@ func (h *queryHandler) getRegistrations(ctx context.Context) error {
 }
 
 func (h *queryHandler) getInviteesCount(ctx context.Context) error {
+	if len(h.inviteIDs) == 0 {
+		return nil
+	}
+
 	offset := int32(0)
 	limit := constant.DefaultRowLimit
 
@@ -164,6 +189,10 @@ func (h *queryHandler) getInviteesCount(ctx context.Context) error {
 }
 
 func (h *queryHandler) getAchievements(ctx context.Context) error {
+	if len(h.inviteIDs) == 0 {
+		return nil
+	}
+
 	offset := int32(0)
 	limit := constant.DefaultRowLimit
 
@@ -205,6 +234,9 @@ func (h *queryHandler) getCoins(ctx context.Context) error {
 }
 
 func (h *queryHandler) getUsers(ctx context.Context) error {
+	if len(h.inviteIDs) == 0 {
+		return nil
+	}
 	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		IDs:   &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
@@ -223,6 +255,9 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 	for _, achievement := range h.achievements {
 		goodIDs = append(goodIDs, achievement.GoodID)
 	}
+	if len(goodIDs) == 0 {
+		return nil
+	}
 	goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmgrpb.Conds{
 		AppID:   &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		GoodIDs: &commonpb.StringSliceVal{Op: cruder.IN, Value: goodIDs},
@@ -237,6 +272,10 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 }
 
 func (h *queryHandler) getCommissions(ctx context.Context) error {
+	if len(h.inviteIDs) == 0 {
+		return nil
+	}
+
 	offset := int32(0)
 	limit := constant.DefaultRowLimit
 
