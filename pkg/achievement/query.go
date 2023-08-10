@@ -475,9 +475,6 @@ func (h *Handler) GetAchievements(ctx context.Context) ([]*npool.Achievement, ui
 	if err := handler.getRegistrations(ctx); err != nil {
 		return nil, 0, err
 	}
-	if len(handler.registrations) == 0 {
-		return nil, handler.total, nil
-	}
 	if err := handler.getInviteesCount(ctx); err != nil {
 		return nil, 0, err
 	}
