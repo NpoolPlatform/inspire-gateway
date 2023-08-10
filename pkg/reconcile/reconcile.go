@@ -56,8 +56,12 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 	if err != nil {
 		return err
 	}
+	currency, err := decimal.NewFromString(order.PaymentCoinUSDCurrency)
+	if err != nil {
+		return err
+	}
 
-	goodValue := price.Mul(untis).String()
+	goodValue := price.Mul(untis).Div(currency).String()
 	paymentAmountS := paymentAmount.Add(payWithBalance).String()
 
 	logger.Sugar().Infow(
