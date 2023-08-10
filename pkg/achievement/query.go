@@ -61,11 +61,11 @@ func (h *queryHandler) getInvitees(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	h.total = total + uint32(len(h.inviteIDs))
 	for _, registration := range registrations {
 		h.registrations[registration.InviteeID] = registration
 		h.inviteIDs = append(h.inviteIDs, registration.InviteeID)
 	}
-	h.total = total + uint32(len(h.inviteIDs))
 	return nil
 }
 
