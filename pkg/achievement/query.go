@@ -313,25 +313,22 @@ func (h *queryHandler) formalizeAchievements() {
 				percent = commission.AmountOrPercent
 			}
 		}
-		info.Achievements = append(
-			info.Achievements,
-			&npool.GoodAchievement{
-				GoodID:            achievement.GoodID,
-				GoodName:          good.GoodName,
-				GoodUnit:          good.Unit,
-				CommissionPercent: percent,
-				CoinTypeID:        coin.ID,
-				CoinName:          coin.Name,
-				CoinLogo:          coin.Logo,
-				CoinUnit:          coin.Unit,
-				TotalUnits:        achievement.TotalUnits,
-				SelfUnits:         achievement.SelfUnits,
-				TotalAmount:       achievement.TotalAmount,
-				SelfAmount:        achievement.SelfAmount,
-				TotalCommission:   achievement.TotalCommission,
-				SelfCommission:    achievement.SelfCommission,
-			},
-		)
+		info.Achievements = append(info.Achievements, &npool.GoodAchievement{
+			GoodID:            achievement.GoodID,
+			GoodName:          good.GoodName,
+			GoodUnit:          good.Unit,
+			CommissionPercent: percent,
+			CoinTypeID:        coin.ID,
+			CoinName:          coin.Name,
+			CoinLogo:          coin.Logo,
+			CoinUnit:          coin.Unit,
+			TotalUnits:        achievement.TotalUnits,
+			SelfUnits:         achievement.SelfUnits,
+			TotalAmount:       achievement.TotalAmount,
+			SelfAmount:        achievement.SelfAmount,
+			TotalCommission:   achievement.TotalCommission,
+			SelfCommission:    achievement.SelfCommission,
+		})
 		h.infoMap[achievement.UserID] = info
 		achievedGoods, ok := h.achievedGoods[achievement.GoodID]
 		if !ok {
