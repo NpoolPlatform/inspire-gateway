@@ -65,7 +65,7 @@ func (h *queryHandler) getInvitees(ctx context.Context) error {
 		h.registrations[registration.InviteeID] = registration
 		h.inviteIDs = append(h.inviteIDs, registration.InviteeID)
 	}
-	h.total = total
+	h.total = total + len(h.inviteIDs)
 	return nil
 }
 
