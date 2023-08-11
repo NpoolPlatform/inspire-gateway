@@ -220,6 +220,9 @@ func (h *queryHandler) getCoins(ctx context.Context) error {
 	for _, achievement := range h.achievements {
 		coinTypeIDs = append(coinTypeIDs, achievement.CoinTypeID)
 	}
+	for _, good := range h.goods {
+		coinTypeIDs = append(coinTypeIDs, good.CoinTypeID)
+	}
 	coins, _, err := appcoinmwcli.GetCoins(ctx, &appcoinmwpb.Conds{
 		AppID:       &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		CoinTypeIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: coinTypeIDs},
@@ -334,6 +337,18 @@ func (h *queryHandler) formalizeUsers() {
 	}
 }
 
+func (h *queryHandler) userCommissionPercent(goodID, userID string) string {
+	percent := decimal.NewFromInt(0).String()
+	commissions, ok := h.commissions[goodID]
+	if ok {
+		commission, ok := commissions[userID]
+		if ok {
+			percent = commission.AmountOrPercent
+		}
+	}
+	return percent
+}
+
 func (h *queryHandler) formalizeAchievements() {
 	for _, achievement := range h.achievements {
 		info, ok := h.infoMap[achievement.UserID]
@@ -348,20 +363,23 @@ func (h *queryHandler) formalizeAchievements() {
 		if !ok {
 			continue
 		}
-		percent := decimal.NewFromInt(0).String()
-		commissions, ok := h.commissions[achievement.GoodID]
-		if ok {
-			commission, ok := commissions[achievement.UserID]
-			if ok {
-				percent = commission.AmountOrPercent
-			}
+		if good.CoinTypeID != achievement.CoinTypeID {
+			logger.Sugar().Warnw(
+				"formalizeAchievements",
+				"AchievementID", achievement.ID,
+				"GoodID", achievement.GoodID,
+				"GoodCoinTypeID", good.CoinTypeID,
+				"CoinTypeID", achievement.CoinTypeID,
+				"State", "Achievement cointypeid is not good cointypeid",
+			)
+			continue
 		}
 		info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 			GoodID:            achievement.GoodID,
 			GoodName:          good.GoodName,
 			GoodUnit:          good.Unit,
-			CommissionPercent: percent,
-			CoinTypeID:        coin.ID,
+			CommissionPercent: h.userCommissionPercent(achievement.GoodID, achievement.UserID),
+			CoinTypeID:        coin.CoinTypeID,
 			CoinName:          coin.Name,
 			CoinLogo:          coin.Logo,
 			CoinUnit:          coin.Unit,
@@ -383,40 +401,39 @@ func (h *queryHandler) formalizeAchievements() {
 }
 
 func (h *queryHandler) formalizeNew() {
-	for _, good := range h.goods {
-		commissions, ok := h.commissions[good.ID]
-		if !ok {
-			continue
-		}
-		achievedGoods, ok := h.achievedGoods[good.ID]
-		if !ok {
-			continue
-		}
-		for userID, commission := range commissions {
-			if _, ok := achievedGoods[userID]; ok {
-				continue
+	for _, user := range h.users {
+		for _, good := range h.goods {
+			achievedGoods, ok := h.achievedGoods[good.GoodID]
+			if ok {
+				if _, ok := achievedGoods[user.ID]; ok {
+					continue
+				}
 			}
 			coin, ok := h.coins[good.CoinTypeID]
 			if !ok {
+				logger.Sugar().Warnw(
+					"formalizeNew",
+					"UserID", user.ID,
+					"CoinTypeID", good.CoinTypeID,
+					"State", "Invalid coin",
+				)
 				continue
 			}
-
-			info, ok := h.infoMap[userID]
+			info, ok := h.infoMap[user.ID]
 			if !ok {
 				logger.Sugar().Warnw(
 					"formalizeNew",
-					"UserID", userID,
+					"UserID", user.ID,
 					"State", "We should have info here",
 				)
 				continue
 			}
-
 			info.Achievements = append(info.Achievements, &npool.GoodAchievement{
-				GoodID:            good.ID,
+				GoodID:            good.GoodID,
 				GoodName:          good.GoodName,
 				GoodUnit:          good.Unit,
-				CommissionPercent: commission.AmountOrPercent,
-				CoinTypeID:        coin.ID,
+				CommissionPercent: h.userCommissionPercent(good.GoodID, user.ID),
+				CoinTypeID:        coin.CoinTypeID,
 				CoinName:          coin.Name,
 				CoinLogo:          coin.Logo,
 				CoinUnit:          coin.Unit,
@@ -427,7 +444,7 @@ func (h *queryHandler) formalizeNew() {
 				TotalCommission:   decimal.NewFromInt(0).String(),
 				SelfCommission:    decimal.NewFromInt(0).String(),
 			})
-			h.infoMap[userID] = info
+			h.infoMap[user.ID] = info
 		}
 	}
 }
@@ -515,13 +532,13 @@ func (h *Handler) GetAchievements(ctx context.Context) ([]*npool.Achievement, ui
 	if err := handler.getAchievements(ctx); err != nil {
 		return nil, 0, err
 	}
-	if err := handler.getCoins(ctx); err != nil {
-		return nil, 0, err
-	}
 	if err := handler.getUsers(ctx); err != nil {
 		return nil, 0, err
 	}
 	if err := handler.getGoods(ctx); err != nil {
+		return nil, 0, err
+	}
+	if err := handler.getCoins(ctx); err != nil {
 		return nil, 0, err
 	}
 	if err := handler.getCommissions(ctx); err != nil {
