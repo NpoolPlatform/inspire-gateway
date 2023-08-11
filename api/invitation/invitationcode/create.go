@@ -3,50 +3,37 @@ package invitationcode
 import (
 	"context"
 
-	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/invitation/invitationcode"
-	invitationcodemgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/invitation/invitationcode"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
 	invitationcode1 "github.com/NpoolPlatform/inspire-gateway/pkg/invitation/invitationcode"
-
-	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
-	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/invitation/invitationcode"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/google/uuid"
 )
 
-//nolint
 func (s *Server) CreateInvitationCode(ctx context.Context, in *npool.CreateInvitationCodeRequest) (*npool.CreateInvitationCodeResponse, error) {
-	if _, err := uuid.Parse(in.GetAppID()); err != nil {
-		return &npool.CreateInvitationCodeResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-	if _, err := uuid.Parse(in.GetTargetUserID()); err != nil {
+	handler, err := invitationcode1.NewHandler(
+		ctx,
+		invitationcode1.WithAppID(&in.AppID),
+		invitationcode1.WithUserID(&in.TargetUserID),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"CreateInvitationCode",
+			"In", in,
+			"Err", err,
+		)
 		return &npool.CreateInvitationCodeResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	user, err := usermwcli.GetUser(ctx, in.GetAppID(), in.GetTargetUserID())
+	info, err := handler.CreateInvitationCode(ctx)
 	if err != nil {
-		return &npool.CreateInvitationCodeResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-	if user == nil {
-		return &npool.CreateInvitationCodeResponse{}, status.Error(codes.InvalidArgument, "TargetUserID is invalid")
-	}
-
-	app, err := appmwcli.GetApp(ctx, in.GetAppID())
-	if err != nil {
-		return &npool.CreateInvitationCodeResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-	if app == nil {
-		return &npool.CreateInvitationCodeResponse{}, status.Error(codes.InvalidArgument, "AppID is invalid")
-	}
-
-	info, err := invitationcode1.CreateInvitationCode(ctx, &invitationcodemgrpb.InvitationCodeReq{
-		AppID:  &in.AppID,
-		UserID: &in.TargetUserID,
-	})
-	if err != nil {
+		logger.Sugar().Errorw(
+			"CreateInvitationCode",
+			"In", in,
+			"Err", err,
+		)
 		return &npool.CreateInvitationCodeResponse{}, status.Error(codes.Internal, err.Error())
 	}
 

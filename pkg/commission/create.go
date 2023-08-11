@@ -5,160 +5,308 @@ import (
 	"fmt"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-
-	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
-
-	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
-	commmgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/commission"
-	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
-
-	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
-	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
+	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-
-	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
-	goodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
-
+	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
+	commissionmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
+	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
+	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-
-	sendmwpb "github.com/NpoolPlatform/message/npool/third/mw/v1/send"
-	sendmwcli "github.com/NpoolPlatform/third-middleware/pkg/client/send"
-
-	tmplmwpb "github.com/NpoolPlatform/message/npool/notif/mw/v1/template"
-	tmplmwcli "github.com/NpoolPlatform/notif-middleware/pkg/client/template"
-
-	applangmwcli "github.com/NpoolPlatform/g11n-middleware/pkg/client/applang"
-	applangmwpb "github.com/NpoolPlatform/message/npool/g11n/mw/v1/applang"
+	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
+	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
+	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
+	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 
 	"github.com/shopspring/decimal"
 )
 
-//nolint
-func CreateCommission(
-	ctx context.Context,
-	appID, userID string,
-	goodID *string,
-	settleType commmgrpb.SettleType,
-	value decimal.Decimal,
-	startAt *uint32,
-) (
-	*npool.Commission,
-	error,
-) {
-	user, err := usermwcli.GetUser(ctx, appID, userID)
+type createHandler struct {
+	*Handler
+	user       *usermwpb.User
+	inviter    *registrationmwpb.Registration
+	targetUser *usermwpb.User
+	req        *commissionmwpb.CommissionReq
+}
+
+func (h *createHandler) _getUser(ctx context.Context, userID string) (*usermwpb.User, error) {
+	if h.AppID == nil {
+		return nil, fmt.Errorf("invalid appid")
+	}
+	user, err := usermwcli.GetUser(ctx, *h.AppID, userID)
 	if err != nil {
 		return nil, err
 	}
 	if user == nil {
 		return nil, fmt.Errorf("invalid user")
 	}
+	return user, nil
+}
+
+func (h *createHandler) getUser(ctx context.Context) error {
+	if !h.CheckAffiliate {
+		return nil
+	}
+	if h.UserID == nil {
+		return fmt.Errorf("invalid userid")
+	}
+	user, err := h._getUser(ctx, *h.UserID)
+	if err != nil {
+		return err
+	}
 	if !user.Kol {
-		return nil, fmt.Errorf("user not kol")
+		return fmt.Errorf("permission denied")
+	}
+	h.user = user
+	return nil
+}
+
+func (h *createHandler) getTargetUser(ctx context.Context) error {
+	if h.TargetUserID == nil {
+		return fmt.Errorf("invalid targetuserid")
+	}
+	user, err := h._getUser(ctx, *h.TargetUserID)
+	if err != nil {
+		return err
+	}
+	h.targetUser = user
+	return nil
+}
+
+func (h *createHandler) validateRegistration(ctx context.Context) error {
+	info, err := registrationmwcli.GetRegistrationOnly(ctx, &registrationmwpb.Conds{
+		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		InviteeID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
+	})
+	if err != nil {
+		return err
+	}
+	h.inviter = info
+	if !h.CheckAffiliate {
+		if info != nil {
+			h.UserID = &info.InviterID
+		}
+		return nil
+	}
+	if h.UserID == nil {
+		return fmt.Errorf("permission denied")
+	}
+	if info == nil {
+		return fmt.Errorf("permission denied")
+	}
+	if info.InviterID != *h.UserID {
+		return fmt.Errorf("permission denied")
+	}
+	return nil
+}
+
+func (h *createHandler) validateInviter(ctx context.Context) error {
+	if h.AmountOrPercent == nil {
+		return fmt.Errorf("invalid amountorpercent")
+	}
+	commission, err := decimal.NewFromString(*h.AmountOrPercent)
+	if err != nil {
+		return err
+	}
+	if commission.Cmp(decimal.NewFromInt(0)) < 0 {
+		return fmt.Errorf("invalid amountorpercent")
+	}
+	if h.inviter == nil {
+		if h.CheckAffiliate {
+			return fmt.Errorf("permission denied")
+		}
+		// That means we don't have a inviter
+		return nil
 	}
 
-	if goodID != nil {
-		good, err := goodmwcli.GetGoodOnly(ctx, &goodmgrpb.Conds{
-			AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: appID},
-			GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: *goodID},
-		})
+	info, err := commissionmwcli.GetCommissionOnly(ctx, &commissionmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		UserID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
+		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(types.SettleType_GoodOrderPayment)},
+	})
+	if err != nil {
+		return nil
+	}
+	if info == nil {
+		return fmt.Errorf("invalid inviter commission")
+	}
+
+	commission1, err := decimal.NewFromString(info.AmountOrPercent)
+	if err != nil {
+		return err
+	}
+	if commission.Cmp(commission1) > 0 {
+		return fmt.Errorf("invalid invitee commission")
+	}
+
+	return nil
+}
+
+func (h *createHandler) validateInvitees(ctx context.Context) error {
+	invitees := []*registrationmwpb.Registration{}
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+
+	for {
+		_invitees, _, err := registrationmwcli.GetRegistrations(ctx, &registrationmwpb.Conds{
+			AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			InviterID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
+		}, offset, limit)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		if good == nil {
-			return nil, fmt.Errorf("invalid good")
+		if len(_invitees) == 0 {
+			break
 		}
-
-		coin, err := appcoinmwcli.GetCoinOnly(ctx, &appcoinmwpb.Conds{
-			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: appID},
-			CoinTypeID: &basetypes.StringVal{Op: cruder.EQ, Value: good.CoinTypeID},
-		})
+		invitees = append(invitees, _invitees...)
+		offset += limit
+	}
+	userIDs := []string{}
+	for _, invitee := range invitees {
+		userIDs = append(userIDs, invitee.InviteeID)
+	}
+	commissions, _, err := commissionmwcli.GetCommissions(ctx, &commissionmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		UserIDs:    &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
+		GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
+		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(types.SettleType_GoodOrderPayment)},
+	}, 0, int32(len(userIDs)))
+	if err != nil {
+		return err
+	}
+	commission, err := decimal.NewFromString(*h.AmountOrPercent)
+	if err != nil {
+		return err
+	}
+	for _, _commission := range commissions {
+		value, err := decimal.NewFromString(_commission.AmountOrPercent)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		if coin == nil {
-			return nil, fmt.Errorf("invalid coin")
+		if commission.Cmp(value) < 0 {
+			return fmt.Errorf("invalid inviter commission")
 		}
 	}
+	return nil
+}
 
-	req := &commmwpb.CommissionReq{
-		AppID:      &appID,
-		UserID:     &userID,
-		GoodID:     goodID,
-		SettleType: &settleType,
-		StartAt:    startAt,
+func (h *createHandler) validateGood(ctx context.Context) error {
+	if h.GoodID == nil {
+		return nil
 	}
 
-	valueStr := value.String()
-
-	switch settleType {
-	case commmgrpb.SettleType_GoodOrderPercent:
-		fallthrough //nolint
-	case commmgrpb.SettleType_GoodOrderValuePercent:
-		req.Percent = &valueStr
-	case commmgrpb.SettleType_LimitedOrderPercent:
-		fallthrough //nolint
-	case commmgrpb.SettleType_AmountThreshold:
-		fallthrough //nolint
-	case commmgrpb.SettleType_NoCommission:
-		return nil, fmt.Errorf("not implemented")
-	default:
-		return nil, fmt.Errorf("unknown settle type")
+	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmgrpb.Conds{
+		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+	})
+	if err != nil {
+		return err
+	}
+	if good == nil {
+		return fmt.Errorf("invalid good")
 	}
 
-	info, err := commmwcli.CreateCommission(ctx, req)
+	coin, err := appcoinmwcli.GetCoinOnly(ctx, &appcoinmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		CoinTypeID: &basetypes.StringVal{Op: cruder.EQ, Value: good.CoinTypeID},
+	})
+	if err != nil {
+		return err
+	}
+	if coin == nil {
+		return fmt.Errorf("invalid coin")
+	}
+	return nil
+}
+
+func (h *createHandler) createCommission(ctx context.Context) error {
+	h.req = &commissionmwpb.CommissionReq{
+		AppID:            h.AppID,
+		UserID:           h.TargetUserID,
+		GoodID:           h.GoodID,
+		SettleType:       h.SettleType,
+		SettleMode:       h.SettleMode,
+		SettleAmountType: h.SettleAmountType,
+		SettleInterval:   h.SettleInterval,
+		StartAt:          h.StartAt,
+		AmountOrPercent:  h.AmountOrPercent,
+		Threshold:        h.Threshold,
+	}
+	info, err := commissionmwcli.CreateCommission(ctx, h.req)
+	if err != nil {
+		return err
+	}
+	h.ID = &info.ID
+	return nil
+}
+
+func (h *createHandler) notifyCreateCommission() {
+	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
+		return publisher.Update(
+			basetypes.MsgID_CreateCommissionReq.String(),
+			nil,
+			nil,
+			nil,
+			&commissionmwpb.Commission{
+				AppID:            *h.AppID,
+				UserID:           *h.TargetUserID,
+				GoodID:           *h.GoodID,
+				SettleType:       *h.SettleType,
+				SettleMode:       *h.SettleMode,
+				SettleAmountType: *h.SettleAmountType,
+				SettleInterval:   *h.SettleInterval,
+				StartAt:          *h.StartAt,
+				AmountOrPercent:  *h.AmountOrPercent,
+			},
+		)
+	}); err != nil {
+		logger.Sugar().Errorw(
+			"rewardSignup",
+			"AppID", h.AppID,
+			"UserID", h.TargetUserID,
+			"Error", err,
+		)
+	}
+}
+
+func (h *Handler) CreateCommission(ctx context.Context) (*npool.Commission, error) {
+	handler := &createHandler{
+		Handler: h,
+	}
+	if err := handler.getUser(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getTargetUser(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.validateRegistration(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.validateGood(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.validateInviter(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.validateInvitees(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.createCommission(ctx); err != nil {
+		return nil, err
+	}
+	info, err := h.GetCommission(ctx)
 	if err != nil {
 		return nil, err
 	}
-
-	comm, err := GetCommission(ctx, info.ID, settleType)
-	if err != nil {
-		return nil, err
-	}
-
-	lang, err := applangmwcli.GetLangOnly(ctx, &applangmwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: appID},
-		Main:  &basetypes.BoolVal{Op: cruder.EQ, Value: true},
-	})
-	if err != nil {
-		logger.Sugar().Warnw("CreateCommission", "Error", err)
-		return comm, nil
-	}
-	if lang == nil {
-		logger.Sugar().Warnw("CreateCommission", "Error", "Main AppLang not exist")
-		return comm, nil
-	}
-
-	info1, err := tmplmwcli.GenerateText(ctx, &tmplmwpb.GenerateTextRequest{
-		AppID:     appID,
-		LangID:    lang.LangID,
-		Channel:   basetypes.NotifChannel_ChannelEmail,
-		EventType: basetypes.UsedFor_SetCommission,
-	})
-	if err != nil {
-		logger.Sugar().Warnw("CreateCommission", "Error", err)
-		return comm, nil
-	}
-	if info1 == nil {
-		logger.Sugar().Warnw("CreateCommission", "Error", "Cannot generate text")
-		return comm, nil
-	}
-
-	err = sendmwcli.SendMessage(ctx, &sendmwpb.SendMessageRequest{
-		Subject:     info1.Subject,
-		Content:     info1.Content,
-		From:        info1.From,
-		To:          user.EmailAddress,
-		ToCCs:       info1.ToCCs,
-		ReplyTos:    info1.ReplyTos,
-		AccountType: basetypes.SignMethod_Email,
-	})
-	if err != nil {
-		logger.Sugar().Warnw("CreateCommission", "Error", "Cannot send message")
-		return comm, nil
-	}
-
-	return comm, nil
+	handler.notifyCreateCommission()
+	return info, nil
 }

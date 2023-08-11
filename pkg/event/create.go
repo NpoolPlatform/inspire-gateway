@@ -2,18 +2,64 @@ package event
 
 import (
 	"context"
+	"fmt"
 
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
+	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	commonpb "github.com/NpoolPlatform/message/npool"
+	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
-	mgrpb "github.com/NpoolPlatform/message/npool/inspire/mgr/v1/event"
-
-	mgrcli "github.com/NpoolPlatform/inspire-manager/pkg/client/event"
+	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 )
 
-func CreateEvent(ctx context.Context, in *mgrpb.EventReq) (*npool.Event, error) {
-	info, err := mgrcli.CreateEvent(ctx, in)
+type createHandler struct {
+	*Handler
+}
+
+func (h *createHandler) validateGood(ctx context.Context) error {
+	if h.GoodID == nil {
+		return nil
+	}
+	if h.AppID == nil {
+		return fmt.Errorf("invalid appid")
+	}
+
+	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmgrpb.Conds{
+		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+	})
 	if err != nil {
+		return err
+	}
+	if good == nil {
+		return fmt.Errorf("invalid goodid")
+	}
+
+	return nil
+}
+
+func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
+	handler := &createHandler{
+		Handler: h,
+	}
+	if err := handler.validateGood(ctx); err != nil {
 		return nil, err
 	}
 
-	return expand(ctx, info)
+	info, err := eventmwcli.CreateEvent(ctx, &eventmwpb.EventReq{
+		AppID:          h.AppID,
+		EventType:      h.EventType,
+		CouponIDs:      h.CouponIDs,
+		Credits:        h.Credits,
+		CreditsPerUSD:  h.CreditsPerUSD,
+		MaxConsecutive: h.MaxConsecutive,
+		GoodID:         h.GoodID,
+		InviterLayers:  h.InviterLayers,
+	})
+	if err != nil {
+		return nil, err
+	}
+	h.ID = &info.ID
+	return h.GetEvent(ctx)
 }

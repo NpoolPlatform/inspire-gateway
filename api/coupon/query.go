@@ -1,24 +1,25 @@
-package allocated
+//nolint:dupl
+package coupon
 
 import (
 	"context"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 
-	allocated1 "github.com/NpoolPlatform/inspire-gateway/pkg/coupon/allocated"
-	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon/allocated"
+	coupon1 "github.com/NpoolPlatform/inspire-gateway/pkg/coupon"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *Server) GetCoupons(ctx context.Context, in *npool.GetCouponsRequest) (*npool.GetCouponsResponse, error) {
-	handler, err := allocated1.NewHandler(
+	handler, err := coupon1.NewHandler(
 		ctx,
-		allocated1.WithAppID(&in.AppID),
-		allocated1.WithUserID(&in.UserID),
-		allocated1.WithOffset(in.GetOffset()),
-		allocated1.WithLimit(in.GetLimit()),
+		coupon1.WithAppID(&in.AppID),
+		coupon1.WithCouponType(in.CouponType),
+		coupon1.WithOffset(in.GetOffset()),
+		coupon1.WithLimit(in.GetLimit()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -46,15 +47,16 @@ func (s *Server) GetCoupons(ctx context.Context, in *npool.GetCouponsRequest) (*
 }
 
 func (s *Server) GetAppCoupons(ctx context.Context, in *npool.GetAppCouponsRequest) (*npool.GetAppCouponsResponse, error) {
-	handler, err := allocated1.NewHandler(
+	handler, err := coupon1.NewHandler(
 		ctx,
-		allocated1.WithAppID(&in.AppID),
-		allocated1.WithOffset(in.GetOffset()),
-		allocated1.WithLimit(in.GetLimit()),
+		coupon1.WithAppID(&in.TargetAppID),
+		coupon1.WithCouponType(in.CouponType),
+		coupon1.WithOffset(in.GetOffset()),
+		coupon1.WithLimit(in.GetLimit()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"GetAppCoupons",
+			"GetCoupons",
 			"In", in,
 			"Err", err,
 		)
@@ -64,7 +66,7 @@ func (s *Server) GetAppCoupons(ctx context.Context, in *npool.GetAppCouponsReque
 	infos, total, err := handler.GetCoupons(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"GetAppCoupons",
+			"GetCoupons",
 			"In", in,
 			"Err", err,
 		)
