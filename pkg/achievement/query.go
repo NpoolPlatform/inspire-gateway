@@ -289,8 +289,9 @@ func (h *queryHandler) getCommissions(ctx context.Context) error {
 
 	for {
 		commissions, _, err := commmwcli.GetCommissions(ctx, &commissionmwpb.Conds{
-			AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			UserIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			UserIDs:    &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+			SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(types.SettleType_GoodOrderPayment)},
 		}, offset, limit)
 		if err != nil {
 			return err
@@ -351,7 +352,7 @@ func (h *queryHandler) userGoodCommission(appID, goodID, userID string) commissi
 		UserID:           userID,
 		GoodID:           goodID,
 		AmountOrPercent:  decimal.NewFromInt(0).String(),
-		SettleType:       types.SettleType_DefaultSettleType,
+		SettleType:       types.SettleType_GoodOrderPayment,
 		SettleMode:       types.SettleMode_DefaultSettleMode,
 		SettleAmountType: types.SettleAmountType_DefaultSettleAmountType,
 		SettleInterval:   types.SettleInterval_DefaultSettleInterval,
@@ -510,7 +511,8 @@ func (h *queryHandler) formalizeDirectContribution(ctx context.Context) error {
 			}
 			amount, _ := decimal.NewFromString(statement.Commission)
 			superior, _ := decimal.NewFromString(achievement.SuperiorCommission)
-			achievement.SuperiorCommission = superior.Add(amount).String()
+			currency, _ := decimal.NewFromString(statement.PaymentCoinUSDCurrency)
+			achievement.SuperiorCommission = superior.Add(amount.Mul(currency)).String()
 			break
 		}
 	}
