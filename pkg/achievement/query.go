@@ -339,15 +339,15 @@ func (h *queryHandler) formalizeUsers() {
 	}
 }
 
-func (h *queryHandler) userGoodCommission(appID, goodID, userID string) commissionmwpb.Commission {
+func (h *queryHandler) userGoodCommission(appID, goodID, userID string) *commissionmwpb.Commission {
 	commissions, ok := h.commissions[goodID]
 	if ok {
 		commission, ok := commissions[userID]
 		if ok {
-			return *commission
+			return commission
 		}
 	}
-	return commissionmwpb.Commission{
+	return &commissionmwpb.Commission{
 		AppID:            appID,
 		UserID:           userID,
 		GoodID:           goodID,
