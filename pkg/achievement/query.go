@@ -20,7 +20,7 @@ import (
 	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
-	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
+	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
 	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
@@ -33,6 +33,7 @@ import (
 
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
+	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 )
 
@@ -45,7 +46,7 @@ type queryHandler struct {
 	coins         map[string]*appcoinmwpb.Coin
 	users         map[string]*usermwpb.User
 	goods         map[string]*appgoodmwpb.Good
-	commissions   map[string]map[string]*commmwpb.Commission
+	commissions   map[string]map[string]*commissionmwpb.Commission
 	total         uint32
 	achievedGoods map[string]map[string]struct{}
 	statements    []*statementmwpb.Statement
@@ -287,7 +288,7 @@ func (h *queryHandler) getCommissions(ctx context.Context) error {
 	limit := constant.DefaultRowLimit
 
 	for {
-		commissions, _, err := commmwcli.GetCommissions(ctx, &commmwpb.Conds{
+		commissions, _, err := commmwcli.GetCommissions(ctx, &commissionmwpb.Conds{
 			AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			UserIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
 		}, offset, limit)
@@ -300,7 +301,7 @@ func (h *queryHandler) getCommissions(ctx context.Context) error {
 		for _, commission := range commissions {
 			commissions, ok := h.commissions[commission.GoodID]
 			if !ok {
-				commissions = map[string]*commmwpb.Commission{}
+				commissions = map[string]*commissionmwpb.Commission{}
 			}
 			commissions[commission.UserID] = commission
 			h.commissions[commission.GoodID] = commissions
@@ -337,16 +338,24 @@ func (h *queryHandler) formalizeUsers() {
 	}
 }
 
-func (h *queryHandler) userCommissionPercent(goodID, userID string) string {
-	percent := decimal.NewFromInt(0).String()
+func (h *queryHandler) userGoodCommission(appID, goodID, userID string) commissionmwpb.Commission {
 	commissions, ok := h.commissions[goodID]
 	if ok {
 		commission, ok := commissions[userID]
 		if ok {
-			percent = commission.AmountOrPercent
+			return *commission
 		}
 	}
-	return percent
+	return commissionmwpb.Commission{
+		AppID:            appID,
+		UserID:           userID,
+		GoodID:           goodID,
+		AmountOrPercent:  decimal.NewFromInt(0).String(),
+		SettleType:       types.SettleType_DefaultSettleType,
+		SettleMode:       types.SettleMode_DefaultSettleMode,
+		SettleAmountType: types.SettleAmountType_DefaultSettleAmountType,
+		SettleInterval:   types.SettleInterval_DefaultSettleInterval,
+	}
 }
 
 func (h *queryHandler) formalizeAchievements() {
@@ -374,21 +383,28 @@ func (h *queryHandler) formalizeAchievements() {
 			)
 			continue
 		}
+
+		commission := h.userGoodCommission(achievement.AppID, achievement.GoodID, achievement.UserID)
+
 		info.Achievements = append(info.Achievements, &npool.GoodAchievement{
-			GoodID:            achievement.GoodID,
-			GoodName:          good.GoodName,
-			GoodUnit:          good.Unit,
-			CommissionPercent: h.userCommissionPercent(achievement.GoodID, achievement.UserID),
-			CoinTypeID:        coin.CoinTypeID,
-			CoinName:          coin.Name,
-			CoinLogo:          coin.Logo,
-			CoinUnit:          coin.Unit,
-			TotalUnits:        achievement.TotalUnits,
-			SelfUnits:         achievement.SelfUnits,
-			TotalAmount:       achievement.TotalAmount,
-			SelfAmount:        achievement.SelfAmount,
-			TotalCommission:   achievement.TotalCommission,
-			SelfCommission:    achievement.SelfCommission,
+			GoodID:                     achievement.GoodID,
+			GoodName:                   good.GoodName,
+			GoodUnit:                   good.Unit,
+			CommissionPercent:          commission.AmountOrPercent,
+			CommissionSettleType:       commission.SettleType,
+			CommissionSettleMode:       commission.SettleMode,
+			CommissionSettleAmountType: commission.SettleAmountType,
+			CommissionSettleInterval:   commission.SettleInterval,
+			CoinTypeID:                 coin.CoinTypeID,
+			CoinName:                   coin.Name,
+			CoinLogo:                   coin.Logo,
+			CoinUnit:                   coin.Unit,
+			TotalUnits:                 achievement.TotalUnits,
+			SelfUnits:                  achievement.SelfUnits,
+			TotalAmount:                achievement.TotalAmount,
+			SelfAmount:                 achievement.SelfAmount,
+			TotalCommission:            achievement.TotalCommission,
+			SelfCommission:             achievement.SelfCommission,
 		})
 		h.infoMap[achievement.UserID] = info
 		achievedGoods, ok := h.achievedGoods[achievement.GoodID]
@@ -428,21 +444,28 @@ func (h *queryHandler) formalizeNew() {
 				)
 				continue
 			}
+
+			commission := h.userGoodCommission(good.AppID, good.GoodID, user.ID)
+
 			info.Achievements = append(info.Achievements, &npool.GoodAchievement{
-				GoodID:            good.GoodID,
-				GoodName:          good.GoodName,
-				GoodUnit:          good.Unit,
-				CommissionPercent: h.userCommissionPercent(good.GoodID, user.ID),
-				CoinTypeID:        coin.CoinTypeID,
-				CoinName:          coin.Name,
-				CoinLogo:          coin.Logo,
-				CoinUnit:          coin.Unit,
-				TotalAmount:       decimal.NewFromInt(0).String(),
-				SelfAmount:        decimal.NewFromInt(0).String(),
-				TotalUnits:        decimal.NewFromInt(0).String(),
-				SelfUnits:         decimal.NewFromInt(0).String(),
-				TotalCommission:   decimal.NewFromInt(0).String(),
-				SelfCommission:    decimal.NewFromInt(0).String(),
+				GoodID:                     good.GoodID,
+				GoodName:                   good.GoodName,
+				GoodUnit:                   good.Unit,
+				CommissionPercent:          commission.AmountOrPercent,
+				CommissionSettleType:       commission.SettleType,
+				CommissionSettleMode:       commission.SettleMode,
+				CommissionSettleAmountType: commission.SettleAmountType,
+				CommissionSettleInterval:   commission.SettleInterval,
+				CoinTypeID:                 coin.CoinTypeID,
+				CoinName:                   coin.Name,
+				CoinLogo:                   coin.Logo,
+				CoinUnit:                   coin.Unit,
+				TotalAmount:                decimal.NewFromInt(0).String(),
+				SelfAmount:                 decimal.NewFromInt(0).String(),
+				TotalUnits:                 decimal.NewFromInt(0).String(),
+				SelfUnits:                  decimal.NewFromInt(0).String(),
+				TotalCommission:            decimal.NewFromInt(0).String(),
+				SelfCommission:             decimal.NewFromInt(0).String(),
 			})
 			h.infoMap[user.ID] = info
 		}
@@ -517,7 +540,7 @@ func (h *Handler) GetAchievements(ctx context.Context) ([]*npool.Achievement, ui
 		coins:         map[string]*appcoinmwpb.Coin{},
 		users:         map[string]*usermwpb.User{},
 		goods:         map[string]*appgoodmwpb.Good{},
-		commissions:   map[string]map[string]*commmwpb.Commission{},
+		commissions:   map[string]map[string]*commissionmwpb.Commission{},
 		achievedGoods: map[string]map[string]struct{}{},
 		statements:    []*statementmwpb.Statement{},
 		infoMap:       map[string]*npool.Achievement{},
