@@ -292,6 +292,7 @@ func (h *queryHandler) getCommissions(ctx context.Context) error {
 			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			UserIDs:    &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
 			SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(types.SettleType_GoodOrderPayment)},
+			EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
 		}, offset, limit)
 		if err != nil {
 			return err
