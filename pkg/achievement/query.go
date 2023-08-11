@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	"github.com/shopspring/decimal"
 
@@ -250,22 +251,23 @@ func (h *queryHandler) getUsers(ctx context.Context) error {
 }
 
 func (h *queryHandler) getGoods(ctx context.Context) error {
-	goodIDs := []string{}
-	for _, achievement := range h.achievements {
-		goodIDs = append(goodIDs, achievement.GoodID)
-	}
-	if len(goodIDs) == 0 {
-		return nil
-	}
-	goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmgrpb.Conds{
-		AppID:   &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		GoodIDs: &commonpb.StringSliceVal{Op: cruder.IN, Value: goodIDs},
-	}, 0, int32(len(goodIDs)))
-	if err != nil {
-		return err
-	}
-	for _, good := range goods {
-		h.goods[good.GoodID] = good
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+
+	for {
+		goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmgrpb.Conds{
+			AppID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(goods) == 0 {
+			break
+		}
+		for _, good := range goods {
+			h.goods[good.GoodID] = good
+		}
+		offset += limit
 	}
 	return nil
 }
@@ -378,57 +380,51 @@ func (h *queryHandler) formalizeAchievements() {
 }
 
 func (h *queryHandler) formalizeNew() {
-	for _, info := range h.infoMap {
-	nextCommission:
-		for goodID, commissions := range h.commissions {
-			achievedGoods, ok := h.achievedGoods[goodID]
+	for _, good := range h.goods {
+		commissions, ok := h.commissions[good.ID]
+		if !ok {
+			continue
+		}
+		achievedGoods, ok := h.achievedGoods[good.ID]
+		if !ok {
+			continue
+		}
+		for userID, commission := range commissions {
+			if _, ok := achievedGoods[userID]; ok {
+				continue
+			}
+			coin, ok := h.coins[good.CoinTypeID]
 			if !ok {
-				break
+				continue
 			}
-			for userID := range commissions {
-				if _, ok := achievedGoods[userID]; ok {
-					break nextCommission
-				}
 
-				percent := decimal.NewFromInt(0).String()
-				commissions, ok := h.commissions[goodID]
-				if ok {
-					commission, ok := commissions[userID]
-					if ok {
-						percent = commission.AmountOrPercent
-					}
-				}
-
-				good, ok := h.goods[goodID]
-				if !ok {
-					continue
-				}
-				coin, ok := h.coins[good.CoinTypeID]
-				if !ok {
-					continue
-				}
-
-				info.Achievements = append(
-					info.Achievements,
-					&npool.GoodAchievement{
-						GoodID:            goodID,
-						GoodName:          good.GoodName,
-						GoodUnit:          good.Unit,
-						CommissionPercent: percent,
-						CoinTypeID:        coin.ID,
-						CoinName:          coin.Name,
-						CoinLogo:          coin.Logo,
-						CoinUnit:          coin.Unit,
-						TotalAmount:       decimal.NewFromInt(0).String(),
-						SelfAmount:        decimal.NewFromInt(0).String(),
-						TotalUnits:        decimal.NewFromInt(0).String(),
-						SelfUnits:         decimal.NewFromInt(0).String(),
-						TotalCommission:   decimal.NewFromInt(0).String(),
-						SelfCommission:    decimal.NewFromInt(0).String(),
-					},
+			info, ok := h.infoMap[userID]
+			if !ok {
+				logger.Sugar().Warnw(
+					"formalizeNew",
+					"UserID", userID,
+					"State", "We should have info here",
 				)
-				h.infoMap[userID] = info
+				continue
 			}
+
+			info.Achievements = append(info.Achievements, &npool.GoodAchievement{
+				GoodID:            good.ID,
+				GoodName:          good.GoodName,
+				GoodUnit:          good.Unit,
+				CommissionPercent: commission.AmountOrPercent,
+				CoinTypeID:        coin.ID,
+				CoinName:          coin.Name,
+				CoinLogo:          coin.Logo,
+				CoinUnit:          coin.Unit,
+				TotalAmount:       decimal.NewFromInt(0).String(),
+				SelfAmount:        decimal.NewFromInt(0).String(),
+				TotalUnits:        decimal.NewFromInt(0).String(),
+				SelfUnits:         decimal.NewFromInt(0).String(),
+				TotalCommission:   decimal.NewFromInt(0).String(),
+				SelfCommission:    decimal.NewFromInt(0).String(),
+			})
+			h.infoMap[userID] = info
 		}
 	}
 }
