@@ -8,7 +8,9 @@ import (
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	coinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
+	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	commonpb "github.com/NpoolPlatform/message/npool"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
@@ -18,15 +20,17 @@ import (
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
 	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
+	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 )
 
 type queryHandler struct {
 	*Handler
-	users map[string]*usermwpb.User
-	goods map[string]*appgoodmwpb.Good
-	coins map[string]*coinmwpb.Coin
-	comms []*commmwpb.Commission
-	infos []*npool.Commission
+	users    map[string]*usermwpb.User
+	invitees []*registrationmwpb.Registration
+	goods    map[string]*appgoodmwpb.Good
+	coins    map[string]*coinmwpb.Coin
+	comms    []*commmwpb.Commission
+	infos    []*npool.Commission
 }
 
 func (h *queryHandler) getUsers(ctx context.Context) error {
@@ -180,15 +184,58 @@ func (h *Handler) GetCommission(ctx context.Context) (*npool.Commission, error) 
 	return handler.infos[0], nil
 }
 
+func (h *queryHandler) getInvitees(ctx context.Context) error {
+	if h.UserID == nil {
+		return nil
+	}
+
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+
+	for {
+		infos, _, err := registrationmwcli.GetRegistrations(ctx, &registrationmwpb.Conds{
+			AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			InviterID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(infos) == 0 {
+			break
+		}
+		h.invitees = append(h.invitees, infos...)
+		offset += limit
+	}
+
+	return nil
+}
+
 func (h *Handler) GetCommissions(ctx context.Context) ([]*npool.Commission, uint32, error) {
 	if h.AppID == nil {
 		return nil, 0, fmt.Errorf("invalid appid")
 	}
+
+	handler := &queryHandler{
+		Handler: h,
+		users:   map[string]*usermwpb.User{},
+		goods:   map[string]*appgoodmwpb.Good{},
+		coins:   map[string]*coinmwpb.Coin{},
+		infos:   []*npool.Commission{},
+	}
+
+	if err := handler.getInvitees(ctx); err != nil {
+		return nil, 0, err
+	}
+
 	conds := &commmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}
 	if h.UserID != nil {
-		conds.UserID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID}
+		userIDs := []string{*h.UserID}
+		for _, invitee := range handler.invitees {
+			userIDs = append(userIDs, invitee.InviteeID)
+		}
+		conds.UserIDs = &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs}
 	}
 	if h.EndAt != nil {
 		conds.EndAt = &basetypes.Uint32Val{Op: cruder.EQ, Value: *h.EndAt}
@@ -200,15 +247,8 @@ func (h *Handler) GetCommissions(ctx context.Context) ([]*npool.Commission, uint
 	if len(infos) == 0 {
 		return nil, total, nil
 	}
+	handler.comms = infos
 
-	handler := &queryHandler{
-		Handler: h,
-		users:   map[string]*usermwpb.User{},
-		goods:   map[string]*appgoodmwpb.Good{},
-		coins:   map[string]*coinmwpb.Coin{},
-		comms:   infos,
-		infos:   []*npool.Commission{},
-	}
 	if err := handler.getUsers(ctx); err != nil {
 		return nil, 0, err
 	}
