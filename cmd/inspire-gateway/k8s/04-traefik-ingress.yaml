@@ -169,6 +169,10 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          - path: /api/inspire/v1/create/allocatedcoupon
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
 
     - host: api.procyon.vip
       http: *http_rules
