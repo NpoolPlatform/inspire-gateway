@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	commissionmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
-	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
+	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 )
 
 type cloneHandler struct {

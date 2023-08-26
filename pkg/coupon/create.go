@@ -5,14 +5,14 @@ import (
 	"fmt"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
+	commonpb "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
 )
 

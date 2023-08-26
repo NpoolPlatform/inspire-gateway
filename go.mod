@@ -7,14 +7,14 @@ require (
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20230518061816-62bd589c0f63
 	github.com/NpoolPlatform/chain-middleware v0.0.0-20230605123408-7e083d1f9b54
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230629111059-d8280578df85
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20230813055757-23d6ad3123fc
-	github.com/NpoolPlatform/good-middleware v0.0.0-20230811102318-3badbd5ab606
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20230814035104-e1466b5c157e
+	github.com/NpoolPlatform/good-middleware v0.0.0-20230826040727-70fb11824a13
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230811101104-636b885293d2
-	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230111075810-4275366a66b9
-	github.com/NpoolPlatform/libent-cruder v0.0.0-20221109023947-366125b690fb
-	github.com/NpoolPlatform/message v0.0.0-20230811100148-665aae942dc8
+	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230823092830-58d49b1f675a
+	github.com/NpoolPlatform/libent-cruder v0.0.0-20230825073905-d23e4d838f99
+	github.com/NpoolPlatform/message v0.0.0-20230825022604-70803a07cbed
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20230629102531-6aa588cd8391
-	github.com/NpoolPlatform/order-middleware v0.0.0-20230301031035-f35cd4b89dc7
+	github.com/NpoolPlatform/order-middleware v0.0.0-20230825084855-a8ce957e9800
 	github.com/NpoolPlatform/third-middleware v0.0.0-20230704082227-6d9cd6cef31f
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
@@ -53,7 +53,7 @@ require (
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/inflect v0.19.0 // indirect
-	github.com/go-redis/redis/v8 v8.11.4 // indirect
+	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
