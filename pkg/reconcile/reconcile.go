@@ -40,24 +40,6 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		return err
 	}
 
-	paymentAmount, err := decimal.NewFromString(order.PaymentAmount)
-	if err != nil {
-		return err
-	}
-
-	goodValue, err := decimal.NewFromString(order.GoodValue)
-	if err != nil {
-		return err
-	}
-	goodValueUSD, err := decimal.NewFromString(order.GoodValueUSD)
-	if err != nil {
-		return err
-	}
-
-	paymentAmountS := paymentAmount.String()
-	goodValueS := goodValue.String()
-	goodValueUSDS := goodValueUSD.String()
-
 	statements, err := calculatemwcli.Calculate(ctx, &calculatemwpb.CalculateRequest{
 		AppID:                  order.AppID,
 		UserID:                 order.UserID,
@@ -68,25 +50,14 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		PaymentCoinTypeID:      order.PaymentCoinTypeID,
 		PaymentCoinUSDCurrency: order.CoinUSDCurrency,
 		Units:                  order.Units,
-		PaymentAmount:          paymentAmountS,
-		GoodValue:              goodValueS,
-		GoodValueUSD:           goodValueUSDS,
+		PaymentAmount:          order.PaymentAmount,
+		GoodValue:              order.GoodValue,
+		GoodValueUSD:           order.GoodValueUSD,
 		SettleType:             types.SettleType_GoodOrderPayment,
 		HasCommission:          order.OrderType == ordertypes.OrderType_Normal,
 		OrderCreatedAt:         order.CreatedAt,
 	})
 	if err != nil {
-		logger.Sugar().Infow(
-			"reconcileOrder",
-			"AppID", order.AppID,
-			"UserID", order.UserID,
-			"OrderID", order.ID,
-			"PaymentAmount", paymentAmountS,
-			"GoodValue", goodValue,
-			"CoinTypeID", good.CoinTypeID,
-			"PaymentCoinTypeID", order.PaymentCoinTypeID,
-			"Error", err,
-		)
 		return err
 	}
 
@@ -119,34 +90,12 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 
 	_, err = achievementstatementmwcli.CreateStatements(ctx, achievementStatementReqs)
 	if err != nil {
-		logger.Sugar().Infow(
-			"reconcileOrder",
-			"AppID", order.AppID,
-			"UserID", order.UserID,
-			"OrderID", order.ID,
-			"PaymentAmount", paymentAmountS,
-			"GoodValue", goodValue,
-			"CoinTypeID", good.CoinTypeID,
-			"PaymentCoinTypeID", order.PaymentCoinTypeID,
-			"Error", err,
-		)
 		return err
 	}
 
 	ledgerStatementReqs := []*ledgerstatementmwpb.StatementReq{}
 	ioType := ledgertypes.IOType_Incoming
 	ioSubType := ledgertypes.IOSubType_Commission
-
-	logger.Sugar().Infow(
-		"reconcileOrder",
-		"AppID", order.AppID,
-		"UserID", order.UserID,
-		"OrderID", order.ID,
-		"PaymentAmount", paymentAmountS,
-		"GoodValue", goodValue,
-		"CoinTypeID", good.CoinTypeID,
-		"PaymentCoinTypeID", order.PaymentCoinTypeID,
-	)
 
 	for _, statement := range statements {
 		commission, err := decimal.NewFromString(statement.Commission)
@@ -156,17 +105,6 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		if commission.Cmp(decimal.NewFromInt(0)) <= 0 {
 			continue
 		}
-
-		logger.Sugar().Infow(
-			"reconcileOrder",
-			"AppID", statement.AppID,
-			"UserID", statement.UserID,
-			"Amount", statement.Amount,
-			"DirectContributorUserID", statement.DirectContributorID,
-			"OrderID", order.ID,
-			"OrderUserID", order.UserID,
-		)
-
 		ioExtra := fmt.Sprintf(
 			`{"PaymentID":"%v","OrderID":"%v","DirectContributorID":"%v","OrderUserID":"%v"}`,
 			order.PaymentID,
@@ -191,18 +129,6 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 	}
 
 	if _, err = ledgerstatementmwcli.CreateStatements(ctx, ledgerStatementReqs); err != nil {
-		logger.Sugar().Infow(
-			"reconcileOrder",
-			"AppID", order.AppID,
-			"UserID", order.UserID,
-			"GoodID", order.GoodID,
-			"OrderID", order.ID,
-			"PaymentAmount", paymentAmountS,
-			"GoodValue", goodValue,
-			"CoinTypeID", good.CoinTypeID,
-			"PaymentCoinTypeID", order.PaymentCoinTypeID,
-			"Error", err,
-		)
 		return err
 	}
 
