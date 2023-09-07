@@ -4,37 +4,28 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
-	"github.com/shopspring/decimal"
-
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-
+	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
+	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	achievementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement"
 	statementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/statement"
-	achievementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement"
-	statementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement"
-
-	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
-	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
-
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
-	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
-
-	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
-	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
-
-	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
-	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
-	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
-
-	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/achievement"
-
+	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
+	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
+	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/achievement"
+	achievementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement"
+	statementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement"
+	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
+	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
+
+	"github.com/shopspring/decimal"
 )
 
 type queryHandler struct {
@@ -259,8 +250,8 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 	limit := constant.DefaultRowLimit
 
 	for {
-		goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmgrpb.Conds{
-			AppID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmwpb.Conds{
+			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		}, offset, limit)
 		if err != nil {
 			return err

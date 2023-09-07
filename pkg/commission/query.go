@@ -7,17 +7,15 @@ import (
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	coinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
-	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
 	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	coinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
-	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
-	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
+	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
 	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
@@ -63,8 +61,8 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 	}
 
 	goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmgrpb.Conds{
-		AppID:   &commonpb.StringVal{Op: cruder.EQ, Value: h.comms[0].AppID},
-		GoodIDs: &commonpb.StringSliceVal{Op: cruder.IN, Value: goodIDs},
+		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: h.comms[0].AppID},
+		GoodIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: goodIDs},
 	}, int32(0), int32(len(goodIDs)))
 	if err != nil {
 		return err

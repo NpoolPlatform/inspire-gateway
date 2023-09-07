@@ -4,11 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
-	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
+	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
 	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 )
@@ -25,9 +24,9 @@ func (h *createHandler) validateGood(ctx context.Context) error {
 		return fmt.Errorf("invalid appid")
 	}
 
-	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmgrpb.Conds{
-		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		GoodID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
 	})
 	if err != nil {
 		return err

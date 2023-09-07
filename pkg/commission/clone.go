@@ -4,11 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	commissionmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
-	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 )
 
 type cloneHandler struct {
@@ -17,9 +17,9 @@ type cloneHandler struct {
 
 func (h *cloneHandler) validateGoods(ctx context.Context) error {
 	const limit = 2
-	goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmgrpb.Conds{
-		AppID:   &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		GoodIDs: &commonpb.StringSliceVal{Op: cruder.IN, Value: []string{*h.FromGoodID, *h.ToGoodID}},
+	goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmwpb.Conds{
+		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		GoodIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: []string{*h.FromGoodID, *h.ToGoodID}},
 	}, int32(0), int32(limit))
 	if err != nil {
 		return err

@@ -5,15 +5,13 @@ import (
 	"fmt"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
-	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
-	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
+	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
 	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
 	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
@@ -52,9 +50,9 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 	}
 	goods, _, err := appgoodmwcli.GetGoods(
 		ctx,
-		&appgoodmgrpb.Conds{
-			AppID:   &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			GoodIDs: &commonpb.StringSliceVal{Op: cruder.IN, Value: goodIDs},
+		&appgoodmwpb.Conds{
+			AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			GoodIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: goodIDs},
 		},
 		0,
 		int32(len(goodIDs)),
