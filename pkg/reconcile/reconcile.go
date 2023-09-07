@@ -150,15 +150,9 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		return err
 	}
 
-<<<<<<< HEAD
 	statements := []*ledgerstatementmwpb.StatementReq{}
 	ioType := ledgerstatementmwpb.IOType_Incoming
 	ioSubType := ledgerstatementmwpb.IOSubType_Commission
-=======
-	details := []*ledgerdetailmgrpb.StatementReq{}
-	ioType := ledgertypes.IOType_Incoming
-	ioSubType := ledgertypes.IOSubType_Commission
->>>>>>> feat/ledger-refactor
 
 	logger.Sugar().Infow(
 		"reconcileOrder",
@@ -198,11 +192,7 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 			order.UserID,
 		)
 
-<<<<<<< HEAD
 		statements = append(statements, &ledgerstatementmwpb.StatementReq{
-=======
-		details = append(details, &ledgerdetailmgrpb.StatementReq{
->>>>>>> feat/ledger-refactor
 			AppID:      &order.AppID,
 			UserID:     &statement.UserID,
 			CoinTypeID: &order.PaymentCoinTypeID,
@@ -217,12 +207,7 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		return nil
 	}
 
-<<<<<<< HEAD
-	err = ledgerstatementmwcli.CreateStatements(ctx, statements)
-	if err != nil {
-=======
-	if _, err = ledgermwcli.CreateStatements(ctx, details); err != nil {
->>>>>>> feat/ledger-refactor
+	if _, err = ledgerstatementmwcli.CreateStatements(ctx, statements); err != nil {
 		logger.Sugar().Infow(
 			"reconcileOrder",
 			"AppID", order.AppID,
@@ -248,17 +233,10 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 		orders, _, err := ordermwcli.GetOrders(
 			ctx,
 			&ordermwpb.Conds{
-<<<<<<< HEAD
 				AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 				GoodID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
 				Type:   &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
-				States: &basetypes.Uint32SliceVal{
-=======
-				AppID:     &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
-				GoodID:    &commonpb.StringVal{Op: cruder.EQ, Value: *h.GoodID},
-				OrderType: &commonpb.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
-				OrderStates: &commonpb.Uint32SliceVal{
->>>>>>> feat/ledger-refactor
+				OrderStates: &basetypes.Uint32SliceVal{
 					Op: cruder.IN,
 					Value: []uint32{
 						uint32(ordertypes.OrderState_OrderStatePaid),
