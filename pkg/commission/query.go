@@ -60,7 +60,7 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 		return nil
 	}
 
-	goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmgrpb.Conds{
+	goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmwpb.Conds{
 		AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: h.comms[0].AppID},
 		GoodIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: goodIDs},
 	}, int32(0), int32(len(goodIDs)))

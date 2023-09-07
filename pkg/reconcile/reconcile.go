@@ -13,6 +13,7 @@ import (
 	calculatemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/calculate"
 	ledgerstatementmwcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger/statement"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
+	ledgertypes "github.com/NpoolPlatform/message/npool/basetypes/ledger/v1"
 	ordertypes "github.com/NpoolPlatform/message/npool/basetypes/order/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
@@ -43,38 +44,19 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 	if err != nil {
 		return err
 	}
-	payWithBalance, err := decimal.NewFromString(order.PaymentBalanceAmount)
+
+	goodValue, err := decimal.NewFromString(order.GoodValue)
+	if err != nil {
+		return err
+	}
+	goodValueUSD, err := decimal.NewFromString(order.GoodValueUSD)
 	if err != nil {
 		return err
 	}
 
-	price, err := decimal.NewFromString(good.Price)
-	if err != nil {
-		return err
-	}
-	untis, err := decimal.NewFromString(order.Units)
-	if err != nil {
-		return err
-	}
-	currency, err := decimal.NewFromString(order.PaymentCoinUSDCurrency)
-	if err != nil {
-		return err
-	}
-
-	goodValue := price.Mul(untis).Div(currency).String()
-	paymentAmountS := paymentAmount.Add(payWithBalance).String()
-
-	logger.Sugar().Infow(
-		"reconcileOrder",
-		"AppID", order.AppID,
-		"UserID", order.UserID,
-		"OrderID", order.ID,
-		"PaymentAmount", paymentAmountS,
-		"GoodValue", goodValue,
-		"CoinTypeID", good.CoinTypeID,
-		"PaymentCoinTypeID", order.PaymentCoinTypeID,
-		"USDCurrency", order.PaymentCoinUSDCurrency,
-	)
+	paymentAmountS := paymentAmount.String()
+	goodValueS := goodValue.String()
+	goodValueUSDS := goodValueUSD.String()
 
 	statements, err := calculatemwcli.Calculate(ctx, &calculatemwpb.CalculateRequest{
 		AppID:                  order.AppID,
@@ -84,10 +66,11 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		PaymentID:              order.PaymentID,
 		CoinTypeID:             good.CoinTypeID,
 		PaymentCoinTypeID:      order.PaymentCoinTypeID,
-		PaymentCoinUSDCurrency: order.PaymentCoinUSDCurrency,
+		PaymentCoinUSDCurrency: order.CoinUSDCurrency,
 		Units:                  order.Units,
 		PaymentAmount:          paymentAmountS,
-		GoodValue:              goodValue,
+		GoodValue:              goodValueS,
+		GoodValueUSD:           goodValueUSDS,
 		SettleType:             types.SettleType_GoodOrderPayment,
 		HasCommission:          order.OrderType == ordertypes.OrderType_Normal,
 		OrderCreatedAt:         order.CreatedAt,
@@ -111,7 +94,7 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		return nil
 	}
 
-	statementReqs := []*statementmwpb.StatementReq{}
+	achievementStatementReqs := []*achievementstatementmwpb.StatementReq{}
 	for _, statement := range statements {
 		req := &achievementstatementmwpb.StatementReq{
 			AppID:                  &statement.AppID,
@@ -131,10 +114,10 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		if _, err := uuid.Parse(statement.DirectContributorID); err == nil {
 			req.DirectContributorID = &statement.DirectContributorID
 		}
-		statementReqs = append(statementReqs, req)
+		achievementStatementReqs = append(achievementStatementReqs, req)
 	}
 
-	_, err = achievementstatementmwcli.CreateStatements(ctx, statementReqs)
+	_, err = achievementstatementmwcli.CreateStatements(ctx, achievementStatementReqs)
 	if err != nil {
 		logger.Sugar().Infow(
 			"reconcileOrder",
@@ -150,9 +133,9 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		return err
 	}
 
-	statements := []*ledgerstatementmwpb.StatementReq{}
-	ioType := ledgerstatementmwpb.IOType_Incoming
-	ioSubType := ledgerstatementmwpb.IOSubType_Commission
+	ledgerStatementReqs := []*ledgerstatementmwpb.StatementReq{}
+	ioType := ledgertypes.IOType_Incoming
+	ioSubType := ledgertypes.IOSubType_Commission
 
 	logger.Sugar().Infow(
 		"reconcileOrder",
@@ -192,7 +175,7 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 			order.UserID,
 		)
 
-		statements = append(statements, &ledgerstatementmwpb.StatementReq{
+		ledgerStatementReqs = append(ledgerStatementReqs, &ledgerstatementmwpb.StatementReq{
 			AppID:      &order.AppID,
 			UserID:     &statement.UserID,
 			CoinTypeID: &order.PaymentCoinTypeID,
@@ -203,11 +186,11 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		})
 	}
 
-	if len(statements) == 0 {
+	if len(ledgerStatementReqs) == 0 {
 		return nil
 	}
 
-	if _, err = ledgerstatementmwcli.CreateStatements(ctx, statements); err != nil {
+	if _, err = ledgerstatementmwcli.CreateStatements(ctx, ledgerStatementReqs); err != nil {
 		logger.Sugar().Infow(
 			"reconcileOrder",
 			"AppID", order.AppID,
@@ -233,9 +216,9 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 		orders, _, err := ordermwcli.GetOrders(
 			ctx,
 			&ordermwpb.Conds{
-				AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-				GoodID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
-				Type:   &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
+				AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+				GoodID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+				OrderType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
 				OrderStates: &basetypes.Uint32SliceVal{
 					Op: cruder.IN,
 					Value: []uint32{

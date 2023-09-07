@@ -7,6 +7,7 @@ import (
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
 	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
