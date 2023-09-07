@@ -35,7 +35,7 @@ const (
 
 func lockKey() string {
 	serviceID := config.GetStringValueWithNameSpace(servicename.ServiceDomain, keyServiceID)
-	return fmt.Sprintf("%v:%v", basetypes.Prefix_PrefixMigrateInspire, serviceID)
+	return fmt.Sprintf("%v:%v", basetypes.Prefix_PrefixMigrate, serviceID)
 }
 
 func dsn(hostname string) (string, error) {
@@ -138,8 +138,6 @@ func Migrate(ctx context.Context) error {
 				return err
 			}
 		}
-		return nil
-
 		return nil
 	})
 }
