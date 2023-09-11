@@ -17,15 +17,16 @@ import (
 
 type createHandler struct {
 	*Handler
+	goodID *string
 }
 
-func (h *createHandler) validateGood(ctx context.Context) error {
-	if h.GoodID == nil {
+func (h *createHandler) checkGood(ctx context.Context) error {
+	if h.AppGoodID == nil {
 		return nil
 	}
 	info, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
-		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		GoodID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		ID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 	})
 	if err != nil {
 		return err
@@ -33,6 +34,7 @@ func (h *createHandler) validateGood(ctx context.Context) error {
 	if info == nil {
 		return fmt.Errorf("invalid good")
 	}
+	h.goodID = &info.GoodID
 	return nil
 }
 
@@ -69,7 +71,7 @@ func (h *Handler) CreateCoupon(ctx context.Context) (*couponmwpb.Coupon, error) 
 		Handler: h,
 	}
 
-	if err := handler.validateGood(ctx); err != nil {
+	if err := handler.checkGood(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.validateIssuer(ctx); err != nil {
@@ -79,23 +81,21 @@ func (h *Handler) CreateCoupon(ctx context.Context) (*couponmwpb.Coupon, error) 
 	if *h.CouponType == types.CouponType_SpecialOffer {
 		return handler.createSpecialOffer(ctx)
 	}
-	return couponmwcli.CreateCoupon(
-		ctx,
-		&couponmwpb.CouponReq{
-			ID:               h.ID,
-			AppID:            h.AppID,
-			CouponType:       h.CouponType,
-			Denomination:     h.Denomination,
-			Circulation:      h.Circulation,
-			IssuedBy:         h.IssuedBy,
-			StartAt:          h.StartAt,
-			DurationDays:     h.DurationDays,
-			Message:          h.Message,
-			Name:             h.Name,
-			GoodID:           h.GoodID,
-			CouponConstraint: h.CouponConstraint,
-			Threshold:        h.Threshold,
-			Random:           h.Random,
-		},
-	)
+	return couponmwcli.CreateCoupon(ctx, &couponmwpb.CouponReq{
+		ID:               h.ID,
+		AppID:            h.AppID,
+		CouponType:       h.CouponType,
+		Denomination:     h.Denomination,
+		Circulation:      h.Circulation,
+		IssuedBy:         h.IssuedBy,
+		StartAt:          h.StartAt,
+		DurationDays:     h.DurationDays,
+		Message:          h.Message,
+		Name:             h.Name,
+		GoodID:           handler.goodID,
+		AppGoodID:        h.AppGoodID,
+		CouponConstraint: h.CouponConstraint,
+		Threshold:        h.Threshold,
+		Random:           h.Random,
+	})
 }

@@ -32,6 +32,7 @@ type createHandler struct {
 	inviter    *registrationmwpb.Registration
 	targetUser *usermwpb.User
 	req        *commissionmwpb.CommissionReq
+	goodID     *string
 }
 
 func (h *createHandler) _getUser(ctx context.Context, userID string) (*usermwpb.User, error) {
@@ -127,7 +128,7 @@ func (h *createHandler) validateInviter(ctx context.Context) error {
 	info, err := commissionmwcli.GetCommissionOnly(ctx, &commissionmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		UserID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
-		GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+		AppGoodID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
 		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(types.SettleType_GoodOrderPayment)},
 	})
@@ -175,7 +176,7 @@ func (h *createHandler) validateInvitees(ctx context.Context) error {
 	commissions, _, err := commissionmwcli.GetCommissions(ctx, &commissionmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		UserIDs:    &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
-		GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+		AppGoodID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
 		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(types.SettleType_GoodOrderPayment)},
 	}, 0, int32(len(userIDs)))
@@ -198,14 +199,14 @@ func (h *createHandler) validateInvitees(ctx context.Context) error {
 	return nil
 }
 
-func (h *createHandler) validateGood(ctx context.Context) error {
-	if h.GoodID == nil {
+func (h *createHandler) checkGood(ctx context.Context) error {
+	if h.AppGoodID == nil {
 		return nil
 	}
 
 	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
-		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		GoodID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		ID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 	})
 	if err != nil {
 		return err
@@ -213,6 +214,8 @@ func (h *createHandler) validateGood(ctx context.Context) error {
 	if good == nil {
 		return fmt.Errorf("invalid good")
 	}
+
+	h.goodID = &good.GoodID
 
 	coin, err := appcoinmwcli.GetCoinOnly(ctx, &appcoinmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
@@ -231,7 +234,8 @@ func (h *createHandler) createCommission(ctx context.Context) error {
 	h.req = &commissionmwpb.CommissionReq{
 		AppID:            h.AppID,
 		UserID:           h.TargetUserID,
-		GoodID:           h.GoodID,
+		GoodID:           h.goodID,
+		AppGoodID:        h.AppGoodID,
 		SettleType:       h.SettleType,
 		SettleMode:       h.SettleMode,
 		SettleAmountType: h.SettleAmountType,
@@ -250,22 +254,26 @@ func (h *createHandler) createCommission(ctx context.Context) error {
 
 func (h *createHandler) notifyCreateCommission() {
 	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
+		comm := &commissionmwpb.Commission{
+			AppID:            *h.AppID,
+			UserID:           *h.TargetUserID,
+			AppGoodID:        *h.AppGoodID,
+			SettleType:       *h.SettleType,
+			SettleMode:       *h.SettleMode,
+			SettleAmountType: *h.SettleAmountType,
+			SettleInterval:   *h.SettleInterval,
+			StartAt:          *h.StartAt,
+			AmountOrPercent:  *h.AmountOrPercent,
+		}
+		if h.goodID != nil {
+			comm.GoodID = *h.goodID
+		}
 		return publisher.Update(
 			basetypes.MsgID_CreateCommissionReq.String(),
 			nil,
 			nil,
 			nil,
-			&commissionmwpb.Commission{
-				AppID:            *h.AppID,
-				UserID:           *h.TargetUserID,
-				GoodID:           *h.GoodID,
-				SettleType:       *h.SettleType,
-				SettleMode:       *h.SettleMode,
-				SettleAmountType: *h.SettleAmountType,
-				SettleInterval:   *h.SettleInterval,
-				StartAt:          *h.StartAt,
-				AmountOrPercent:  *h.AmountOrPercent,
-			},
+			comm,
 		)
 	}); err != nil {
 		logger.Sugar().Errorw(
@@ -290,7 +298,7 @@ func (h *Handler) CreateCommission(ctx context.Context) (*npool.Commission, erro
 	if err := handler.validateRegistration(ctx); err != nil {
 		return nil, err
 	}
-	if err := handler.validateGood(ctx); err != nil {
+	if err := handler.checkGood(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.validateInviter(ctx); err != nil {

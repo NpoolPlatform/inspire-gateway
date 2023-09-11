@@ -7,8 +7,8 @@ import (
 )
 
 type Handler struct {
-	AppID  *string
-	GoodID *string
+	AppID     *string
+	AppGoodID *string
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -34,7 +34,7 @@ func WithAppID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithGoodID(id *string) func(context.Context, *Handler) error {
+func WithAppGoodID(id *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			return nil
@@ -42,7 +42,7 @@ func WithGoodID(id *string) func(context.Context, *Handler) error {
 		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
-		h.GoodID = id
+		h.AppGoodID = id
 		return nil
 	}
 }

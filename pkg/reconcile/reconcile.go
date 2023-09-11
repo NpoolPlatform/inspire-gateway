@@ -33,17 +33,21 @@ type reconcileHandler struct {
 
 func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolint
 	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
-		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: order.AppID},
-		GoodID: &basetypes.StringVal{Op: cruder.EQ, Value: order.GoodID},
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: order.AppID},
+		ID:    &basetypes.StringVal{Op: cruder.EQ, Value: order.AppGoodID},
 	})
 	if err != nil {
 		return err
+	}
+	if good == nil {
+		return fmt.Errorf("invalid good")
 	}
 
 	statements, err := calculatemwcli.Calculate(ctx, &calculatemwpb.CalculateRequest{
 		AppID:                  order.AppID,
 		UserID:                 order.UserID,
 		GoodID:                 order.GoodID,
+		AppGoodID:              order.AppGoodID,
 		OrderID:                order.ID,
 		PaymentID:              order.PaymentID,
 		CoinTypeID:             good.CoinTypeID,
@@ -71,6 +75,7 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 			AppID:                  &statement.AppID,
 			UserID:                 &statement.UserID,
 			GoodID:                 &statement.GoodID,
+			AppGoodID:              &statement.AppGoodID,
 			OrderID:                &statement.OrderID,
 			SelfOrder:              &statement.SelfOrder,
 			PaymentID:              &statement.PaymentID,
@@ -139,24 +144,19 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 	offset := int32(0)
 	limit := constant.DefaultRowLimit
 	for {
-		orders, _, err := ordermwcli.GetOrders(
-			ctx,
-			&ordermwpb.Conds{
-				AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-				GoodID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
-				OrderType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
-				OrderStates: &basetypes.Uint32SliceVal{
-					Op: cruder.IN,
-					Value: []uint32{
-						uint32(ordertypes.OrderState_OrderStatePaid),
-						uint32(ordertypes.OrderState_OrderStateInService),
-						uint32(ordertypes.OrderState_OrderStateExpired),
-					},
+		orders, _, err := ordermwcli.GetOrders(ctx, &ordermwpb.Conds{
+			AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			AppGoodID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
+			OrderType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
+			OrderStates: &basetypes.Uint32SliceVal{
+				Op: cruder.IN,
+				Value: []uint32{
+					uint32(ordertypes.OrderState_OrderStatePaid),
+					uint32(ordertypes.OrderState_OrderStateInService),
+					uint32(ordertypes.OrderState_OrderStateExpired),
 				},
 			},
-			offset,
-			limit,
-		)
+		}, offset, limit)
 		if err != nil {
 			return err
 		}
@@ -169,7 +169,7 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 				logger.Sugar().Errorw(
 					"reconcileOrders",
 					"AppID", *h.AppID,
-					"GoodID", *h.GoodID,
+					"AppGoodID", *h.AppGoodID,
 					"OrderID", order.ID,
 					"Err", err,
 				)
@@ -185,8 +185,8 @@ func (h *Handler) Reconcile(ctx context.Context) error {
 	if h.AppID == nil {
 		return fmt.Errorf("invalid appid")
 	}
-	if h.GoodID == nil {
-		return fmt.Errorf("invalid goodid")
+	if h.AppGoodID == nil {
+		return fmt.Errorf("invalid appgoodid")
 	}
 	handler := &reconcileHandler{
 		Handler: h,

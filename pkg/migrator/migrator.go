@@ -9,18 +9,18 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	constant "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
+	servicename "github.com/NpoolPlatform/inspire-gateway/pkg/servicename"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db/ent"
 	entcommission "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/commission"
-	entgoodorderpercent "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/goodorderpercent"
-
-	constant "github.com/NpoolPlatform/go-service-framework/pkg/mysql/const"
-	servicename "github.com/NpoolPlatform/inspire-gateway/pkg/servicename"
-	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
+	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 
-	"github.com/shopspring/decimal"
+	"github.com/google/uuid"
 )
 
 const (
@@ -89,51 +89,40 @@ func Migrate(ctx context.Context) error {
 	}()
 
 	return db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
-		gops, err := tx.
-			GoodOrderPercent.
+		commissions, err := tx.
+			Commission.
 			Query().
 			Where(
-				entgoodorderpercent.DeletedAt(0),
+				entcommission.DeletedAt(0),
 			).
 			All(_ctx)
 		if err != nil {
 			return err
 		}
 
-		for _, gop := range gops {
-			exist, err := tx.
-				Commission.
-				Query().
-				Where(
-					entcommission.ID(gop.ID),
-				).
-				Exist(_ctx)
-			if err != nil {
-				return err
-			}
-			if exist {
+		goods := map[uuid.UUID]*appgoodmwpb.Good{}
+		for _, commission := range commissions {
+			if commission.AppGoodID != uuid.Nil {
 				continue
 			}
 
+			good, ok := goods[commission.GoodID]
+			if !ok {
+				good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
+					AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: commission.AppID.String()},
+					GoodID: &basetypes.StringVal{Op: cruder.EQ, Value: commission.GoodID.String()},
+				})
+				if err != nil {
+					continue
+				}
+				goods[commission.GoodID] = good
+			}
+
+			id := uuid.MustParse(good.ID)
 			if _, err := tx.
 				Commission.
 				Create().
-				SetID(gop.ID).
-				SetAppID(gop.AppID).
-				SetUserID(gop.UserID).
-				SetGoodID(gop.GoodID).
-				SetAmountOrPercent(gop.Percent).
-				SetStartAt(gop.StartAt).
-				SetEndAt(gop.EndAt).
-				SetSettleType(types.SettleType_GoodOrderPayment.String()).
-				SetSettleMode(types.SettleMode_SettleWithGoodValue.String()).
-				SetSettleAmountType(types.SettleAmountType_SettleByPercent.String()).
-				SetSettleInterval(types.SettleInterval_SettleEveryOrder.String()).
-				SetThreshold(decimal.NewFromInt(0)).
-				SetOrderLimit(0).
-				SetCreatedAt(gop.CreatedAt).
-				SetUpdatedAt(gop.UpdatedAt).
-				SetDeletedAt(gop.DeletedAt).
+				SetAppGoodID(id).
 				Save(_ctx); err != nil {
 				return err
 			}
