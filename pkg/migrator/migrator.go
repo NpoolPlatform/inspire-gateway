@@ -108,11 +108,14 @@ func Migrate(ctx context.Context) error {
 
 			good, ok := goods[commission.GoodID]
 			if !ok {
-				good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
+				good, err = appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
 					AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: commission.AppID.String()},
 					GoodID: &basetypes.StringVal{Op: cruder.EQ, Value: commission.GoodID.String()},
 				})
 				if err != nil {
+					continue
+				}
+				if good == nil {
 					continue
 				}
 				goods[commission.GoodID] = good
