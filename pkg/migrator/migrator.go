@@ -105,7 +105,6 @@ func Migrate(ctx context.Context) error {
 			if commission.AppGoodID != uuid.Nil {
 				continue
 			}
-
 			good, ok := goods[commission.GoodID]
 			if !ok {
 				good, err = appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
