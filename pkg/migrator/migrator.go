@@ -124,7 +124,7 @@ func Migrate(ctx context.Context) error {
 			id := uuid.MustParse(good.ID)
 			if _, err := tx.
 				Commission.
-				Create().
+				UpdateOneID(commission.ID).
 				SetAppGoodID(id).
 				Save(_ctx); err != nil {
 				return err
