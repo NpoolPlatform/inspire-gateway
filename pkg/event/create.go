@@ -15,10 +15,11 @@ import (
 
 type createHandler struct {
 	*Handler
+	appGood *appgoodmwpb.Good
 }
 
-func (h *createHandler) validateGood(ctx context.Context) error {
-	if h.GoodID == nil {
+func (h *createHandler) checkAppGood(ctx context.Context) error {
+	if h.AppGoodID == nil {
 		return nil
 	}
 	if h.AppID == nil {
@@ -26,8 +27,8 @@ func (h *createHandler) validateGood(ctx context.Context) error {
 	}
 
 	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
-		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		GoodID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		ID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 	})
 	if err != nil {
 		return err
@@ -35,6 +36,7 @@ func (h *createHandler) validateGood(ctx context.Context) error {
 	if good == nil {
 		return fmt.Errorf("invalid goodid")
 	}
+	h.appGood = good
 
 	return nil
 }
@@ -43,7 +45,7 @@ func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
 	handler := &createHandler{
 		Handler: h,
 	}
-	if err := handler.validateGood(ctx); err != nil {
+	if err := handler.checkAppGood(ctx); err != nil {
 		return nil, err
 	}
 
@@ -54,7 +56,8 @@ func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
 		Credits:        h.Credits,
 		CreditsPerUSD:  h.CreditsPerUSD,
 		MaxConsecutive: h.MaxConsecutive,
-		GoodID:         h.GoodID,
+		GoodID:         &handler.appGood.GoodID,
+		AppGoodID:      h.AppGoodID,
 		InviterLayers:  h.InviterLayers,
 	})
 	if err != nil {
