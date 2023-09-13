@@ -32,11 +32,11 @@ type queryHandler struct {
 	*Handler
 	registrations map[string]*registrationmwpb.Registration
 	inviteIDs     []string
-	achievements  map[string]*achievementmwpb.Achievement
+	achievements  []*achievementmwpb.Achievement
 	inviteesCount map[string]uint32
 	coins         map[string]*appcoinmwpb.Coin
 	users         map[string]*usermwpb.User
-	goods         map[string]*appgoodmwpb.Good
+	appGoods      map[string]*appgoodmwpb.Good
 	commissions   map[string]map[string]*commissionmwpb.Commission
 	total         uint32
 	achievedGoods map[string]map[string]struct{}
@@ -199,9 +199,7 @@ func (h *queryHandler) getAchievements(ctx context.Context) error {
 		if len(achievements) == 0 {
 			break
 		}
-		for _, achievement := range achievements {
-			h.achievements[achievement.UserID] = achievement
-		}
+		h.achievements = append(h.achievements, achievements...)
 		offset += limit
 	}
 	return nil
@@ -212,7 +210,7 @@ func (h *queryHandler) getCoins(ctx context.Context) error {
 	for _, achievement := range h.achievements {
 		coinTypeIDs = append(coinTypeIDs, achievement.CoinTypeID)
 	}
-	for _, good := range h.goods {
+	for _, good := range h.appGoods {
 		coinTypeIDs = append(coinTypeIDs, good.CoinTypeID)
 	}
 	coins, _, err := appcoinmwcli.GetCoins(ctx, &appcoinmwpb.Conds{
@@ -263,7 +261,7 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 			if !good.Visible {
 				continue
 			}
-			h.goods[good.ID] = good
+			h.appGoods[good.ID] = good
 		}
 		offset += limit
 	}
@@ -331,7 +329,7 @@ func (h *queryHandler) formalizeUsers() {
 	}
 }
 
-func (h *queryHandler) userGoodCommission(appID, appGoodID, userID string) *commissionmwpb.Commission {
+func (h *queryHandler) userGoodCommission(appID, goodID, appGoodID, userID string) *commissionmwpb.Commission {
 	commissions, ok := h.commissions[appGoodID]
 	if ok {
 		commission, ok := commissions[userID]
@@ -339,15 +337,10 @@ func (h *queryHandler) userGoodCommission(appID, appGoodID, userID string) *comm
 			return commission
 		}
 	}
-	good, ok := h.goods[appGoodID]
-	if good == nil {
-		return nil
-	}
-
 	return &commissionmwpb.Commission{
 		AppID:            appID,
 		UserID:           userID,
-		GoodID:           good.GoodID,
+		GoodID:           goodID,
 		AppGoodID:        appGoodID,
 		AmountOrPercent:  decimal.NewFromInt(0).String(),
 		SettleType:       types.SettleType_GoodOrderPayment,
@@ -367,7 +360,7 @@ func (h *queryHandler) formalizeAchievements() {
 		if !ok {
 			continue
 		}
-		good, ok := h.goods[achievement.AppGoodID]
+		good, ok := h.appGoods[achievement.AppGoodID]
 		if !ok {
 			continue
 		}
@@ -384,8 +377,12 @@ func (h *queryHandler) formalizeAchievements() {
 			continue
 		}
 
-		commission := h.userGoodCommission(achievement.AppID, achievement.AppGoodID, achievement.UserID)
-
+		commission := h.userGoodCommission(
+			achievement.AppID,
+			achievement.GoodID,
+			achievement.AppGoodID,
+			achievement.UserID,
+		)
 		info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 			GoodID:                     achievement.GoodID,
 			GoodName:                   good.GoodName,
@@ -420,7 +417,7 @@ func (h *queryHandler) formalizeAchievements() {
 
 func (h *queryHandler) formalizeNew() {
 	for _, user := range h.users {
-		for _, good := range h.goods {
+		for _, good := range h.appGoods {
 			achievedGoods, ok := h.achievedGoods[good.ID]
 			if ok {
 				if _, ok := achievedGoods[user.ID]; ok {
@@ -447,8 +444,7 @@ func (h *queryHandler) formalizeNew() {
 				continue
 			}
 
-			commission := h.userGoodCommission(good.AppID, good.ID, user.ID)
-
+			commission := h.userGoodCommission(good.AppID, good.GoodID, good.ID, user.ID)
 			info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 				GoodID:                     good.GoodID,
 				GoodName:                   good.GoodName,
@@ -540,11 +536,10 @@ func (h *Handler) GetAchievements(ctx context.Context) ([]*npool.Achievement, ui
 		Handler:       h,
 		registrations: map[string]*registrationmwpb.Registration{},
 		inviteIDs:     []string{},
-		achievements:  map[string]*achievementmwpb.Achievement{},
 		inviteesCount: map[string]uint32{},
 		coins:         map[string]*appcoinmwpb.Coin{},
 		users:         map[string]*usermwpb.User{},
-		goods:         map[string]*appgoodmwpb.Good{},
+		appGoods:      map[string]*appgoodmwpb.Good{},
 		commissions:   map[string]map[string]*commissionmwpb.Commission{},
 		achievedGoods: map[string]map[string]struct{}{},
 		statements:    []*statementmwpb.Statement{},
