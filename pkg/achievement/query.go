@@ -263,7 +263,7 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 			if !good.Visible {
 				continue
 			}
-			h.goods[good.GoodID] = good
+			h.goods[good.ID] = good
 		}
 		offset += limit
 	}
@@ -292,12 +292,12 @@ func (h *queryHandler) getCommissions(ctx context.Context) error {
 			break
 		}
 		for _, commission := range commissions {
-			commissions, ok := h.commissions[commission.GoodID]
+			commissions, ok := h.commissions[commission.AppGoodID]
 			if !ok {
 				commissions = map[string]*commissionmwpb.Commission{}
 			}
 			commissions[commission.UserID] = commission
-			h.commissions[commission.GoodID] = commissions
+			h.commissions[commission.AppGoodID] = commissions
 		}
 		offset += limit
 	}
@@ -331,18 +331,24 @@ func (h *queryHandler) formalizeUsers() {
 	}
 }
 
-func (h *queryHandler) userGoodCommission(appID, goodID, userID string) *commissionmwpb.Commission {
-	commissions, ok := h.commissions[goodID]
+func (h *queryHandler) userGoodCommission(appID, appGoodID, userID string) *commissionmwpb.Commission {
+	commissions, ok := h.commissions[appGoodID]
 	if ok {
 		commission, ok := commissions[userID]
 		if ok {
 			return commission
 		}
 	}
+	good, ok := h.goods[appGoodID]
+	if good == nil {
+		return nil
+	}
+
 	return &commissionmwpb.Commission{
 		AppID:            appID,
 		UserID:           userID,
-		GoodID:           goodID,
+		GoodID:           good.GoodID,
+		AppGoodID:        appGoodID,
 		AmountOrPercent:  decimal.NewFromInt(0).String(),
 		SettleType:       types.SettleType_GoodOrderPayment,
 		SettleMode:       types.SettleMode_DefaultSettleMode,
@@ -361,7 +367,7 @@ func (h *queryHandler) formalizeAchievements() {
 		if !ok {
 			continue
 		}
-		good, ok := h.goods[achievement.GoodID]
+		good, ok := h.goods[achievement.AppGoodID]
 		if !ok {
 			continue
 		}
@@ -370,6 +376,7 @@ func (h *queryHandler) formalizeAchievements() {
 				"formalizeAchievements",
 				"AchievementID", achievement.ID,
 				"GoodID", achievement.GoodID,
+				"AppGoodID", achievement.AppGoodID,
 				"GoodCoinTypeID", good.CoinTypeID,
 				"CoinTypeID", achievement.CoinTypeID,
 				"State", "Achievement cointypeid is not good cointypeid",
@@ -377,12 +384,13 @@ func (h *queryHandler) formalizeAchievements() {
 			continue
 		}
 
-		commission := h.userGoodCommission(achievement.AppID, achievement.GoodID, achievement.UserID)
+		commission := h.userGoodCommission(achievement.AppID, achievement.AppGoodID, achievement.UserID)
 
 		info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 			GoodID:                     achievement.GoodID,
 			GoodName:                   good.GoodName,
 			GoodUnit:                   good.Unit,
+			AppGoodID:                  good.ID,
 			CommissionValue:            commission.AmountOrPercent,
 			CommissionThreshold:        commission.Threshold,
 			CommissionSettleType:       commission.SettleType,
@@ -401,19 +409,19 @@ func (h *queryHandler) formalizeAchievements() {
 			SelfCommission:             achievement.SelfCommission,
 		})
 		h.infoMap[achievement.UserID] = info
-		achievedGoods, ok := h.achievedGoods[achievement.GoodID]
+		achievedGoods, ok := h.achievedGoods[achievement.AppGoodID]
 		if !ok {
 			achievedGoods = map[string]struct{}{}
 		}
 		achievedGoods[achievement.UserID] = struct{}{}
-		h.achievedGoods[achievement.GoodID] = achievedGoods
+		h.achievedGoods[achievement.AppGoodID] = achievedGoods
 	}
 }
 
 func (h *queryHandler) formalizeNew() {
 	for _, user := range h.users {
 		for _, good := range h.goods {
-			achievedGoods, ok := h.achievedGoods[good.GoodID]
+			achievedGoods, ok := h.achievedGoods[good.ID]
 			if ok {
 				if _, ok := achievedGoods[user.ID]; ok {
 					continue
@@ -439,12 +447,13 @@ func (h *queryHandler) formalizeNew() {
 				continue
 			}
 
-			commission := h.userGoodCommission(good.AppID, good.GoodID, user.ID)
+			commission := h.userGoodCommission(good.AppID, good.ID, user.ID)
 
 			info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 				GoodID:                     good.GoodID,
 				GoodName:                   good.GoodName,
 				GoodUnit:                   good.Unit,
+				AppGoodID:                  good.ID,
 				CommissionValue:            commission.AmountOrPercent,
 				CommissionThreshold:        commission.Threshold,
 				CommissionSettleType:       commission.SettleType,
@@ -500,7 +509,7 @@ func (h *queryHandler) formalizeDirectContribution(ctx context.Context) error {
 			continue
 		}
 		for _, achievement := range info.Achievements {
-			if achievement.GoodID != statement.GoodID {
+			if achievement.AppGoodID != statement.AppGoodID {
 				continue
 			}
 			amount, _ := decimal.NewFromString(statement.Commission)

@@ -12,7 +12,7 @@ require (
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230913030839-207fc9f2b88c
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230905173933-7c12797d1d98
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20230825073905-d23e4d838f99
-	github.com/NpoolPlatform/message v0.0.0-20230912110441-310989a8f88f
+	github.com/NpoolPlatform/message v0.0.0-20230913045422-c4a12104d511
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20230629102531-6aa588cd8391
 	github.com/NpoolPlatform/order-middleware v0.0.0-20230906144118-aa8f4d466b82
 	github.com/NpoolPlatform/third-middleware v0.0.0-20230704082227-6d9cd6cef31f
