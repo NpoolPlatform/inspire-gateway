@@ -53,18 +53,21 @@ func (h *Handler) UpdateEvent(ctx context.Context) (*npool.Event, error) {
 	if err := handler.checkAppGood(ctx); err != nil {
 		return nil, err
 	}
-	_, err := eventmwcli.UpdateEvent(ctx, &eventmwpb.EventReq{
+	req := &eventmwpb.EventReq{
 		ID:             h.ID,
 		AppID:          h.AppID,
 		CouponIDs:      h.CouponIDs,
 		Credits:        h.Credits,
 		CreditsPerUSD:  h.CreditsPerUSD,
 		MaxConsecutive: h.MaxConsecutive,
-		GoodID:         &handler.appGood.GoodID,
-		AppGoodID:      h.AppGoodID,
 		InviterLayers:  h.InviterLayers,
-	})
-	if err != nil {
+	}
+	if handler.appGood != nil {
+		req.GoodID = &handler.appGood.GoodID
+		req.AppGoodID = h.AppGoodID
+	}
+
+	if _, err := eventmwcli.UpdateEvent(ctx, req); err != nil {
 		return nil, err
 	}
 	return h.GetEvent(ctx)

@@ -49,17 +49,21 @@ func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
 		return nil, err
 	}
 
-	info, err := eventmwcli.CreateEvent(ctx, &eventmwpb.EventReq{
+	req := &eventmwpb.EventReq{
 		AppID:          h.AppID,
 		EventType:      h.EventType,
 		CouponIDs:      h.CouponIDs,
 		Credits:        h.Credits,
 		CreditsPerUSD:  h.CreditsPerUSD,
 		MaxConsecutive: h.MaxConsecutive,
-		GoodID:         &handler.appGood.GoodID,
-		AppGoodID:      h.AppGoodID,
 		InviterLayers:  h.InviterLayers,
-	})
+	}
+	if handler.appGood != nil {
+		req.GoodID = &handler.appGood.GoodID
+		req.AppGoodID = h.AppGoodID
+	}
+
+	info, err := eventmwcli.CreateEvent(ctx, req)
 	if err != nil {
 		return nil, err
 	}
