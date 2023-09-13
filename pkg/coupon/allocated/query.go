@@ -48,6 +48,31 @@ func (h *queryHandler) formalize() {
 	}
 }
 
+func (h *Handler) GetCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) {
+	info, err := allocatedmwcli.GetCoupon(ctx, *h.ID)
+	if err != nil {
+		return nil, err
+	}
+	if info == nil {
+		return nil, nil
+	}
+
+	handler := &queryHandler{
+		Handler: h,
+		infos:   []*allocatedmwpb.Coupon{info},
+		users:   map[string]*usermwpb.User{},
+	}
+	if err := handler.getUsers(ctx); err != nil {
+		return nil, err
+	}
+	handler.formalize()
+	if len(handler.infos) == 0 {
+		return nil, nil
+	}
+
+	return handler.infos[0], nil
+}
+
 func (h *Handler) GetCoupons(ctx context.Context) ([]*allocatedmwpb.Coupon, uint32, error) {
 	if h.AppID == nil {
 		return nil, 0, fmt.Errorf("invalid appid")

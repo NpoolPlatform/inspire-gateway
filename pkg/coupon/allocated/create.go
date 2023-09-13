@@ -7,6 +7,8 @@ import (
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	allocatedmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/allocated"
 	allocatedmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/allocated"
+
+	"github.com/google/uuid"
 )
 
 func (h *Handler) CreateCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) {
@@ -25,7 +27,12 @@ func (h *Handler) CreateCoupon(ctx context.Context) (*allocatedmwpb.Coupon, erro
 		return nil, fmt.Errorf("invalid user")
 	}
 
-	return allocatedmwcli.CreateCoupon(
+	id := uuid.NewString()
+	if h.ID == nil {
+		h.ID = &id
+	}
+
+	if _, err := allocatedmwcli.CreateCoupon(
 		ctx,
 		&allocatedmwpb.CouponReq{
 			ID:       h.ID,
@@ -33,5 +40,9 @@ func (h *Handler) CreateCoupon(ctx context.Context) (*allocatedmwpb.Coupon, erro
 			UserID:   h.UserID,
 			CouponID: h.CouponID,
 		},
-	)
+	); err != nil {
+		return nil, err
+	}
+
+	return h.GetCoupon(ctx)
 }
