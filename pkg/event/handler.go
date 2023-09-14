@@ -20,7 +20,7 @@ type Handler struct {
 	Credits        *string
 	CreditsPerUSD  *string
 	MaxConsecutive *uint32
-	GoodID         *string
+	AppGoodID      *string
 	InviterLayers  *uint32
 	Offset         int32
 	Limit          int32
@@ -101,7 +101,7 @@ func WithCouponIDs(ids []string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithGoodID(id *string) func(context.Context, *Handler) error {
+func WithAppGoodID(id *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			return nil
@@ -109,7 +109,7 @@ func WithGoodID(id *string) func(context.Context, *Handler) error {
 		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
-		h.GoodID = id
+		h.AppGoodID = id
 		return nil
 	}
 }

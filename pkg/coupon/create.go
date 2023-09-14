@@ -1,3 +1,4 @@
+//nolint:dupl
 package coupon
 
 import (
@@ -5,28 +6,28 @@ import (
 	"fmt"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
+	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
 )
 
 type createHandler struct {
 	*Handler
+	goodID *string
 }
 
-func (h *createHandler) validateGood(ctx context.Context) error {
-	if h.GoodID == nil {
+func (h *createHandler) checkGood(ctx context.Context) error {
+	if h.AppGoodID == nil {
 		return nil
 	}
-	info, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmgrpb.Conds{
-		AppID:  &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		GoodID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.GoodID},
+	info, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		ID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 	})
 	if err != nil {
 		return err
@@ -34,6 +35,7 @@ func (h *createHandler) validateGood(ctx context.Context) error {
 	if info == nil {
 		return fmt.Errorf("invalid good")
 	}
+	h.goodID = &info.GoodID
 	return nil
 }
 
@@ -70,7 +72,7 @@ func (h *Handler) CreateCoupon(ctx context.Context) (*couponmwpb.Coupon, error) 
 		Handler: h,
 	}
 
-	if err := handler.validateGood(ctx); err != nil {
+	if err := handler.checkGood(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.validateIssuer(ctx); err != nil {
@@ -80,23 +82,21 @@ func (h *Handler) CreateCoupon(ctx context.Context) (*couponmwpb.Coupon, error) 
 	if *h.CouponType == types.CouponType_SpecialOffer {
 		return handler.createSpecialOffer(ctx)
 	}
-	return couponmwcli.CreateCoupon(
-		ctx,
-		&couponmwpb.CouponReq{
-			ID:               h.ID,
-			AppID:            h.AppID,
-			CouponType:       h.CouponType,
-			Denomination:     h.Denomination,
-			Circulation:      h.Circulation,
-			IssuedBy:         h.IssuedBy,
-			StartAt:          h.StartAt,
-			DurationDays:     h.DurationDays,
-			Message:          h.Message,
-			Name:             h.Name,
-			GoodID:           h.GoodID,
-			CouponConstraint: h.CouponConstraint,
-			Threshold:        h.Threshold,
-			Random:           h.Random,
-		},
-	)
+	return couponmwcli.CreateCoupon(ctx, &couponmwpb.CouponReq{
+		ID:               h.ID,
+		AppID:            h.AppID,
+		CouponType:       h.CouponType,
+		Denomination:     h.Denomination,
+		Circulation:      h.Circulation,
+		IssuedBy:         h.IssuedBy,
+		StartAt:          h.StartAt,
+		DurationDays:     h.DurationDays,
+		Message:          h.Message,
+		Name:             h.Name,
+		GoodID:           handler.goodID,
+		AppGoodID:        h.AppGoodID,
+		CouponConstraint: h.CouponConstraint,
+		Threshold:        h.Threshold,
+		Random:           h.Random,
+	})
 }

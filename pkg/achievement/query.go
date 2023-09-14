@@ -4,48 +4,39 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
-	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
-	"github.com/shopspring/decimal"
-
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
-
+	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
+	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
+	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
+	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	achievementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement"
 	statementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/statement"
-	achievementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement"
-	statementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement"
-
-	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
-	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
-
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
-	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
-
-	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
-	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
-
-	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/appgood"
-	appgoodmgrpb "github.com/NpoolPlatform/message/npool/good/mgr/v1/appgood"
-	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/appgood"
-
-	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/achievement"
-
+	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
-	commonpb "github.com/NpoolPlatform/message/npool"
+	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
+	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/achievement"
+	achievementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement"
+	statementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement"
+	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
+	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
+
+	"github.com/shopspring/decimal"
 )
 
 type queryHandler struct {
 	*Handler
 	registrations map[string]*registrationmwpb.Registration
 	inviteIDs     []string
-	achievements  map[string]*achievementmwpb.Achievement
+	achievements  []*achievementmwpb.Achievement
 	inviteesCount map[string]uint32
 	coins         map[string]*appcoinmwpb.Coin
 	users         map[string]*usermwpb.User
-	goods         map[string]*appgoodmwpb.Good
+	appGoods      map[string]*appgoodmwpb.Good
 	commissions   map[string]map[string]*commissionmwpb.Commission
 	total         uint32
 	achievedGoods map[string]map[string]struct{}
@@ -208,9 +199,7 @@ func (h *queryHandler) getAchievements(ctx context.Context) error {
 		if len(achievements) == 0 {
 			break
 		}
-		for _, achievement := range achievements {
-			h.achievements[achievement.UserID] = achievement
-		}
+		h.achievements = append(h.achievements, achievements...)
 		offset += limit
 	}
 	return nil
@@ -221,7 +210,7 @@ func (h *queryHandler) getCoins(ctx context.Context) error {
 	for _, achievement := range h.achievements {
 		coinTypeIDs = append(coinTypeIDs, achievement.CoinTypeID)
 	}
-	for _, good := range h.goods {
+	for _, good := range h.appGoods {
 		coinTypeIDs = append(coinTypeIDs, good.CoinTypeID)
 	}
 	coins, _, err := appcoinmwcli.GetCoins(ctx, &appcoinmwpb.Conds{
@@ -259,8 +248,8 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 	limit := constant.DefaultRowLimit
 
 	for {
-		goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmgrpb.Conds{
-			AppID: &commonpb.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmwpb.Conds{
+			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		}, offset, limit)
 		if err != nil {
 			return err
@@ -272,7 +261,7 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 			if !good.Visible {
 				continue
 			}
-			h.goods[good.GoodID] = good
+			h.appGoods[good.ID] = good
 		}
 		offset += limit
 	}
@@ -301,12 +290,12 @@ func (h *queryHandler) getCommissions(ctx context.Context) error {
 			break
 		}
 		for _, commission := range commissions {
-			commissions, ok := h.commissions[commission.GoodID]
+			commissions, ok := h.commissions[commission.AppGoodID]
 			if !ok {
 				commissions = map[string]*commissionmwpb.Commission{}
 			}
 			commissions[commission.UserID] = commission
-			h.commissions[commission.GoodID] = commissions
+			h.commissions[commission.AppGoodID] = commissions
 		}
 		offset += limit
 	}
@@ -340,8 +329,8 @@ func (h *queryHandler) formalizeUsers() {
 	}
 }
 
-func (h *queryHandler) userGoodCommission(appID, goodID, userID string) *commissionmwpb.Commission {
-	commissions, ok := h.commissions[goodID]
+func (h *queryHandler) userGoodCommission(appID, goodID, appGoodID, userID string) *commissionmwpb.Commission {
+	commissions, ok := h.commissions[appGoodID]
 	if ok {
 		commission, ok := commissions[userID]
 		if ok {
@@ -352,6 +341,7 @@ func (h *queryHandler) userGoodCommission(appID, goodID, userID string) *commiss
 		AppID:            appID,
 		UserID:           userID,
 		GoodID:           goodID,
+		AppGoodID:        appGoodID,
 		AmountOrPercent:  decimal.NewFromInt(0).String(),
 		SettleType:       types.SettleType_GoodOrderPayment,
 		SettleMode:       types.SettleMode_DefaultSettleMode,
@@ -370,7 +360,7 @@ func (h *queryHandler) formalizeAchievements() {
 		if !ok {
 			continue
 		}
-		good, ok := h.goods[achievement.GoodID]
+		good, ok := h.appGoods[achievement.AppGoodID]
 		if !ok {
 			continue
 		}
@@ -379,6 +369,7 @@ func (h *queryHandler) formalizeAchievements() {
 				"formalizeAchievements",
 				"AchievementID", achievement.ID,
 				"GoodID", achievement.GoodID,
+				"AppGoodID", achievement.AppGoodID,
 				"GoodCoinTypeID", good.CoinTypeID,
 				"CoinTypeID", achievement.CoinTypeID,
 				"State", "Achievement cointypeid is not good cointypeid",
@@ -386,12 +377,17 @@ func (h *queryHandler) formalizeAchievements() {
 			continue
 		}
 
-		commission := h.userGoodCommission(achievement.AppID, achievement.GoodID, achievement.UserID)
-
+		commission := h.userGoodCommission(
+			achievement.AppID,
+			achievement.GoodID,
+			achievement.AppGoodID,
+			achievement.UserID,
+		)
 		info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 			GoodID:                     achievement.GoodID,
 			GoodName:                   good.GoodName,
 			GoodUnit:                   good.Unit,
+			AppGoodID:                  good.ID,
 			CommissionValue:            commission.AmountOrPercent,
 			CommissionThreshold:        commission.Threshold,
 			CommissionSettleType:       commission.SettleType,
@@ -410,19 +406,19 @@ func (h *queryHandler) formalizeAchievements() {
 			SelfCommission:             achievement.SelfCommission,
 		})
 		h.infoMap[achievement.UserID] = info
-		achievedGoods, ok := h.achievedGoods[achievement.GoodID]
+		achievedGoods, ok := h.achievedGoods[achievement.AppGoodID]
 		if !ok {
 			achievedGoods = map[string]struct{}{}
 		}
 		achievedGoods[achievement.UserID] = struct{}{}
-		h.achievedGoods[achievement.GoodID] = achievedGoods
+		h.achievedGoods[achievement.AppGoodID] = achievedGoods
 	}
 }
 
 func (h *queryHandler) formalizeNew() {
 	for _, user := range h.users {
-		for _, good := range h.goods {
-			achievedGoods, ok := h.achievedGoods[good.GoodID]
+		for _, good := range h.appGoods {
+			achievedGoods, ok := h.achievedGoods[good.ID]
 			if ok {
 				if _, ok := achievedGoods[user.ID]; ok {
 					continue
@@ -448,12 +444,12 @@ func (h *queryHandler) formalizeNew() {
 				continue
 			}
 
-			commission := h.userGoodCommission(good.AppID, good.GoodID, user.ID)
-
+			commission := h.userGoodCommission(good.AppID, good.GoodID, good.ID, user.ID)
 			info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 				GoodID:                     good.GoodID,
 				GoodName:                   good.GoodName,
 				GoodUnit:                   good.Unit,
+				AppGoodID:                  good.ID,
 				CommissionValue:            commission.AmountOrPercent,
 				CommissionThreshold:        commission.Threshold,
 				CommissionSettleType:       commission.SettleType,
@@ -509,7 +505,7 @@ func (h *queryHandler) formalizeDirectContribution(ctx context.Context) error {
 			continue
 		}
 		for _, achievement := range info.Achievements {
-			if achievement.GoodID != statement.GoodID {
+			if achievement.AppGoodID != statement.AppGoodID {
 				continue
 			}
 			amount, _ := decimal.NewFromString(statement.Commission)
@@ -540,11 +536,10 @@ func (h *Handler) GetAchievements(ctx context.Context) ([]*npool.Achievement, ui
 		Handler:       h,
 		registrations: map[string]*registrationmwpb.Registration{},
 		inviteIDs:     []string{},
-		achievements:  map[string]*achievementmwpb.Achievement{},
 		inviteesCount: map[string]uint32{},
 		coins:         map[string]*appcoinmwpb.Coin{},
 		users:         map[string]*usermwpb.User{},
-		goods:         map[string]*appgoodmwpb.Good{},
+		appGoods:      map[string]*appgoodmwpb.Good{},
 		commissions:   map[string]map[string]*commissionmwpb.Commission{},
 		achievedGoods: map[string]map[string]struct{}{},
 		statements:    []*statementmwpb.Statement{},

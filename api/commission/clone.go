@@ -17,8 +17,8 @@ func (s *Server) CloneCommissions(ctx context.Context, in *npool.CloneCommission
 	handler, err := commission1.NewHandler(
 		ctx,
 		commission1.WithAppID(&in.AppID),
-		commission1.WithFromGoodID(&in.FromGoodID),
-		commission1.WithToGoodID(&in.ToGoodID),
+		commission1.WithFromAppGoodID(&in.FromAppGoodID),
+		commission1.WithToAppGoodID(&in.ToAppGoodID),
 		commission1.WithScalePercent(&in.ScalePercent),
 	)
 	if err != nil {
@@ -47,8 +47,8 @@ func (s *Server) CloneAppCommissions(ctx context.Context, in *npool.CloneAppComm
 	handler, err := commission1.NewHandler(
 		ctx,
 		commission1.WithAppID(&in.TargetAppID),
-		commission1.WithFromGoodID(&in.FromGoodID),
-		commission1.WithToGoodID(&in.ToGoodID),
+		commission1.WithFromAppGoodID(&in.FromAppGoodID),
+		commission1.WithToAppGoodID(&in.ToAppGoodID),
 		commission1.WithScalePercent(&in.ScalePercent),
 	)
 	if err != nil {

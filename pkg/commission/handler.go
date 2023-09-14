@@ -17,7 +17,7 @@ type Handler struct {
 	AppID            *string
 	UserID           *string
 	TargetUserID     *string
-	GoodID           *string
+	AppGoodID        *string
 	SettleType       *types.SettleType
 	SettleMode       *types.SettleMode
 	SettleInterval   *types.SettleInterval
@@ -26,8 +26,8 @@ type Handler struct {
 	Threshold        *string
 	StartAt          *uint32
 	EndAt            *uint32
-	FromGoodID       *string
-	ToGoodID         *string
+	FromAppGoodID    *string
+	ToAppGoodID      *string
 	ScalePercent     *string
 	CheckAffiliate   bool
 	Offset           int32
@@ -94,19 +94,6 @@ func WithTargetUserID(id *string) func(context.Context, *Handler) error {
 			return err
 		}
 		h.TargetUserID = id
-		return nil
-	}
-}
-
-func WithGoodID(id *string) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		h.GoodID = id
 		return nil
 	}
 }
@@ -223,7 +210,7 @@ func WithEndAt(value *uint32) func(context.Context, *Handler) error {
 	}
 }
 
-func WithFromGoodID(id *string) func(context.Context, *Handler) error {
+func WithAppGoodID(id *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			return nil
@@ -231,12 +218,12 @@ func WithFromGoodID(id *string) func(context.Context, *Handler) error {
 		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
-		h.FromGoodID = id
+		h.AppGoodID = id
 		return nil
 	}
 }
 
-func WithToGoodID(id *string) func(context.Context, *Handler) error {
+func WithFromAppGoodID(id *string) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			return nil
@@ -244,7 +231,20 @@ func WithToGoodID(id *string) func(context.Context, *Handler) error {
 		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
-		h.ToGoodID = id
+		h.FromAppGoodID = id
+		return nil
+	}
+}
+
+func WithToAppGoodID(id *string) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.ToAppGoodID = id
 		return nil
 	}
 }
