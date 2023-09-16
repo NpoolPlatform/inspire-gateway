@@ -148,14 +148,11 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 			AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			AppGoodID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 			OrderType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
-			OrderStates: &basetypes.Uint32SliceVal{
-				Op: cruder.IN,
-				Value: []uint32{
-					uint32(ordertypes.OrderState_OrderStatePaid),
-					uint32(ordertypes.OrderState_OrderStateInService),
-					uint32(ordertypes.OrderState_OrderStateExpired),
-				},
-			},
+			OrderStates: &basetypes.Uint32SliceVal{Op: cruder.IN, Value: []uint32{
+				uint32(ordertypes.OrderState_OrderStatePaid),
+				uint32(ordertypes.OrderState_OrderStateInService),
+				uint32(ordertypes.OrderState_OrderStateExpired),
+			}},
 		}, offset, limit)
 		if err != nil {
 			return err
