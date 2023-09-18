@@ -191,9 +191,10 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 	limit := constant.DefaultRowLimit
 	for {
 		orders, _, err := ordermwcli.GetOrders(ctx, &ordermwpb.Conds{
-			AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			AppGoodID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
-			OrderType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
+			AppID:       &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			AppGoodID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
+			OrderType:   &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(orderType)},
+			PaymentType: &basetypes.Uint32Val{Op: cruder.NEQ, Value: uint32(ordertypes.PaymentType_PayWithParentOrder)},
 			OrderStates: &basetypes.Uint32SliceVal{Op: cruder.IN, Value: []uint32{
 				uint32(ordertypes.OrderState_OrderStatePaid),
 				uint32(ordertypes.OrderState_OrderStateInService),
