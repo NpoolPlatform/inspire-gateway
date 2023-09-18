@@ -31,6 +31,47 @@ type reconcileHandler struct {
 	*Handler
 }
 
+func (h reconcileHandler) orderGoodValue(ctx context.Context, order *ordermwpb.Order) (decimal.Decimal, decimal.Decimal, error) {
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+
+	goodValue, err := decimal.NewFromString(order.GoodValue)
+	if err != nil {
+		return decimal.NewFromInt(0), decimal.NewFromInt(0), err
+	}
+	goodValueUSD, err := decimal.NewFromString(order.GoodValueUSD)
+	if err != nil {
+		return decimal.NewFromInt(0), decimal.NewFromInt(0), err
+	}
+
+	for {
+		childs, _, err := ordermwcli.GetOrders(ctx, &ordermwpb.Conds{
+			ParentOrderID: &basetypes.StringVal{Op: cruder.EQ, Value: order.ID},
+			PaymentType:   &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(ordertypes.PaymentType_PayWithParentOrder)},
+		}, offset, limit)
+		if err != nil {
+			return decimal.NewFromInt(0), decimal.NewFromInt(0), err
+		}
+		if len(childs) == 0 {
+			break
+		}
+		for _, child := range childs {
+			amount, err := decimal.NewFromString(child.GoodValue)
+			if err != nil {
+				return decimal.NewFromInt(0), decimal.NewFromInt(0), err
+			}
+			amountUSD, err := decimal.NewFromString(child.GoodValueUSD)
+			if err != nil {
+				return decimal.NewFromInt(0), decimal.NewFromInt(0), err
+			}
+			goodValue = goodValue.Add(amount)
+			goodValueUSD = goodValueUSD.Add(amountUSD)
+		}
+		offset += limit
+	}
+	return goodValue, goodValueUSD, nil
+}
+
 func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolint
 	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: order.AppID},
@@ -41,6 +82,11 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 	}
 	if good == nil {
 		return fmt.Errorf("invalid good")
+	}
+
+	goodValue, goodValueUSD, err := h.orderGoodValue(ctx, order)
+	if err != nil {
+		return err
 	}
 
 	statements, err := calculatemwcli.Calculate(ctx, &calculatemwpb.CalculateRequest{
@@ -55,8 +101,8 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		PaymentCoinUSDCurrency: order.CoinUSDCurrency,
 		Units:                  order.Units,
 		PaymentAmount:          order.PaymentAmount,
-		GoodValue:              order.GoodValue,
-		GoodValueUSD:           order.GoodValueUSD,
+		GoodValue:              goodValue.String(),
+		GoodValueUSD:           goodValueUSD.String(),
 		SettleType:             types.SettleType_GoodOrderPayment,
 		HasCommission:          order.OrderType == ordertypes.OrderType_Normal,
 		OrderCreatedAt:         order.CreatedAt,
