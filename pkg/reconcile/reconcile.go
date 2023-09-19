@@ -31,6 +31,7 @@ type reconcileHandler struct {
 	*Handler
 }
 
+//nolint:gocritic
 func (h reconcileHandler) orderGoodValue(ctx context.Context, order *ordermwpb.Order) (decimal.Decimal, decimal.Decimal, error) {
 	offset := int32(0)
 	limit := constant.DefaultRowLimit
