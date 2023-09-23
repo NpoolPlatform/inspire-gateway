@@ -9,7 +9,7 @@ require (
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230913141802-cbb17f1c7637
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230913101807-3934219c0456
 	github.com/NpoolPlatform/good-middleware v0.0.0-20230917065700-efaaa92171b4
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230913112606-d48a3cb95447
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230923132717-3bd4afc9928d
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230917074922-787f70282dd3
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20230825073905-d23e4d838f99
 	github.com/NpoolPlatform/message v0.0.0-20230917065134-468517781435
@@ -29,7 +29,6 @@ require (
 require (
 	ariga.io/atlas v0.10.0 // indirect
 	entgo.io/ent v0.12.0 // indirect
-	github.com/AmirSoleimani/VoucherCodeGenerator/vcgen v0.0.0-20220706103434-bcb25b5bff9c // indirect
 	github.com/Shonminh/apollo-client v0.4.0 // indirect
 	github.com/ThreeDotsLabs/watermill v1.2.0 // indirect
 	github.com/ThreeDotsLabs/watermill-amqp/v2 v2.0.7 // indirect

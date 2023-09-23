@@ -18,7 +18,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/NpoolPlatform/inspire-middleware/pkg/pubsub"
+	"github.com/NpoolPlatform/inspire-gateway/pkg/pubsub"
 )
 
 var runCmd = &cli.Command{

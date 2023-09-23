@@ -108,10 +108,6 @@ func statReq(ctx context.Context, mid string, uid uuid.UUID) (bool, error) {
 func statMsg(ctx context.Context, mid string, uid uuid.UUID, rid *uuid.UUID) (bool, error) { //nolint
 	switch mid {
 	case basetypes.MsgID_CreateCommissionReq.String():
-		fallthrough //nolint
-	case basetypes.MsgID_CreateLoginHistoryReq.String():
-		fallthrough //nolint
-	case basetypes.MsgID_CreateAuthHistoryReq.String():
 		return statReq(ctx, mid, uid)
 	default:
 		return false, fmt.Errorf("invalid message")
@@ -129,7 +125,7 @@ func stat(ctx context.Context, mid string, uid uuid.UUID, rid *uuid.UUID) (bool,
 // Process will consume the message and return consuming state
 //  Return
 //   error   reason of error, if nil, means the message should be acked
-func process(ctx context.Context, uid uuid.UUID, req interface{}) (err error) {
+func process(ctx context.Context, mid string, req interface{}) (err error) {
 	switch mid {
 	case basetypes.MsgID_CreateCommissionReq.String():
 		err = commission.Apply(ctx, req)
@@ -145,12 +141,18 @@ func handler(ctx context.Context, msg *pubsub.Msg) (err error) {
 	var req interface{}
 	var appliable bool
 
-	defer func() {
+	defer func(req *interface{}, appliable *bool) {
 		msg.Ack()
-		if req != nil && appliable {
-			_ = finish(ctx, msg, err)
+		if *req != nil && *appliable {
+			if err := finish(ctx, msg, err); err != nil {
+				logger.Sugar().Errorw(
+					"handler",
+					"Msg", msg,
+					"Error", err,
+				)
+			}
 		}
-	}()
+	}(&req, &appliable)
 
 	req, err = prepare(msg.MID, msg.Body)
 	if err != nil {
@@ -168,7 +170,7 @@ func handler(ctx context.Context, msg *pubsub.Msg) (err error) {
 		return nil
 	}
 
-	err = process(ctx, msg.MID, msg.UID, req)
+	err = process(ctx, msg.MID, req)
 	return err
 }
 
