@@ -3,19 +3,19 @@ module github.com/NpoolPlatform/inspire-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230917082029-230c1954e222
-	github.com/NpoolPlatform/basal-middleware v0.0.0-20230913134752-d45f93a3a60c
-	github.com/NpoolPlatform/chain-middleware v0.0.0-20230913142438-2e5786e6ca7e
-	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230913141802-cbb17f1c7637
-	github.com/NpoolPlatform/go-service-framework v0.0.0-20230913101807-3934219c0456
-	github.com/NpoolPlatform/good-middleware v0.0.0-20230917065700-efaaa92171b4
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230923132717-3bd4afc9928d
-	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230917074922-787f70282dd3
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20230924060533-3e21b24a2113
+	github.com/NpoolPlatform/basal-middleware v0.0.0-20230924051732-306a71d294ed
+	github.com/NpoolPlatform/chain-middleware v0.0.0-20230924052457-76b2482b116b
+	github.com/NpoolPlatform/g11n-middleware v0.0.0-20230924052720-8134e2dbd9cd
+	github.com/NpoolPlatform/go-service-framework v0.0.0-20230922114506-a65341cfbf48
+	github.com/NpoolPlatform/good-middleware v0.0.0-20230924052908-6a3bb6ba7a4d
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20230924053035-4e2ef1b162bd
+	github.com/NpoolPlatform/ledger-middleware v0.0.0-20230924053152-8c9b73fba39f
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20230825073905-d23e4d838f99
-	github.com/NpoolPlatform/message v0.0.0-20230917065134-468517781435
-	github.com/NpoolPlatform/notif-middleware v0.0.0-20230913142635-fe1be9a7165b
-	github.com/NpoolPlatform/order-middleware v0.0.0-20230917082151-1bfffcb53c47
-	github.com/NpoolPlatform/third-middleware v0.0.0-20230913134511-fac1c31f0821
+	github.com/NpoolPlatform/message v0.0.0-20230923053829-31c88d9a36c2
+	github.com/NpoolPlatform/notif-middleware v0.0.0-20230924053351-a70b78c0f129
+	github.com/NpoolPlatform/order-middleware v0.0.0-20230924055637-0cfe6550171b
+	github.com/NpoolPlatform/third-middleware v0.0.0-20230924060259-e89f8c1e5e9b
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2
