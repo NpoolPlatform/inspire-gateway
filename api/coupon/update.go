@@ -28,6 +28,7 @@ func (s *Server) UpdateCoupon(ctx context.Context, in *npool.UpdateCouponRequest
 		coupon1.WithThreshold(in.Threshold),
 		coupon1.WithCouponConstraint(in.CouponConstraint),
 		coupon1.WithRandom(in.Random),
+		coupon1.WithCouponScope(in.CouponScope),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -29,6 +29,7 @@ type Handler struct {
 	Name             *string
 	Threshold        *string
 	CouponConstraint *types.CouponConstraint
+	CouponScope      *types.CouponScope
 	Random           *bool
 	Offset           int32
 	Limit            int32
@@ -230,6 +231,23 @@ func WithCouponConstraint(couponConstraint *types.CouponConstraint) func(context
 			return fmt.Errorf("invalid couponconstraint")
 		}
 		h.CouponConstraint = couponConstraint
+		return nil
+	}
+}
+
+func WithCouponScope(couponScope *types.CouponScope) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if couponScope == nil {
+			return nil
+		}
+		switch *couponScope {
+		case types.CouponScope_AllGood:
+		case types.CouponScope_Blacklist:
+		case types.CouponScope_Whitelist:
+		default:
+			return fmt.Errorf("invalid couponscope")
+		}
+		h.CouponScope = couponScope
 		return nil
 	}
 }
