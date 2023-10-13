@@ -43,24 +43,3 @@ func (s *Server) GetScopes(ctx context.Context, in *npool.GetScopesRequest) (*np
 		Total: total,
 	}, nil
 }
-
-func (s *Server) GetAppScopes(ctx context.Context, in *npool.GetAppScopesRequest) (*npool.GetAppScopesResponse, error) {
-	resp, err := s.GetScopes(ctx, &npool.GetScopesRequest{
-		AppID:  in.TargetAppID,
-		Offset: in.Offset,
-		Limit:  in.Limit,
-	})
-	if err != nil {
-		logger.Sugar().Errorw(
-			"GetAppScopes",
-			"In", in,
-			"Err", err,
-		)
-		return &npool.GetAppScopesResponse{}, status.Error(codes.InvalidArgument, err.Error())
-	}
-
-	return &npool.GetAppScopesResponse{
-		Infos: resp.Infos,
-		Total: resp.Total,
-	}, nil
-}
