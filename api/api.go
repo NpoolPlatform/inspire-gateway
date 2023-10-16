@@ -55,6 +55,9 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 	if err := allocated.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
+	if err := scope.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
 	if err := invitationcode.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
