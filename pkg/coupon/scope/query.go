@@ -21,7 +21,7 @@ type queryHandler struct {
 
 func (h *queryHandler) getAppGoods(ctx context.Context) error {
 	ids := []string{}
-	for _, info := range h.infos {
+	for _, info := range h.scopes {
 		ids = append(ids, info.AppGoodID)
 	}
 	appgoods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmwpb.Conds{
@@ -38,7 +38,7 @@ func (h *queryHandler) getAppGoods(ctx context.Context) error {
 }
 
 func (h *queryHandler) formalize() {
-	for _, info := range h.infos {
+	for _, info := range h.scopes {
 		appgood, ok := h.appgoods[info.AppGoodID]
 		if !ok {
 			continue
