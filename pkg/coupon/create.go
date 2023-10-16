@@ -6,37 +6,16 @@ import (
 	"fmt"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
 )
 
 type createHandler struct {
 	*Handler
-	goodID *string
-}
-
-func (h *createHandler) checkGood(ctx context.Context) error {
-	if h.AppGoodID == nil {
-		return nil
-	}
-	info, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		ID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
-	})
-	if err != nil {
-		return err
-	}
-	if info == nil {
-		return fmt.Errorf("invalid good")
-	}
-	h.goodID = &info.GoodID
-	return nil
 }
 
 func (h *createHandler) validateIssuer(ctx context.Context) error {
@@ -72,9 +51,6 @@ func (h *Handler) CreateCoupon(ctx context.Context) (*couponmwpb.Coupon, error) 
 		Handler: h,
 	}
 
-	if err := handler.checkGood(ctx); err != nil {
-		return nil, err
-	}
 	if err := handler.validateIssuer(ctx); err != nil {
 		return nil, err
 	}
@@ -93,8 +69,6 @@ func (h *Handler) CreateCoupon(ctx context.Context) (*couponmwpb.Coupon, error) 
 		DurationDays:     h.DurationDays,
 		Message:          h.Message,
 		Name:             h.Name,
-		GoodID:           handler.goodID,
-		AppGoodID:        h.AppGoodID,
 		CouponConstraint: h.CouponConstraint,
 		Threshold:        h.Threshold,
 		Random:           h.Random,

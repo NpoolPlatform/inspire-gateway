@@ -19,7 +19,6 @@ type Handler struct {
 	AppID            *string
 	UserID           *string
 	IssuedBy         *string
-	AppGoodID        *string
 	CouponType       *types.CouponType
 	Denomination     *string
 	Circulation      *string
@@ -97,19 +96,6 @@ func WithIssuedBy(id *string) func(context.Context, *Handler) error {
 			return err
 		}
 		h.IssuedBy = id
-		return nil
-	}
-}
-
-func WithAppGoodID(id *string) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		h.AppGoodID = id
 		return nil
 	}
 }
