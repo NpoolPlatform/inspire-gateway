@@ -95,7 +95,7 @@ func (h *Handler) GetScopes(ctx context.Context) ([]*npool.Scope, uint32, error)
 		return nil, 0, err
 	}
 	if len(infos) == 0 {
-		return nil, total, nil
+		return nil, 0, nil
 	}
 
 	handler := &queryHandler{
