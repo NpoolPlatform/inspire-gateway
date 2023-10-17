@@ -15,6 +15,7 @@ import (
 type Handler struct {
 	ID          *string
 	AppID       *string
+	UserID      *string
 	AppGoodID   *string
 	CouponID    *string
 	CouponScope *types.CouponScope
@@ -70,6 +71,22 @@ func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 		}
 
 		h.AppID = id
+		return nil
+	}
+}
+
+func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid userid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.UserID = id
 		return nil
 	}
 }

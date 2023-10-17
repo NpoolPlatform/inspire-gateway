@@ -16,6 +16,7 @@ func (s *Server) GetScopes(ctx context.Context, in *npool.GetScopesRequest) (*np
 	handler, err := scope1.NewHandler(
 		ctx,
 		scope1.WithAppID(&in.AppID, true),
+		scope1.WithUserID(&in.UserID, true),
 		scope1.WithOffset(in.GetOffset()),
 		scope1.WithLimit(in.GetLimit()),
 	)
@@ -45,11 +46,12 @@ func (s *Server) GetScopes(ctx context.Context, in *npool.GetScopesRequest) (*np
 }
 
 func (s *Server) GetAppScopes(ctx context.Context, in *npool.GetAppScopesRequest) (*npool.GetAppScopesResponse, error) {
-	resp, err := s.GetScopes(ctx, &npool.GetScopesRequest{
-		AppID:  in.TargetAppID,
-		Offset: in.Offset,
-		Limit:  in.Limit,
-	})
+	handler, err := scope1.NewHandler(
+		ctx,
+		scope1.WithAppID(&in.AppID, true),
+		scope1.WithOffset(in.GetOffset()),
+		scope1.WithLimit(in.GetLimit()),
+	)
 	if err != nil {
 		logger.Sugar().Errorw(
 			"GetAppScopes",
@@ -59,7 +61,38 @@ func (s *Server) GetAppScopes(ctx context.Context, in *npool.GetAppScopesRequest
 		return &npool.GetAppScopesResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
+	infos, total, err := handler.GetAppScopes(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetAppScopes",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.GetAppScopesResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
 	return &npool.GetAppScopesResponse{
+		Infos: infos,
+		Total: total,
+	}, nil
+}
+
+func (s *Server) GetNAppScopes(ctx context.Context, in *npool.GetNAppScopesRequest) (*npool.GetNAppScopesResponse, error) {
+	resp, err := s.GetAppScopes(ctx, &npool.GetAppScopesRequest{
+		AppID:  in.TargetAppID,
+		Offset: in.Offset,
+		Limit:  in.Limit,
+	})
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetNAppScopes",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.GetNAppScopesResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	return &npool.GetNAppScopesResponse{
 		Infos: resp.Infos,
 		Total: resp.Total,
 	}, nil
