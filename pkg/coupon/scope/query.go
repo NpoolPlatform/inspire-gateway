@@ -141,7 +141,7 @@ func (h *Handler) GetScopes(ctx context.Context) ([]*npool.Scope, uint32, error)
 		if err != nil {
 			return nil, 0, err
 		}
-		if len(infos) == 0 {
+		if len(_infos) == 0 {
 			break
 		}
 		infos = append(infos, _infos...)
