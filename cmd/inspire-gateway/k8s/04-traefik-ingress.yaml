@@ -157,7 +157,7 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/clone/commissions
+          - path: /api/inspire/v1/clone
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
@@ -166,6 +166,10 @@ spec:
               serviceName: inspire-gateway
               servicePort: 50390
           - path: /api/inspire/v1/get/app/allocatedcoupons
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/get/allocatedcoupons
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
