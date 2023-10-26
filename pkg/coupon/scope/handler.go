@@ -148,7 +148,6 @@ func WithCouponScope(couponScope *types.CouponScope, must bool) func(context.Con
 			return nil
 		}
 		switch *couponScope {
-		case types.CouponScope_AllGood:
 		case types.CouponScope_Blacklist:
 		case types.CouponScope_Whitelist:
 		default:
