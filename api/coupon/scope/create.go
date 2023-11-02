@@ -15,10 +15,9 @@ import (
 func (s *Server) CreateScope(ctx context.Context, in *npool.CreateScopeRequest) (*npool.CreateScopeResponse, error) {
 	handler, err := scope1.NewHandler(
 		ctx,
-		scope1.WithAppID(&in.TargetAppID, true),
+		scope1.WithGoodID(&in.GoodID, true),
 		scope1.WithCouponID(&in.CouponID, true),
 		scope1.WithCouponScope(&in.CouponScope, true),
-		scope1.WithAppGoodID(in.AppGoodID, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

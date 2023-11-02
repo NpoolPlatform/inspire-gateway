@@ -15,8 +15,6 @@ import (
 func (s *Server) GetScopes(ctx context.Context, in *npool.GetScopesRequest) (*npool.GetScopesResponse, error) {
 	handler, err := scope1.NewHandler(
 		ctx,
-		scope1.WithAppID(&in.AppID, true),
-		scope1.WithUserID(&in.UserID, true),
 		scope1.WithOffset(in.GetOffset()),
 		scope1.WithLimit(in.GetLimit()),
 	)

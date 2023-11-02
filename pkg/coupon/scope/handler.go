@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
-	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
+	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
@@ -14,9 +13,7 @@ import (
 
 type Handler struct {
 	ID          *string
-	AppID       *string
-	UserID      *string
-	AppGoodID   *string
+	GoodID      *string
 	CouponID    *string
 	CouponScope *types.CouponScope
 	Offset      int32
@@ -49,73 +46,29 @@ func WithID(id *string, must bool) func(context.Context, *Handler) error {
 	}
 }
 
-//nolint
-func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
+func WithGoodID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid appid")
+				return fmt.Errorf("invalid goodid")
 			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
-
-		exist, err := appmwcli.ExistApp(ctx, *id)
+		good, err := goodmwcli.GetGood(ctx, *id)
 		if err != nil {
 			return err
 		}
-		if !exist {
-			return fmt.Errorf("app not found")
+		if good == nil {
+			return fmt.Errorf("good not found")
 		}
-
-		h.AppID = id
+		h.GoodID = id
 		return nil
 	}
 }
 
-func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			if must {
-				return fmt.Errorf("invalid userid")
-			}
-			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		h.UserID = id
-		return nil
-	}
-}
-
-//nolint
-func WithAppGoodID(id *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			if must {
-				return fmt.Errorf("invalid appgoodid")
-			}
-			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		exist, err := appgoodmwcli.ExistGood(ctx, *id)
-		if err != nil {
-			return err
-		}
-		if !exist {
-			return fmt.Errorf("appgood not found")
-		}
-		h.AppGoodID = id
-		return nil
-	}
-}
-
-//nolint
 func WithCouponID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
