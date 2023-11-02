@@ -19,7 +19,7 @@ type queryHandler struct {
 	goods  map[string]*goodmwpb.Good
 }
 
-func (h *queryHandler) getAppGoods(ctx context.Context) error {
+func (h *queryHandler) getGoods(ctx context.Context) error {
 	ids := []string{}
 	for _, info := range h.scopes {
 		ids = append(ids, info.GoodID)
@@ -73,7 +73,7 @@ func (h *Handler) GetScope(ctx context.Context) (*npool.Scope, error) {
 		scopes:  []*scopemwpb.Scope{info},
 		goods:   map[string]*goodmwpb.Good{},
 	}
-	if err := handler.getAppGoods(ctx); err != nil {
+	if err := handler.getGoods(ctx); err != nil {
 		return nil, err
 	}
 
@@ -95,7 +95,7 @@ func (h *Handler) GetScopes(ctx context.Context) ([]*npool.Scope, uint32, error)
 		scopes:  scopes,
 		goods:   map[string]*goodmwpb.Good{},
 	}
-	if err := handler.getAppGoods(ctx); err != nil {
+	if err := handler.getGoods(ctx); err != nil {
 		return nil, 0, err
 	}
 
