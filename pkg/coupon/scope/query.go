@@ -3,61 +3,56 @@ package scope
 import (
 	"context"
 
-	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
-	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
-	allocatedmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/allocated"
+	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
 	scopemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/scope"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
+	goodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon/scope"
-	allocatedmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/allocated"
 	scopemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/scope"
 )
 
 type queryHandler struct {
 	*Handler
-	infos    []*npool.Scope
-	scopes   []*scopemwpb.Scope
-	appgoods map[string]*appgoodmwpb.Good
+	infos  []*npool.Scope
+	scopes []*scopemwpb.Scope
+	goods  map[string]*goodmwpb.Good
 }
 
 func (h *queryHandler) getAppGoods(ctx context.Context) error {
 	ids := []string{}
 	for _, info := range h.scopes {
-		ids = append(ids, info.AppGoodID)
+		ids = append(ids, info.GoodID)
 	}
-	appgoods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		IDs:   &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+
+	goods, _, err := goodmwcli.GetGoods(ctx, &goodmwpb.Conds{
+		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 	}, int32(0), int32(len(ids)))
 	if err != nil {
 		return err
 	}
-	for _, appgood := range appgoods {
-		h.appgoods[appgood.ID] = appgood
+	for _, good := range goods {
+		h.goods[good.ID] = good
 	}
 	return nil
 }
 
 func (h *queryHandler) formalize() {
 	for _, info := range h.scopes {
-		appgood, ok := h.appgoods[info.AppGoodID]
+		good, ok := h.goods[info.GoodID]
 		if !ok {
 			continue
 		}
 		h.infos = append(h.infos, &npool.Scope{
 			ID:                 info.ID,
-			AppID:              info.AppID,
-			AppGoodID:          info.AppGoodID,
-			GoodName:           appgood.GoodName,
+			GoodID:             info.GoodID,
+			GoodTitle:          good.Title,
 			CouponID:           info.CouponID,
 			CouponName:         info.CouponName,
-			CouponScope:        info.CouponScope,
-			CouponScopeStr:     info.CouponScopeStr,
 			CouponType:         info.CouponType,
-			CouponTypeStr:      info.CouponTypeStr,
+			CouponScope:        info.CouponScope,
 			CouponDenomination: info.CouponDenomination,
+			CouponCirculation:  info.CouponCirculation,
 			CreatedAt:          info.CreatedAt,
 			UpdatedAt:          info.UpdatedAt,
 		})
@@ -74,9 +69,9 @@ func (h *Handler) GetScope(ctx context.Context) (*npool.Scope, error) {
 	}
 
 	handler := &queryHandler{
-		Handler:  h,
-		scopes:   []*scopemwpb.Scope{info},
-		appgoods: map[string]*appgoodmwpb.Good{},
+		Handler: h,
+		scopes:  []*scopemwpb.Scope{info},
+		goods:   map[string]*goodmwpb.Good{},
 	}
 	if err := handler.getAppGoods(ctx); err != nil {
 		return nil, err
@@ -89,69 +84,16 @@ func (h *Handler) GetScope(ctx context.Context) (*npool.Scope, error) {
 	return handler.infos[0], nil
 }
 
-func (h *Handler) GetAppScopes(ctx context.Context) ([]*npool.Scope, uint32, error) {
-	conds := &scopemwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-	}
-	infos, total, err := scopemwcli.GetScopes(ctx, conds, h.Offset, h.Limit)
-	if err != nil {
-		return nil, 0, err
-	}
-	if len(infos) == 0 {
-		return nil, 0, nil
-	}
-
-	handler := &queryHandler{
-		Handler:  h,
-		scopes:   infos,
-		appgoods: map[string]*appgoodmwpb.Good{},
-	}
-	if err := handler.getAppGoods(ctx); err != nil {
-		return nil, 0, err
-	}
-	handler.formalize()
-	return handler.infos, total, nil
-}
-
 func (h *Handler) GetScopes(ctx context.Context) ([]*npool.Scope, uint32, error) {
-	coupons, total, err := allocatedmwcli.GetCoupons(ctx, &allocatedmwpb.Conds{
-		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
-	}, h.Offset, h.Limit)
+	scopes, total, err := scopemwcli.GetScopes(ctx, &scopemwpb.Conds{}, h.Offset, h.Limit)
 	if err != nil {
 		return nil, 0, err
 	}
-	if len(coupons) == 0 {
-		return nil, 0, nil
-	}
-
-	ids := []string{}
-	for _, coupon := range coupons {
-		ids = append(ids, coupon.CouponID)
-	}
-
-	infos := []*scopemwpb.Scope{}
-	offset := 0
-	limit := constant.DefaultRowLimit
-	for {
-		_infos, _, err := scopemwcli.GetScopes(ctx, &scopemwpb.Conds{
-			AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			CouponIDs: &basetypes.StringSliceVal{Op: cruder.EQ, Value: ids},
-		}, int32(offset), limit)
-		if err != nil {
-			return nil, 0, err
-		}
-		if len(_infos) == 0 {
-			break
-		}
-		infos = append(infos, _infos...)
-		offset += int(limit)
-	}
 
 	handler := &queryHandler{
-		Handler:  h,
-		scopes:   infos,
-		appgoods: map[string]*appgoodmwpb.Good{},
+		Handler: h,
+		scopes:  scopes,
+		goods:   map[string]*goodmwpb.Good{},
 	}
 	if err := handler.getAppGoods(ctx); err != nil {
 		return nil, 0, err

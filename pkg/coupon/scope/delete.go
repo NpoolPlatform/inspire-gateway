@@ -15,10 +15,7 @@ func (h *Handler) DeleteScope(ctx context.Context) (*npool.Scope, error) {
 		return nil, err
 	}
 	if info == nil {
-		return nil, nil
-	}
-	if info.AppID != *h.AppID {
-		return nil, fmt.Errorf("app id not matched")
+		return nil, fmt.Errorf("invalid scope")
 	}
 	if _, err := scopemwcli.DeleteScope(ctx, *h.ID); err != nil {
 		return nil, err
