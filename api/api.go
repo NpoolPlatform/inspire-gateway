@@ -9,6 +9,7 @@ import (
 	"github.com/NpoolPlatform/inspire-gateway/api/commission"
 	"github.com/NpoolPlatform/inspire-gateway/api/coupon"
 	"github.com/NpoolPlatform/inspire-gateway/api/coupon/allocated"
+	appgoodscope "github.com/NpoolPlatform/inspire-gateway/api/coupon/app/scope"
 	"github.com/NpoolPlatform/inspire-gateway/api/coupon/scope"
 	"github.com/NpoolPlatform/inspire-gateway/api/event"
 	"github.com/NpoolPlatform/inspire-gateway/api/invitation/invitationcode"
@@ -31,6 +32,7 @@ func Register(server grpc.ServiceRegistrar) {
 	coupon.Register(server)
 	allocated.Register(server)
 	scope.Register(server)
+	appgoodscope.Register(server)
 	invitationcode.Register(server)
 	registration.Register(server)
 	event.Register(server)
@@ -50,6 +52,9 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 		return err
 	}
 	if err := coupon.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := appgoodscope.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	if err := allocated.RegisterGateway(mux, endpoint, opts); err != nil {
