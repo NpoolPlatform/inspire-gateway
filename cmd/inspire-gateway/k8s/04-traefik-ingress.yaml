@@ -27,6 +27,10 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          - path: /api/inspire/v1/get/appgoodscopes
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top
@@ -177,7 +181,6 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-
           - path: /api/inspire/v1/create/scope
             backend:
               serviceName: inspire-gateway
@@ -198,15 +201,6 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/get/app/appgoodscopes
-            backend:
-              serviceName: inspire-gateway
-              servicePort: 50390
-          - path: /api/inspire/v1/get/appgoodscopes
-            backend:
-              serviceName: inspire-gateway
-              servicePort: 50390
-
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top
