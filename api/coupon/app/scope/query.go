@@ -15,6 +15,7 @@ import (
 func (s *Server) GetAppGoodScopes(ctx context.Context, in *npool.GetAppGoodScopesRequest) (*npool.GetAppGoodScopesResponse, error) {
 	handler, err := appgoodscope1.NewHandler(
 		ctx,
+		appgoodscope1.WithAppID(&in.AppID, true),
 		appgoodscope1.WithOffset(in.GetOffset()),
 		appgoodscope1.WithLimit(in.GetLimit()),
 	)
