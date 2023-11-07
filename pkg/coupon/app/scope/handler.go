@@ -3,6 +3,7 @@ package scope
 import (
 	"context"
 	"fmt"
+
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
