@@ -100,6 +100,7 @@ func (h *Handler) GetAppGoodScope(ctx context.Context) (*npool.Scope, error) {
 		Handler:       h,
 		appgoodscopes: []*appgoodscopemwpb.Scope{info},
 		goods:         map[string]*goodmwpb.Good{},
+		appgoods:      map[string]*appgoodmwpb.Good{},
 	}
 	if err := handler.getGoods(ctx); err != nil {
 		return nil, err
