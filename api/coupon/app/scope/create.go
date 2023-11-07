@@ -15,7 +15,7 @@ import (
 func (s *Server) CreateAppGoodScope(ctx context.Context, in *npool.CreateAppGoodScopeRequest) (*npool.CreateAppGoodScopeResponse, error) {
 	handler, err := appgoodscope1.NewHandler(
 		ctx,
-		appgoodscope1.WithAppID(&in.AppGoodID, true),
+		appgoodscope1.WithAppID(&in.AppID, true),
 		appgoodscope1.WithAppGoodID(&in.AppGoodID, true),
 		appgoodscope1.WithScopeID(&in.ScopeID, true),
 		appgoodscope1.WithCouponScope(in.CouponScope, true),
