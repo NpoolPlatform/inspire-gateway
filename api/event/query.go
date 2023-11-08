@@ -15,7 +15,7 @@ import (
 func (s *Server) GetEvents(ctx context.Context, in *npool.GetEventsRequest) (*npool.GetEventsResponse, error) {
 	handler, err := event1.NewHandler(
 		ctx,
-		event1.WithAppID(&in.AppID),
+		event1.WithAppID(&in.AppID, true),
 		event1.WithOffset(in.GetOffset()),
 		event1.WithLimit(in.GetLimit()),
 	)
