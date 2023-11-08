@@ -15,17 +15,17 @@ import (
 func (s *Server) CreateCommission(ctx context.Context, in *npool.CreateCommissionRequest) (*npool.CreateCommissionResponse, error) {
 	handler, err := commission1.NewHandler(
 		ctx,
-		commission1.WithAppID(&in.AppID),
-		commission1.WithUserID(&in.UserID),
-		commission1.WithTargetUserID(&in.TargetUserID),
-		commission1.WithAppGoodID(&in.AppGoodID),
-		commission1.WithSettleType(&in.SettleType),
-		commission1.WithSettleAmountType(&in.SettleAmountType),
-		commission1.WithAmountOrPercent(&in.AmountOrPercent),
+		commission1.WithAppID(&in.AppID, true),
+		commission1.WithUserID(&in.UserID, true),
+		commission1.WithTargetUserID(&in.TargetUserID, true),
+		commission1.WithAppGoodID(&in.AppGoodID, true),
+		commission1.WithSettleType(&in.SettleType, true),
+		commission1.WithSettleAmountType(&in.SettleAmountType, true),
+		commission1.WithAmountOrPercent(&in.AmountOrPercent, true),
 		commission1.WithStartAt(&in.StartAt),
-		commission1.WithSettleMode(&in.SettleMode),
-		commission1.WithSettleInterval(&in.SettleInterval),
-		commission1.WithThreshold(in.Threshold),
+		commission1.WithSettleMode(&in.SettleMode, true),
+		commission1.WithSettleInterval(&in.SettleInterval, true),
+		commission1.WithThreshold(in.Threshold, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -54,16 +54,16 @@ func (s *Server) CreateCommission(ctx context.Context, in *npool.CreateCommissio
 func (s *Server) CreateUserCommission(ctx context.Context, in *npool.CreateUserCommissionRequest) (*npool.CreateUserCommissionResponse, error) {
 	handler, err := commission1.NewHandler(
 		ctx,
-		commission1.WithAppID(&in.AppID),
-		commission1.WithTargetUserID(&in.TargetUserID),
-		commission1.WithAppGoodID(&in.AppGoodID),
-		commission1.WithSettleType(&in.SettleType),
-		commission1.WithSettleAmountType(&in.SettleAmountType),
-		commission1.WithAmountOrPercent(&in.AmountOrPercent),
+		commission1.WithAppID(&in.AppID, true),
+		commission1.WithTargetUserID(&in.TargetUserID, true),
+		commission1.WithAppGoodID(&in.AppGoodID, true),
+		commission1.WithSettleType(&in.SettleType, true),
+		commission1.WithSettleAmountType(&in.SettleAmountType, true),
+		commission1.WithAmountOrPercent(&in.AmountOrPercent, true),
 		commission1.WithStartAt(&in.StartAt),
-		commission1.WithSettleMode(&in.SettleMode),
-		commission1.WithSettleInterval(&in.SettleInterval),
-		commission1.WithThreshold(in.Threshold),
+		commission1.WithSettleMode(&in.SettleMode, true),
+		commission1.WithSettleInterval(&in.SettleInterval, true),
+		commission1.WithThreshold(in.Threshold, true),
 		commission1.WithCheckAffiliate(false),
 	)
 	if err != nil {
