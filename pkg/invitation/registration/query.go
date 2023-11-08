@@ -21,18 +21,14 @@ type queryHandler struct {
 }
 
 func (h *queryHandler) getUsers(ctx context.Context) error {
-	if h.AppID == nil {
-		return fmt.Errorf("invalid appid")
-	}
-
-	userIDs := []string{}
+	ids := []string{}
 	for _, registration := range h.registrations {
-		userIDs = append(userIDs, registration.InviterID, registration.InviteeID)
+		ids = append(ids, registration.InviterID, registration.InviteeID)
 	}
 	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		IDs:   &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
-	}, 0, int32(len(userIDs)))
+		IDs:   &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+	}, 0, int32(len(ids)))
 	if err != nil {
 		return err
 	}
@@ -56,6 +52,7 @@ func (h *queryHandler) formalize() {
 
 		h.infos = append(h.infos, &npool.Registration{
 			ID:                  registration.ID,
+			EntID:               registration.EntID,
 			AppID:               registration.AppID,
 			InviterID:           registration.InviterID,
 			InviterEmailAddress: inviter.EmailAddress,
@@ -72,11 +69,11 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetRegistration(ctx context.Context) (*npool.Registration, error) {
-	if h.ID == nil {
+	if h.EntID == nil {
 		return nil, fmt.Errorf("invalid id")
 	}
 
-	info, err := regmwcli.GetRegistration(ctx, *h.ID)
+	info, err := regmwcli.GetRegistration(ctx, *h.EntID)
 	if err != nil {
 		return nil, err
 	}
@@ -100,9 +97,6 @@ func (h *Handler) GetRegistration(ctx context.Context) (*npool.Registration, err
 }
 
 func (h *Handler) GetRegistrations(ctx context.Context) ([]*npool.Registration, uint32, error) {
-	if h.AppID == nil {
-		return nil, 0, fmt.Errorf("invalid appid")
-	}
 	infos, total, err := regmwcli.GetRegistrations(ctx, &regmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}, h.Offset, h.Limit)
