@@ -15,8 +15,8 @@ import (
 func (s *Server) Reconcile(ctx context.Context, in *npool.ReconcileRequest) (*npool.ReconcileResponse, error) {
 	handler, err := reconcile1.NewHandler(
 		ctx,
-		reconcile1.WithAppID(&in.AppID),
-		reconcile1.WithAppGoodID(&in.AppGoodID),
+		reconcile1.WithAppID(&in.AppID, true),
+		reconcile1.WithAppGoodID(&in.AppGoodID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

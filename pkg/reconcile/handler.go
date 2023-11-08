@@ -2,6 +2,7 @@ package reconcile
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -21,9 +22,12 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithAppID(id *string) func(context.Context, *Handler) error {
+func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appid")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
@@ -34,9 +38,12 @@ func WithAppID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithAppGoodID(id *string) func(context.Context, *Handler) error {
+func WithAppGoodID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appgoodid")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
