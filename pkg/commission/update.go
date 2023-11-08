@@ -52,19 +52,15 @@ func (h *updateHandler) validateCommissions(ctx context.Context) error {
 }
 
 func (h *Handler) UpdateCommission(ctx context.Context) (*npool.Commission, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-	if h.AppID == nil {
-		return nil, fmt.Errorf("invalid appid")
-	}
-
-	info, err := commissionmwcli.GetCommission(ctx, *h.ID)
+	info, err := commissionmwcli.GetCommission(ctx, *h.EntID)
 	if err != nil {
 		return nil, err
 	}
 	if info == nil {
 		return nil, fmt.Errorf("invalid commission")
+	}
+	if info.ID != *h.ID {
+		return nil, fmt.Errorf("permission denied")
 	}
 	if info.AppID != *h.AppID {
 		return nil, fmt.Errorf("permission denied")

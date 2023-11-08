@@ -107,9 +107,17 @@ func (h *queryHandler) formalize() {
 		if !ok {
 			continue
 		}
-
-		info := &npool.Commission{
+		good, ok := h.appGoods[comm.AppGoodID]
+		if !ok {
+			continue
+		}
+		coin, ok := h.coins[good.CoinTypeID]
+		if !ok {
+			continue
+		}
+		h.infos = append(h.infos, &npool.Commission{
 			ID:               comm.ID,
+			EntID:            comm.EntID,
 			AppID:            comm.AppID,
 			UserID:           comm.UserID,
 			Username:         user.Username,
@@ -128,33 +136,22 @@ func (h *queryHandler) formalize() {
 			Threshold:        comm.Threshold,
 			StartAt:          comm.StartAt,
 			EndAt:            comm.EndAt,
+			GoodName:         good.GoodName,
+			CoinTypeID:       good.CoinTypeID,
+			CoinName:         coin.Name,
+			CoinLogo:         coin.Logo,
 			CreatedAt:        comm.CreatedAt,
 			UpdatedAt:        comm.UpdatedAt,
-		}
-
-		good, ok := h.appGoods[comm.AppGoodID]
-		if !ok {
-			continue
-		}
-		coin, ok := h.coins[good.CoinTypeID]
-		if !ok {
-			continue
-		}
-
-		info.GoodName = good.GoodName
-		info.CoinTypeID = good.CoinTypeID
-		info.CoinName = coin.Name
-		info.CoinLogo = coin.Logo
-		h.infos = append(h.infos, info)
+		})
 	}
 }
 
 func (h *Handler) GetCommission(ctx context.Context) (*npool.Commission, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
+	if h.EntID == nil {
+		return nil, fmt.Errorf("invalid entid")
 	}
 
-	info, err := commmwcli.GetCommission(ctx, *h.ID)
+	info, err := commmwcli.GetCommission(ctx, *h.EntID)
 	if err != nil {
 		return nil, err
 	}
@@ -214,10 +211,6 @@ func (h *queryHandler) getInvitees(ctx context.Context) error {
 }
 
 func (h *Handler) GetCommissions(ctx context.Context) ([]*npool.Commission, uint32, error) {
-	if h.AppID == nil {
-		return nil, 0, fmt.Errorf("invalid appid")
-	}
-
 	handler := &queryHandler{
 		Handler:  h,
 		users:    map[string]*usermwpb.User{},
