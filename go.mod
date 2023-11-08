@@ -8,12 +8,12 @@ require (
 	github.com/NpoolPlatform/chain-middleware v0.0.0-20231020114413-49166aeb1ec8
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20231026021135-ec3cd368fc24
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230930023319-e48074d9472e
-	github.com/NpoolPlatform/good-middleware v0.0.0-20231013102637-5097267121bf
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20231109082012-1339ae1a46af
+	github.com/NpoolPlatform/good-middleware v0.0.0-20231011064249-08e0151ee767
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20231110081800-3596eb35239c
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20231011072101-96b312d4e534
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6
-	github.com/NpoolPlatform/message v0.0.0-20231110070602-d0ca2ae03619
-	github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a
+	github.com/NpoolPlatform/message v0.0.0-20231110070721-9f419d9e105b
+	github.com/NpoolPlatform/notif-middleware v0.0.0-20231011082608-04973d328d1f
 	github.com/NpoolPlatform/order-middleware v0.0.0-20231011072313-c0f26bd2b58c
 	github.com/NpoolPlatform/third-middleware v0.0.0-20231011073243-59e4e2a0a8ac
 	github.com/go-resty/resty/v2 v2.7.0
