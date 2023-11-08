@@ -6,6 +6,7 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
+	"github.com/google/uuid"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
@@ -286,6 +287,11 @@ func (h *createHandler) notifyCreateCommission() {
 }
 
 func (h *Handler) CreateCommission(ctx context.Context) (*npool.Commission, error) {
+	id := uuid.NewString()
+	if h.EntID == nil {
+		h.EntID = &id
+	}
+
 	handler := &createHandler{
 		Handler: h,
 	}
@@ -310,10 +316,7 @@ func (h *Handler) CreateCommission(ctx context.Context) (*npool.Commission, erro
 	if err := handler.createCommission(ctx); err != nil {
 		return nil, err
 	}
-	info, err := h.GetCommission(ctx)
-	if err != nil {
-		return nil, err
-	}
 	handler.notifyCreateCommission()
-	return info, nil
+
+	return h.GetCommission(ctx)
 }
