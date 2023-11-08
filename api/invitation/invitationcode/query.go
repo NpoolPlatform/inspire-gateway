@@ -16,7 +16,7 @@ import (
 func (s *Server) GetInvitationCodes(ctx context.Context, in *npool.GetInvitationCodesRequest) (*npool.GetInvitationCodesResponse, error) {
 	handler, err := invitationcode1.NewHandler(
 		ctx,
-		invitationcode1.WithAppID(&in.AppID),
+		invitationcode1.WithAppID(&in.AppID, true),
 		invitationcode1.WithOffset(in.GetOffset()),
 		invitationcode1.WithLimit(in.GetLimit()),
 	)
@@ -48,7 +48,7 @@ func (s *Server) GetInvitationCodes(ctx context.Context, in *npool.GetInvitation
 func (s *Server) GetAppInvitationCodes(ctx context.Context, in *npool.GetAppInvitationCodesRequest) (*npool.GetAppInvitationCodesResponse, error) {
 	handler, err := invitationcode1.NewHandler(
 		ctx,
-		invitationcode1.WithAppID(&in.TargetAppID),
+		invitationcode1.WithAppID(&in.TargetAppID, true),
 		invitationcode1.WithOffset(in.GetOffset()),
 		invitationcode1.WithLimit(in.GetLimit()),
 	)

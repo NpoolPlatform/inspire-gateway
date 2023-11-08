@@ -16,7 +16,7 @@ import (
 func (s *Server) GetRegistrations(ctx context.Context, in *npool.GetRegistrationsRequest) (*npool.GetRegistrationsResponse, error) {
 	handler, err := registration1.NewHandler(
 		ctx,
-		registration1.WithAppID(&in.AppID),
+		registration1.WithAppID(&in.AppID, true),
 		registration1.WithOffset(in.GetOffset()),
 		registration1.WithLimit(in.GetLimit()),
 	)
@@ -48,7 +48,7 @@ func (s *Server) GetRegistrations(ctx context.Context, in *npool.GetRegistration
 func (s *Server) GetAppRegistrations(ctx context.Context, in *npool.GetAppRegistrationsRequest) (*npool.GetAppRegistrationsResponse, error) {
 	handler, err := registration1.NewHandler(
 		ctx,
-		registration1.WithAppID(&in.TargetAppID),
+		registration1.WithAppID(&in.TargetAppID, true),
 		registration1.WithOffset(in.GetOffset()),
 		registration1.WithLimit(in.GetLimit()),
 	)

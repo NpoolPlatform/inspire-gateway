@@ -11,19 +11,15 @@ import (
 )
 
 func (h *Handler) UpdateRegistration(ctx context.Context) (*npool.Registration, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
-	}
-	if h.InviterID == nil {
-		return nil, fmt.Errorf("invalid inviterid")
-	}
-
 	info, err := h.GetRegistration(ctx)
 	if err != nil {
 		return nil, err
 	}
 	if info == nil {
 		return nil, fmt.Errorf("invalid id")
+	}
+	if info.ID != *h.ID || info.EntID != *h.EntID {
+		return nil, fmt.Errorf("permission denied")
 	}
 	if info.InviterID == *h.InviterID || info.InviteeID == *h.InviterID {
 		return nil, fmt.Errorf("invalid inviterid")
