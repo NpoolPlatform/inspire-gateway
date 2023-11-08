@@ -15,14 +15,14 @@ import (
 func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) (*npool.CreateEventResponse, error) {
 	handler, err := event1.NewHandler(
 		ctx,
-		event1.WithAppID(&in.AppID),
-		event1.WithEventType(&in.EventType),
+		event1.WithAppID(&in.AppID, true),
+		event1.WithEventType(&in.EventType, true),
+		event1.WithCredits(in.Credits, false),
+		event1.WithCreditsPerUSD(in.CreditsPerUSD, false),
+		event1.WithAppGoodID(in.AppGoodID, false),
+		event1.WithMaxConsecutive(in.MaxConsecutive, false),
+		event1.WithInviterLayers(in.InviterLayers, false),
 		event1.WithCouponIDs(in.GetCouponIDs()),
-		event1.WithCredits(in.Credits),
-		event1.WithCreditsPerUSD(in.CreditsPerUSD),
-		event1.WithMaxConsecutive(in.MaxConsecutive),
-		event1.WithAppGoodID(in.AppGoodID),
-		event1.WithInviterLayers(in.InviterLayers),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
