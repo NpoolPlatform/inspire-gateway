@@ -14,7 +14,7 @@ type Handler struct {
 	ID          *string
 	AppID       *string
 	AppGoodID   *string
-	ScopeID     *string
+	CouponID    *string
 	CouponScope *types.CouponScope
 	Offset      int32
 	Limit       int32
@@ -86,18 +86,18 @@ func WithAppGoodID(id *string, must bool) func(context.Context, *Handler) error 
 	}
 }
 
-func WithScopeID(id *string, must bool) func(context.Context, *Handler) error {
+func WithCouponID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid goodid")
+				return fmt.Errorf("invalid couponid")
 			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
-		h.ScopeID = id
+		h.CouponID = id
 		return nil
 	}
 }

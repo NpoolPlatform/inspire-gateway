@@ -24,7 +24,7 @@ type queryHandler struct {
 
 func (h *queryHandler) getGoods(ctx context.Context) error {
 	ids := []string{}
-	for _, info := range h.appgoodscopes {
+	for _, info := range h.appgoods {
 		ids = append(ids, info.GoodID)
 	}
 
@@ -61,11 +61,11 @@ func (h *queryHandler) getAppGoods(ctx context.Context) error {
 
 func (h *queryHandler) formalize() {
 	for _, info := range h.appgoodscopes {
-		_, ok := h.goods[info.GoodID]
+		appgood, ok := h.appgoods[info.AppGoodID]
 		if !ok {
 			continue
 		}
-		appgood, ok := h.appgoods[info.AppGoodID]
+		good, ok := h.goods[appgood.GoodID]
 		if !ok {
 			continue
 		}
@@ -74,8 +74,7 @@ func (h *queryHandler) formalize() {
 			AppID:              info.AppID,
 			AppGoodID:          info.AppGoodID,
 			GoodName:           appgood.GoodName,
-			ScopeID:            info.ScopeID,
-			GoodID:             info.GoodID,
+			GoodID:             good.ID,
 			CouponID:           info.CouponID,
 			CouponName:         info.CouponName,
 			CouponType:         info.CouponType,
@@ -102,10 +101,10 @@ func (h *Handler) GetAppGoodScope(ctx context.Context) (*npool.Scope, error) {
 		goods:         map[string]*goodmwpb.Good{},
 		appgoods:      map[string]*appgoodmwpb.Good{},
 	}
-	if err := handler.getGoods(ctx); err != nil {
+	if err := handler.getAppGoods(ctx); err != nil {
 		return nil, err
 	}
-	if err := handler.getAppGoods(ctx); err != nil {
+	if err := handler.getGoods(ctx); err != nil {
 		return nil, err
 	}
 
@@ -130,10 +129,10 @@ func (h *Handler) GetAppGoodScopes(ctx context.Context) ([]*npool.Scope, uint32,
 		goods:         map[string]*goodmwpb.Good{},
 		appgoods:      map[string]*appgoodmwpb.Good{},
 	}
-	if err := handler.getGoods(ctx); err != nil {
+	if err := handler.getAppGoods(ctx); err != nil {
 		return nil, 0, err
 	}
-	if err := handler.getAppGoods(ctx); err != nil {
+	if err := handler.getGoods(ctx); err != nil {
 		return nil, 0, err
 	}
 

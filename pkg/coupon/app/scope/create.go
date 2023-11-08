@@ -5,11 +5,10 @@ import (
 	"fmt"
 
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
-	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
-	scopemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/scope"
+	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	goodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
-	scopemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/scope"
+	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
 
 	appgoodscopemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/app/scope"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon/app/scope"
@@ -19,32 +18,23 @@ import (
 
 type createHandler struct {
 	*Handler
-	scope   *scopemwpb.Scope
+	coupon  *couponmwpb.Coupon
 	good    *goodmwpb.Good
 	appgood *appgoodmwpb.Good
 }
 
-func (h *createHandler) getScope(ctx context.Context) error {
-	scope, err := scopemwcli.GetScope(ctx, *h.ScopeID)
+func (h *createHandler) getCoupon(ctx context.Context) error {
+	coupon, err := couponmwcli.GetCoupon(ctx, *h.CouponID)
 	if err != nil {
 		return err
 	}
-	if scope == nil {
-		return fmt.Errorf("scopeid not exist")
+	if coupon == nil {
+		return fmt.Errorf("coupon not exist")
 	}
-	h.scope = scope
-	return nil
-}
-
-func (h *createHandler) getGood(ctx context.Context) error {
-	good, err := goodmwcli.GetGood(ctx, h.scope.GoodID)
-	if err != nil {
-		return err
+	if coupon.AppID != *h.AppID {
+		return fmt.Errorf("permission denied")
 	}
-	if good == nil {
-		return fmt.Errorf("good not exist")
-	}
-	h.good = good
+	h.coupon = coupon
 	return nil
 }
 
@@ -56,15 +46,16 @@ func (h *createHandler) getAppGood(ctx context.Context) error {
 	if appgood == nil {
 		return fmt.Errorf("appgood not exist")
 	}
-	if h.scope.GoodID != appgood.GoodID {
-		return fmt.Errorf("goodid mismatch")
+	if appgood.AppID != *h.AppID {
+		return fmt.Errorf("permission denied")
 	}
 	h.appgood = appgood
 	return nil
 }
+
 func (h *createHandler) createAppGoodScope(ctx context.Context) error {
 	if h.CouponScope == nil {
-		h.CouponScope = &h.scope.CouponScope
+		h.CouponScope = &h.coupon.CouponScope
 	}
 
 	if _, err := appgoodscopemwcli.CreateAppGoodScope(
@@ -73,7 +64,7 @@ func (h *createHandler) createAppGoodScope(ctx context.Context) error {
 			ID:          h.ID,
 			AppID:       h.AppID,
 			AppGoodID:   h.AppGoodID,
-			ScopeID:     h.ScopeID,
+			CouponID:    h.CouponID,
 			CouponScope: h.CouponScope,
 		},
 	); err != nil {
@@ -91,10 +82,7 @@ func (h *Handler) CreateAppGoodScope(ctx context.Context) (*npool.Scope, error) 
 	handler := &createHandler{
 		Handler: h,
 	}
-	if err := handler.getScope(ctx); err != nil {
-		return nil, err
-	}
-	if err := handler.getGood(ctx); err != nil {
+	if err := handler.getCoupon(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.getAppGood(ctx); err != nil {
