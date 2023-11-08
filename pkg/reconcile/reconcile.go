@@ -227,12 +227,6 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 }
 
 func (h *Handler) Reconcile(ctx context.Context) error {
-	if h.AppID == nil {
-		return fmt.Errorf("invalid appid")
-	}
-	if h.AppGoodID == nil {
-		return fmt.Errorf("invalid appgoodid")
-	}
 	handler := &reconcileHandler{
 		Handler: h,
 	}
