@@ -25,10 +25,10 @@ func (s *Server) CreateCoupon(ctx context.Context, in *npool.CreateCouponRequest
 		coupon1.WithMessage(&in.Message),
 		coupon1.WithName(&in.Name),
 		coupon1.WithUserID(in.TargetUserID),
-		coupon1.WithAppGoodID(in.AppGoodID),
 		coupon1.WithThreshold(in.Threshold),
 		coupon1.WithCouponConstraint(&in.CouponConstraint),
 		coupon1.WithRandom(&in.Random),
+		coupon1.WithCouponScope(&in.CouponScope),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
