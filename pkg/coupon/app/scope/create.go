@@ -7,7 +7,6 @@ import (
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
-	goodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
 	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
 
 	appgoodscopemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/app/scope"
@@ -19,7 +18,6 @@ import (
 type createHandler struct {
 	*Handler
 	coupon  *couponmwpb.Coupon
-	good    *goodmwpb.Good
 	appgood *appgoodmwpb.Good
 }
 
