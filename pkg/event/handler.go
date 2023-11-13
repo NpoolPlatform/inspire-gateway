@@ -112,8 +112,13 @@ func WithEventType(eventType *basetypes.UsedFor, must bool) func(context.Context
 	}
 }
 
-func WithCouponIDs(ids []string) func(context.Context, *Handler) error {
+func WithCouponIDs(ids []string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
+		if len(ids) == 0 {
+			if must {
+				return fmt.Errorf("invalid couponids")
+			}
+		}
 		for _, id := range ids {
 			if _, err := uuid.Parse(id); err != nil {
 				return err

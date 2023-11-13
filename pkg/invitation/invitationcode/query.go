@@ -64,7 +64,6 @@ func (h *Handler) GetInvitationCode(ctx context.Context) (*npool.InvitationCode,
 	if h.EntID == nil {
 		return nil, fmt.Errorf("invalid entid")
 	}
-
 	info, err := invitationcodemwcli.GetInvitationCode(ctx, *h.EntID)
 	if err != nil {
 		return nil, err
