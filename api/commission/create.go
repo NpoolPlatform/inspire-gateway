@@ -22,8 +22,8 @@ func (s *Server) CreateCommission(ctx context.Context, in *npool.CreateCommissio
 		commission1.WithSettleType(&in.SettleType, true),
 		commission1.WithSettleAmountType(&in.SettleAmountType, true),
 		commission1.WithAmountOrPercent(&in.AmountOrPercent, true),
-		commission1.WithStartAt(&in.StartAt),
 		commission1.WithSettleMode(&in.SettleMode, true),
+		commission1.WithStartAt(&in.StartAt, false),
 		commission1.WithSettleInterval(&in.SettleInterval, true),
 		commission1.WithThreshold(in.Threshold, true),
 	)
@@ -60,7 +60,7 @@ func (s *Server) CreateUserCommission(ctx context.Context, in *npool.CreateUserC
 		commission1.WithSettleType(&in.SettleType, true),
 		commission1.WithSettleAmountType(&in.SettleAmountType, true),
 		commission1.WithAmountOrPercent(&in.AmountOrPercent, true),
-		commission1.WithStartAt(&in.StartAt),
+		commission1.WithStartAt(&in.StartAt, true),
 		commission1.WithSettleMode(&in.SettleMode, true),
 		commission1.WithSettleInterval(&in.SettleInterval, true),
 		commission1.WithThreshold(in.Threshold, true),

@@ -49,7 +49,7 @@ func (s *Server) GetAppCommissions(ctx context.Context, in *npool.GetAppCommissi
 	handler, err := commission1.NewHandler(
 		ctx,
 		commission1.WithAppID(&in.AppID, true),
-		commission1.WithEndAt(in.EndAt),
+		commission1.WithEndAt(in.EndAt, false),
 		commission1.WithOffset(in.GetOffset()),
 		commission1.WithLimit(in.GetLimit()),
 	)

@@ -234,9 +234,12 @@ func WithThreshold(amount *string, must bool) func(context.Context, *Handler) er
 	}
 }
 
-func WithStartAt(value *uint32) func(context.Context, *Handler) error {
+func WithStartAt(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
+			if must {
+				return fmt.Errorf("invalid startat")
+			}
 			return nil
 		}
 		if *value == 0 {
@@ -247,8 +250,14 @@ func WithStartAt(value *uint32) func(context.Context, *Handler) error {
 	}
 }
 
-func WithEndAt(value *uint32) func(context.Context, *Handler) error {
+func WithEndAt(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			if must {
+				return fmt.Errorf("invalid endat")
+			}
+			return nil
+		}
 		h.EndAt = value
 		return nil
 	}
