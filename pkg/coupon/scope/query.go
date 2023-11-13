@@ -2,6 +2,7 @@ package scope
 
 import (
 	"context"
+	"fmt"
 
 	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
 	scopemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/scope"
@@ -60,6 +61,9 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetScope(ctx context.Context) (*npool.Scope, error) {
+	if h.EntID == nil {
+		return nil, fmt.Errorf("invalid entid")
+	}
 	info, err := scopemwcli.GetScope(ctx, *h.EntID)
 	if err != nil {
 		return nil, err

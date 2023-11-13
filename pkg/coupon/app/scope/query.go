@@ -2,6 +2,7 @@ package scope
 
 import (
 	"context"
+	"fmt"
 
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
@@ -87,6 +88,9 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetAppGoodScope(ctx context.Context) (*npool.Scope, error) {
+	if h.EntID == nil {
+		return nil, fmt.Errorf("invalid entid")
+	}
 	info, err := appgoodscopemwcli.GetAppGoodScope(ctx, *h.EntID)
 	if err != nil {
 		return nil, err

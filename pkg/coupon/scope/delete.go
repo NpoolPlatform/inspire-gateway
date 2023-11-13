@@ -17,6 +17,9 @@ func (h *Handler) DeleteScope(ctx context.Context) (*npool.Scope, error) {
 	if info == nil {
 		return nil, fmt.Errorf("invalid scope")
 	}
+	if info.ID != *h.ID {
+		return nil, fmt.Errorf("permission denied")
+	}
 	if _, err := scopemwcli.DeleteScope(ctx, *h.ID); err != nil {
 		return nil, err
 	}
