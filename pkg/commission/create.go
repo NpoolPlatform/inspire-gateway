@@ -245,11 +245,9 @@ func (h *createHandler) createCommission(ctx context.Context) error {
 		AmountOrPercent:  h.AmountOrPercent,
 		Threshold:        h.Threshold,
 	}
-	info, err := commissionmwcli.CreateCommission(ctx, h.req)
-	if err != nil {
+	if _, err := commissionmwcli.CreateCommission(ctx, h.req); err != nil {
 		return err
 	}
-	h.ID = &info.ID
 	return nil
 }
 
