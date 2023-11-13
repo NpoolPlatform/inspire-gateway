@@ -2,6 +2,7 @@ package allocated
 
 import (
 	"context"
+	"fmt"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	allocatedmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/allocated"
@@ -48,6 +49,9 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) {
+	if h.EntID == nil {
+		return nil, fmt.Errorf("invalid entid")
+	}
 	info, err := allocatedmwcli.GetCoupon(ctx, *h.EntID)
 	if err != nil {
 		return nil, err

@@ -17,7 +17,7 @@ func (h *Handler) CreateScope(ctx context.Context) (*npool.Scope, error) {
 	if _, err := scopemwcli.CreateScope(
 		ctx,
 		&scopemwpb.ScopeReq{
-			EntID:          h.EntID,
+			EntID:       h.EntID,
 			GoodID:      h.GoodID,
 			CouponID:    h.CouponID,
 			CouponScope: h.CouponScope,
