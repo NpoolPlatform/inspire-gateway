@@ -18,7 +18,7 @@ func (s *Server) CreateAppGoodScope(ctx context.Context, in *npool.CreateAppGood
 		appgoodscope1.WithAppID(&in.AppID, true),
 		appgoodscope1.WithAppGoodID(&in.AppGoodID, true),
 		appgoodscope1.WithCouponID(&in.CouponID, true),
-		appgoodscope1.WithCouponScope(in.CouponScope, false),
+		appgoodscope1.WithCouponScope(&in.CouponScope, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

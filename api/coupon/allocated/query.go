@@ -15,8 +15,8 @@ import (
 func (s *Server) GetCoupons(ctx context.Context, in *npool.GetCouponsRequest) (*npool.GetCouponsResponse, error) {
 	handler, err := allocated1.NewHandler(
 		ctx,
-		allocated1.WithAppID(&in.AppID),
-		allocated1.WithUserID(&in.UserID),
+		allocated1.WithAppID(&in.AppID, true),
+		allocated1.WithUserID(&in.UserID, true),
 		allocated1.WithOffset(in.GetOffset()),
 		allocated1.WithLimit(in.GetLimit()),
 	)
@@ -48,7 +48,7 @@ func (s *Server) GetCoupons(ctx context.Context, in *npool.GetCouponsRequest) (*
 func (s *Server) GetAppCoupons(ctx context.Context, in *npool.GetAppCouponsRequest) (*npool.GetAppCouponsResponse, error) {
 	handler, err := allocated1.NewHandler(
 		ctx,
-		allocated1.WithAppID(&in.AppID),
+		allocated1.WithAppID(&in.AppID, true),
 		allocated1.WithOffset(in.GetOffset()),
 		allocated1.WithLimit(in.GetLimit()),
 	)

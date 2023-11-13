@@ -15,19 +15,20 @@ import (
 func (s *Server) UpdateCoupon(ctx context.Context, in *npool.UpdateCouponRequest) (*npool.UpdateCouponResponse, error) {
 	handler, err := coupon1.NewHandler(
 		ctx,
-		coupon1.WithID(&in.ID),
-		coupon1.WithAppID(&in.TargetAppID),
-		coupon1.WithDenomination(in.Denomination),
-		coupon1.WithCirculation(in.Circulation),
-		coupon1.WithStartAt(in.StartAt),
-		coupon1.WithDurationDays(in.DurationDays),
-		coupon1.WithMessage(in.Message),
-		coupon1.WithName(in.Name),
-		coupon1.WithUserID(in.TargetUserID),
-		coupon1.WithThreshold(in.Threshold),
-		coupon1.WithCouponConstraint(in.CouponConstraint),
-		coupon1.WithRandom(in.Random),
-		coupon1.WithCouponScope(in.CouponScope),
+		coupon1.WithID(&in.ID, true),
+		coupon1.WithEntID(&in.EntID, true),
+		coupon1.WithAppID(&in.TargetAppID, true),
+		coupon1.WithDenomination(in.Denomination, false),
+		coupon1.WithCirculation(in.Circulation, false),
+		coupon1.WithStartAt(in.StartAt, false),
+		coupon1.WithDurationDays(in.DurationDays, false),
+		coupon1.WithMessage(in.Message, false),
+		coupon1.WithName(in.Name, false),
+		coupon1.WithUserID(in.TargetUserID, false),
+		coupon1.WithThreshold(in.Threshold, false),
+		coupon1.WithCouponConstraint(in.CouponConstraint, false),
+		coupon1.WithRandom(in.Random, false),
+		coupon1.WithCouponScope(in.CouponScope, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

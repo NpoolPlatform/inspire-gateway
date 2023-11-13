@@ -22,3 +22,14 @@ func (h *Handler) GetCoupons(ctx context.Context) ([]*couponmwpb.Coupon, uint32,
 	}
 	return couponmwcli.GetCoupons(ctx, conds, h.Offset, h.Limit)
 }
+
+func (h *Handler) GetCoupon(ctx context.Context) (*couponmwpb.Coupon, error) {
+	coupon, err := couponmwcli.GetCoupon(ctx, *h.EntID)
+	if err != nil {
+		return nil, err
+	}
+	if coupon == nil {
+		return nil, nil
+	}
+	return coupon, nil
+}

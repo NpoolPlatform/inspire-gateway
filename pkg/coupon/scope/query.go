@@ -60,7 +60,7 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetScope(ctx context.Context) (*npool.Scope, error) {
-	info, err := scopemwcli.GetScope(ctx, *h.ID)
+	info, err := scopemwcli.GetScope(ctx, *h.EntID)
 	if err != nil {
 		return nil, err
 	}
