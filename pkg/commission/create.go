@@ -233,6 +233,7 @@ func (h *createHandler) checkGood(ctx context.Context) error {
 
 func (h *createHandler) createCommission(ctx context.Context) error {
 	h.req = &commissionmwpb.CommissionReq{
+		EntID:            h.EntID,
 		AppID:            h.AppID,
 		UserID:           h.TargetUserID,
 		GoodID:           h.goodID,
