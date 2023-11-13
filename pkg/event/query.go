@@ -27,9 +27,6 @@ type queryHandler struct {
 }
 
 func (h *queryHandler) getApp(ctx context.Context) error {
-	if h.AppID == nil {
-		return fmt.Errorf("invalid appid")
-	}
 	app, err := appmwcli.GetApp(ctx, *h.AppID)
 	if err != nil {
 		return err
