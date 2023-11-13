@@ -87,7 +87,7 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetAppGoodScope(ctx context.Context) (*npool.Scope, error) {
-	info, err := appgoodscopemwcli.GetAppGoodScope(ctx, *h.ID)
+	info, err := appgoodscopemwcli.GetAppGoodScope(ctx, *h.EntID)
 	if err != nil {
 		return nil, err
 	}

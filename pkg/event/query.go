@@ -69,8 +69,8 @@ func (h *queryHandler) getCoupons(ctx context.Context) error {
 	coupons, _, err := couponmwcli.GetCoupons(
 		ctx,
 		&couponmwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			IDs:   &basetypes.StringSliceVal{Op: cruder.IN, Value: couponIDs},
+			AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: couponIDs},
 		},
 		0,
 		int32(len(couponIDs)),
@@ -79,7 +79,7 @@ func (h *queryHandler) getCoupons(ctx context.Context) error {
 		return err
 	}
 	for _, coupon := range coupons {
-		h.coupons[coupon.ID] = coupon
+		h.coupons[coupon.EntID] = coupon
 	}
 	return nil
 }

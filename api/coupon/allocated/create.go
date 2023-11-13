@@ -15,9 +15,9 @@ import (
 func (s *Server) CreateCoupon(ctx context.Context, in *npool.CreateCouponRequest) (*npool.CreateCouponResponse, error) {
 	handler, err := allocated1.NewHandler(
 		ctx,
-		allocated1.WithAppID(&in.AppID),
-		allocated1.WithUserID(&in.TargetUserID),
-		allocated1.WithCouponID(&in.CouponID),
+		allocated1.WithAppID(&in.AppID, true),
+		allocated1.WithUserID(&in.TargetUserID, true),
+		allocated1.WithCouponID(&in.CouponID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

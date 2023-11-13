@@ -9,8 +9,15 @@ import (
 )
 
 func (h *Handler) UpdateCoupon(ctx context.Context) (*couponmwpb.Coupon, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
+	info, err := h.GetCoupon(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if info == nil {
+		return nil, nil
+	}
+	if info.AppID != *h.AppID || info.EntID != *h.EntID {
+		return nil, fmt.Errorf("permission denied")
 	}
 
 	return couponmwcli.UpdateCoupon(ctx, &couponmwpb.CouponReq{

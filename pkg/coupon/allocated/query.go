@@ -2,7 +2,6 @@ package allocated
 
 import (
 	"context"
-	"fmt"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	allocatedmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/allocated"
@@ -49,7 +48,7 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) {
-	info, err := allocatedmwcli.GetCoupon(ctx, *h.ID)
+	info, err := allocatedmwcli.GetCoupon(ctx, *h.EntID)
 	if err != nil {
 		return nil, err
 	}
@@ -74,10 +73,6 @@ func (h *Handler) GetCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) 
 }
 
 func (h *Handler) GetCoupons(ctx context.Context) ([]*allocatedmwpb.Coupon, uint32, error) {
-	if h.AppID == nil {
-		return nil, 0, fmt.Errorf("invalid appid")
-	}
-
 	conds := &allocatedmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}
