@@ -25,7 +25,7 @@ func (s *Server) CreateCommission(ctx context.Context, in *npool.CreateCommissio
 		commission1.WithSettleMode(&in.SettleMode, true),
 		commission1.WithStartAt(&in.StartAt, false),
 		commission1.WithSettleInterval(&in.SettleInterval, true),
-		commission1.WithThreshold(in.Threshold, true),
+		commission1.WithThreshold(in.Threshold, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -63,7 +63,7 @@ func (s *Server) CreateUserCommission(ctx context.Context, in *npool.CreateUserC
 		commission1.WithStartAt(&in.StartAt, true),
 		commission1.WithSettleMode(&in.SettleMode, true),
 		commission1.WithSettleInterval(&in.SettleInterval, true),
-		commission1.WithThreshold(in.Threshold, true),
+		commission1.WithThreshold(in.Threshold, false),
 		commission1.WithCheckAffiliate(false),
 	)
 	if err != nil {
