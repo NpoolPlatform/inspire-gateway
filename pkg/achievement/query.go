@@ -258,9 +258,6 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 			break
 		}
 		for _, good := range goods {
-			if !good.Visible {
-				continue
-			}
 			h.appGoods[good.ID] = good
 		}
 		offset += limit
