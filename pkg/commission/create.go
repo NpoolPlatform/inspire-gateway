@@ -256,6 +256,7 @@ func (h *createHandler) notifyCreateCommission() {
 	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
 		comm := &commissionmwpb.Commission{
 			AppID:            *h.AppID,
+			EntID:            *h.EntID,
 			UserID:           *h.TargetUserID,
 			AppGoodID:        *h.AppGoodID,
 			SettleType:       *h.SettleType,
