@@ -46,6 +46,7 @@ func (h *queryHandler) formalize() {
 		}
 		h.infos = append(h.infos, &npool.Scope{
 			ID:                 info.ID,
+			EntID:              info.EntID,
 			GoodID:             info.GoodID,
 			GoodTitle:          good.Title,
 			CouponID:           info.CouponID,
