@@ -24,14 +24,14 @@ func (h *queryHandler) getUsers(ctx context.Context) error {
 		userIDs = append(userIDs, info.UserID)
 	}
 	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		IDs:   &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
 	}, int32(0), int32(len(userIDs)))
 	if err != nil {
 		return err
 	}
 	for _, user := range users {
-		h.users[user.ID] = user
+		h.users[user.EntID] = user
 	}
 	return nil
 }

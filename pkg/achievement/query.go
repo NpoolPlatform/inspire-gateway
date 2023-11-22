@@ -231,14 +231,14 @@ func (h *queryHandler) getUsers(ctx context.Context) error {
 		return nil
 	}
 	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		IDs:   &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
 	}, 0, int32(len(h.inviteIDs)))
 	if err != nil {
 		return err
 	}
 	for _, user := range users {
-		h.users[user.ID] = user
+		h.users[user.EntID] = user
 	}
 	return nil
 }
@@ -304,22 +304,22 @@ func (h *queryHandler) formalizeUsers() {
 		invitedAt := uint32(0)
 		var inviterID *string
 
-		registration, ok := h.registrations[user.ID]
+		registration, ok := h.registrations[user.EntID]
 		if ok {
 			invitedAt = registration.CreatedAt
 			inviterID = &registration.InviterID
 		}
 
-		h.infoMap[user.ID] = &npool.Achievement{
+		h.infoMap[user.EntID] = &npool.Achievement{
 			InviterID:     inviterID,
-			UserID:        user.ID,
+			UserID:        user.EntID,
 			Username:      user.Username,
 			EmailAddress:  user.EmailAddress,
 			PhoneNO:       user.PhoneNO,
 			FirstName:     user.FirstName,
 			LastName:      user.LastName,
 			Kol:           user.Kol,
-			TotalInvitees: h.inviteesCount[user.ID],
+			TotalInvitees: h.inviteesCount[user.EntID],
 			CreatedAt:     user.CreatedAt,
 			InvitedAt:     invitedAt,
 		}
@@ -417,7 +417,7 @@ func (h *queryHandler) formalizeNew() {
 		for _, good := range h.appGoods {
 			achievedGoods, ok := h.achievedGoods[good.ID]
 			if ok {
-				if _, ok := achievedGoods[user.ID]; ok {
+				if _, ok := achievedGoods[user.EntID]; ok {
 					continue
 				}
 			}
@@ -425,23 +425,23 @@ func (h *queryHandler) formalizeNew() {
 			if !ok {
 				logger.Sugar().Warnw(
 					"formalizeNew",
-					"UserID", user.ID,
+					"UserID", user.EntID,
 					"CoinTypeID", good.CoinTypeID,
 					"State", "Invalid coin",
 				)
 				continue
 			}
-			info, ok := h.infoMap[user.ID]
+			info, ok := h.infoMap[user.EntID]
 			if !ok {
 				logger.Sugar().Warnw(
 					"formalizeNew",
-					"UserID", user.ID,
+					"UserID", user.EntID,
 					"State", "We should have info here",
 				)
 				continue
 			}
 
-			commission := h.userGoodCommission(good.AppID, good.GoodID, good.ID, user.ID)
+			commission := h.userGoodCommission(good.AppID, good.GoodID, good.ID, user.EntID)
 			info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 				GoodID:                     good.GoodID,
 				GoodName:                   good.GoodName,
@@ -464,7 +464,7 @@ func (h *queryHandler) formalizeNew() {
 				TotalCommission:            decimal.NewFromInt(0).String(),
 				SelfCommission:             decimal.NewFromInt(0).String(),
 			})
-			h.infoMap[user.ID] = info
+			h.infoMap[user.EntID] = info
 		}
 	}
 }
