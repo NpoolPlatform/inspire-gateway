@@ -47,7 +47,7 @@ func (h reconcileHandler) orderGoodValue(ctx context.Context, order *ordermwpb.O
 
 	for {
 		childs, _, err := ordermwcli.GetOrders(ctx, &ordermwpb.Conds{
-			ParentOrderID: &basetypes.StringVal{Op: cruder.EQ, Value: order.ID},
+			ParentOrderID: &basetypes.StringVal{Op: cruder.EQ, Value: order.EntID},
 			PaymentType:   &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(ordertypes.PaymentType_PayWithParentOrder)},
 		}, offset, limit)
 		if err != nil {
@@ -95,7 +95,7 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		UserID:                 order.UserID,
 		GoodID:                 order.GoodID,
 		AppGoodID:              order.AppGoodID,
-		OrderID:                order.ID,
+		OrderID:                order.EntID,
 		PaymentID:              order.PaymentID,
 		CoinTypeID:             good.CoinTypeID,
 		PaymentCoinTypeID:      order.PaymentCoinTypeID,
