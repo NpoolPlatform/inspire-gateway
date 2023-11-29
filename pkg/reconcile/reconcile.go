@@ -160,7 +160,7 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 		ioExtra := fmt.Sprintf(
 			`{"PaymentID":"%v","OrderID":"%v","DirectContributorID":"%v","OrderUserID":"%v"}`,
 			order.PaymentID,
-			order.ID,
+			order.EntID,
 			statement.GetDirectContributorID(),
 			order.UserID,
 		)
@@ -215,7 +215,7 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 					"reconcileOrders",
 					"AppID", *h.AppID,
 					"AppGoodID", *h.AppGoodID,
-					"OrderID", order.ID,
+					"OrderID", order.EntID,
 					"Err", err,
 				)
 			}
