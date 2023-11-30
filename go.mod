@@ -3,7 +3,7 @@ module github.com/NpoolPlatform/inspire-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20231122092801-874f410d306e
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20231130084704-4550aabac9c7
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20231015112137-254853c60eec
 	github.com/NpoolPlatform/chain-middleware v0.0.0-20231020114413-49166aeb1ec8
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20231026021135-ec3cd368fc24
