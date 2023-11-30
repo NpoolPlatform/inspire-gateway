@@ -22,7 +22,7 @@ func (h *createHandler) validateIssuer(ctx context.Context) error {
 		return fmt.Errorf("invalid issuer")
 	}
 	exist, err := usermwcli.ExistUserConds(ctx, &usermwpb.Conds{
-		ID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.IssuedBy},
+		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.IssuedBy},
 	})
 	if err != nil {
 		return nil
