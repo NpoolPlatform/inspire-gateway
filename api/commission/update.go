@@ -15,10 +15,11 @@ import (
 func (s *Server) UpdateCommission(ctx context.Context, in *npool.UpdateCommissionRequest) (*npool.UpdateCommissionResponse, error) {
 	handler, err := commission1.NewHandler(
 		ctx,
-		commission1.WithID(&in.ID),
-		commission1.WithAppID(&in.AppID),
-		commission1.WithStartAt(in.StartAt),
-		commission1.WithThreshold(in.Threshold),
+		commission1.WithID(&in.ID, true),
+		commission1.WithEntID(&in.EntID, true),
+		commission1.WithAppID(&in.AppID, true),
+		commission1.WithThreshold(in.Threshold, false),
+		commission1.WithStartAt(in.StartAt, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

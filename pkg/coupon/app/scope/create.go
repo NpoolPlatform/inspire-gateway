@@ -5,9 +5,7 @@ import (
 	"fmt"
 
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
-	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
-	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
 
 	appgoodscopemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/app/scope"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon/app/scope"
@@ -17,23 +15,7 @@ import (
 
 type createHandler struct {
 	*Handler
-	coupon  *couponmwpb.Coupon
 	appgood *appgoodmwpb.Good
-}
-
-func (h *createHandler) getCoupon(ctx context.Context) error {
-	coupon, err := couponmwcli.GetCoupon(ctx, *h.CouponID)
-	if err != nil {
-		return err
-	}
-	if coupon == nil {
-		return fmt.Errorf("coupon not exist")
-	}
-	if coupon.AppID != *h.AppID {
-		return fmt.Errorf("permission denied")
-	}
-	h.coupon = coupon
-	return nil
 }
 
 func (h *createHandler) getAppGood(ctx context.Context) error {
@@ -52,14 +34,10 @@ func (h *createHandler) getAppGood(ctx context.Context) error {
 }
 
 func (h *createHandler) createAppGoodScope(ctx context.Context) error {
-	if h.CouponScope == nil {
-		h.CouponScope = &h.coupon.CouponScope
-	}
-
 	if _, err := appgoodscopemwcli.CreateAppGoodScope(
 		ctx,
 		&appgoodscopemwpb.ScopeReq{
-			ID:          h.ID,
+			EntID:       h.EntID,
 			AppID:       h.AppID,
 			AppGoodID:   h.AppGoodID,
 			CouponID:    h.CouponID,
@@ -73,15 +51,12 @@ func (h *createHandler) createAppGoodScope(ctx context.Context) error {
 
 func (h *Handler) CreateAppGoodScope(ctx context.Context) (*npool.Scope, error) {
 	id := uuid.NewString()
-	if h.ID == nil {
-		h.ID = &id
+	if h.EntID == nil {
+		h.EntID = &id
 	}
 
 	handler := &createHandler{
 		Handler: h,
-	}
-	if err := handler.getCoupon(ctx); err != nil {
-		return nil, err
 	}
 	if err := handler.getAppGood(ctx); err != nil {
 		return nil, err

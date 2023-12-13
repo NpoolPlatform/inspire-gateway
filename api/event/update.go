@@ -15,13 +15,14 @@ import (
 func (s *Server) UpdateEvent(ctx context.Context, in *npool.UpdateEventRequest) (*npool.UpdateEventResponse, error) {
 	handler, err := event1.NewHandler(
 		ctx,
-		event1.WithID(&in.ID),
-		event1.WithAppID(&in.AppID),
-		event1.WithCouponIDs(in.GetCouponIDs()),
-		event1.WithCredits(in.Credits),
-		event1.WithCreditsPerUSD(in.CreditsPerUSD),
-		event1.WithMaxConsecutive(in.MaxConsecutive),
-		event1.WithInviterLayers(in.InviterLayers),
+		event1.WithID(&in.ID, true),
+		event1.WithEntID(&in.EntID, true),
+		event1.WithAppID(&in.AppID, true),
+		event1.WithCredits(in.Credits, false),
+		event1.WithCreditsPerUSD(in.CreditsPerUSD, false),
+		event1.WithMaxConsecutive(in.MaxConsecutive, false),
+		event1.WithInviterLayers(in.InviterLayers, false),
+		event1.WithCouponIDs(in.GetCouponIDs(), false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

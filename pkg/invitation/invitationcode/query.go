@@ -21,18 +21,14 @@ type queryHandler struct {
 }
 
 func (h *queryHandler) getUsers(ctx context.Context) error {
-	if h.AppID == nil {
-		return fmt.Errorf("invalid appid")
-	}
-
-	userIDs := []string{}
+	ids := []string{}
 	for _, code := range h.codes {
-		userIDs = append(userIDs, code.UserID)
+		ids = append(ids, code.UserID)
 	}
 	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
 		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
-	}, 0, int32(len(userIDs)))
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+	}, 0, int32(len(ids)))
 	if err != nil {
 		return err
 	}
@@ -49,6 +45,8 @@ func (h *queryHandler) formalize() {
 			continue
 		}
 		h.infos = append(h.infos, &npool.InvitationCode{
+			ID:             code.ID,
+			EntID:          code.EntID,
 			AppID:          code.AppID,
 			UserID:         code.UserID,
 			EmailAddress:   user.EmailAddress,
@@ -63,11 +61,10 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetInvitationCode(ctx context.Context) (*npool.InvitationCode, error) {
-	if h.ID == nil {
-		return nil, fmt.Errorf("invalid id")
+	if h.EntID == nil {
+		return nil, fmt.Errorf("invalid entid")
 	}
-
-	info, err := invitationcodemwcli.GetInvitationCode(ctx, *h.ID)
+	info, err := invitationcodemwcli.GetInvitationCode(ctx, *h.EntID)
 	if err != nil {
 		return nil, err
 	}
@@ -91,9 +88,6 @@ func (h *Handler) GetInvitationCode(ctx context.Context) (*npool.InvitationCode,
 }
 
 func (h *Handler) GetInvitationCodes(ctx context.Context) ([]*npool.InvitationCode, uint32, error) {
-	if h.AppID == nil {
-		return nil, 0, fmt.Errorf("invalid appid")
-	}
 	infos, total, err := invitationcodemwcli.GetInvitationCodes(ctx, &invitationcodemwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}, h.Offset, h.Limit)

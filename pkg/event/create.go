@@ -1,4 +1,3 @@
-//nolint:dupl
 package event
 
 import (
@@ -12,6 +11,7 @@ import (
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
 	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
+	"github.com/google/uuid"
 )
 
 type createHandler struct {
@@ -22,9 +22,6 @@ type createHandler struct {
 func (h *createHandler) checkAppGood(ctx context.Context) error {
 	if h.AppGoodID == nil {
 		return nil
-	}
-	if h.AppID == nil {
-		return fmt.Errorf("invalid appid")
 	}
 
 	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
@@ -37,8 +34,8 @@ func (h *createHandler) checkAppGood(ctx context.Context) error {
 	if good == nil {
 		return fmt.Errorf("invalid goodid")
 	}
-	h.appGood = good
 
+	h.appGood = good
 	return nil
 }
 
@@ -50,7 +47,13 @@ func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
 		return nil, err
 	}
 
+	id := uuid.NewString()
+	if h.EntID == nil {
+		h.EntID = &id
+	}
+
 	req := &eventmwpb.EventReq{
+		EntID:          h.EntID,
 		AppID:          h.AppID,
 		EventType:      h.EventType,
 		CouponIDs:      h.CouponIDs,
@@ -64,10 +67,9 @@ func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
 		req.AppGoodID = h.AppGoodID
 	}
 
-	info, err := eventmwcli.CreateEvent(ctx, req)
-	if err != nil {
+	if _, err := eventmwcli.CreateEvent(ctx, req); err != nil {
 		return nil, err
 	}
-	h.ID = &info.ID
+
 	return h.GetEvent(ctx)
 }

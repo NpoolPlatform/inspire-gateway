@@ -16,10 +16,10 @@ import (
 func (s *Server) CloneCommissions(ctx context.Context, in *npool.CloneCommissionsRequest) (*npool.CloneCommissionsResponse, error) {
 	handler, err := commission1.NewHandler(
 		ctx,
-		commission1.WithAppID(&in.AppID),
-		commission1.WithFromAppGoodID(&in.FromAppGoodID),
-		commission1.WithToAppGoodID(&in.ToAppGoodID),
-		commission1.WithScalePercent(&in.ScalePercent),
+		commission1.WithAppID(&in.AppID, true),
+		commission1.WithFromAppGoodID(&in.FromAppGoodID, true),
+		commission1.WithToAppGoodID(&in.ToAppGoodID, true),
+		commission1.WithScalePercent(&in.ScalePercent, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -46,10 +46,10 @@ func (s *Server) CloneCommissions(ctx context.Context, in *npool.CloneCommission
 func (s *Server) CloneAppCommissions(ctx context.Context, in *npool.CloneAppCommissionsRequest) (*npool.CloneAppCommissionsResponse, error) {
 	handler, err := commission1.NewHandler(
 		ctx,
-		commission1.WithAppID(&in.TargetAppID),
-		commission1.WithFromAppGoodID(&in.FromAppGoodID),
-		commission1.WithToAppGoodID(&in.ToAppGoodID),
-		commission1.WithScalePercent(&in.ScalePercent),
+		commission1.WithAppID(&in.TargetAppID, true),
+		commission1.WithFromAppGoodID(&in.FromAppGoodID, true),
+		commission1.WithToAppGoodID(&in.ToAppGoodID, true),
+		commission1.WithScalePercent(&in.ScalePercent, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

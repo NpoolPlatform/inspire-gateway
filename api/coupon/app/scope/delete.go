@@ -16,6 +16,7 @@ func (s *Server) DeleteAppGoodScope(ctx context.Context, in *npool.DeleteAppGood
 	handler, err := appgoodscope1.NewHandler(
 		ctx,
 		appgoodscope1.WithID(&in.ID, true),
+		appgoodscope1.WithEntID(&in.EntID, true),
 		appgoodscope1.WithAppID(&in.AppID, true),
 	)
 	if err != nil {

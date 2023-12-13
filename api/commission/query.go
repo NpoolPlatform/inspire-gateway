@@ -15,8 +15,8 @@ import (
 func (s *Server) GetCommissions(ctx context.Context, in *npool.GetCommissionsRequest) (*npool.GetCommissionsResponse, error) {
 	handler, err := commission1.NewHandler(
 		ctx,
-		commission1.WithAppID(&in.AppID),
-		commission1.WithUserID(&in.UserID),
+		commission1.WithAppID(&in.AppID, true),
+		commission1.WithUserID(&in.UserID, true),
 		commission1.WithOffset(in.GetOffset()),
 		commission1.WithLimit(in.GetLimit()),
 	)
@@ -48,8 +48,8 @@ func (s *Server) GetCommissions(ctx context.Context, in *npool.GetCommissionsReq
 func (s *Server) GetAppCommissions(ctx context.Context, in *npool.GetAppCommissionsRequest) (*npool.GetAppCommissionsResponse, error) {
 	handler, err := commission1.NewHandler(
 		ctx,
-		commission1.WithAppID(&in.AppID),
-		commission1.WithEndAt(in.EndAt),
+		commission1.WithAppID(&in.AppID, true),
+		commission1.WithEndAt(in.EndAt, false),
 		commission1.WithOffset(in.GetOffset()),
 		commission1.WithLimit(in.GetLimit()),
 	)

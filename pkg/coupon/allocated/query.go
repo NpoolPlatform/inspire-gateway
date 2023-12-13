@@ -49,7 +49,10 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) {
-	info, err := allocatedmwcli.GetCoupon(ctx, *h.ID)
+	if h.EntID == nil {
+		return nil, fmt.Errorf("invalid entid")
+	}
+	info, err := allocatedmwcli.GetCoupon(ctx, *h.EntID)
 	if err != nil {
 		return nil, err
 	}
@@ -74,10 +77,6 @@ func (h *Handler) GetCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) 
 }
 
 func (h *Handler) GetCoupons(ctx context.Context) ([]*allocatedmwpb.Coupon, uint32, error) {
-	if h.AppID == nil {
-		return nil, 0, fmt.Errorf("invalid appid")
-	}
-
 	conds := &allocatedmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}

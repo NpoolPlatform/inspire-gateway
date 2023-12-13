@@ -15,8 +15,8 @@ import (
 func (s *Server) CreateInvitationCode(ctx context.Context, in *npool.CreateInvitationCodeRequest) (*npool.CreateInvitationCodeResponse, error) {
 	handler, err := invitationcode1.NewHandler(
 		ctx,
-		invitationcode1.WithAppID(&in.AppID),
-		invitationcode1.WithUserID(&in.TargetUserID),
+		invitationcode1.WithAppID(&in.AppID, true),
+		invitationcode1.WithUserID(&in.TargetUserID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -11,13 +11,13 @@ import (
 
 func (h *Handler) CreateScope(ctx context.Context) (*npool.Scope, error) {
 	id := uuid.NewString()
-	if h.ID == nil {
-		h.ID = &id
+	if h.EntID == nil {
+		h.EntID = &id
 	}
 	if _, err := scopemwcli.CreateScope(
 		ctx,
 		&scopemwpb.ScopeReq{
-			ID:          h.ID,
+			EntID:       h.EntID,
 			GoodID:      h.GoodID,
 			CouponID:    h.CouponID,
 			CouponScope: h.CouponScope,

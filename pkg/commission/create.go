@@ -6,6 +6,7 @@ import (
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	"github.com/NpoolPlatform/go-service-framework/pkg/pubsub"
+	"github.com/google/uuid"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
@@ -232,6 +233,7 @@ func (h *createHandler) checkGood(ctx context.Context) error {
 
 func (h *createHandler) createCommission(ctx context.Context) error {
 	h.req = &commissionmwpb.CommissionReq{
+		EntID:            h.EntID,
 		AppID:            h.AppID,
 		UserID:           h.TargetUserID,
 		GoodID:           h.goodID,
@@ -244,11 +246,9 @@ func (h *createHandler) createCommission(ctx context.Context) error {
 		AmountOrPercent:  h.AmountOrPercent,
 		Threshold:        h.Threshold,
 	}
-	info, err := commissionmwcli.CreateCommission(ctx, h.req)
-	if err != nil {
+	if _, err := commissionmwcli.CreateCommission(ctx, h.req); err != nil {
 		return err
 	}
-	h.ID = &info.ID
 	return nil
 }
 
@@ -256,6 +256,7 @@ func (h *createHandler) notifyCreateCommission() {
 	if err := pubsub.WithPublisher(func(publisher *pubsub.Publisher) error {
 		comm := &commissionmwpb.Commission{
 			AppID:            *h.AppID,
+			EntID:            *h.EntID,
 			UserID:           *h.TargetUserID,
 			AppGoodID:        *h.AppGoodID,
 			SettleType:       *h.SettleType,
@@ -286,6 +287,11 @@ func (h *createHandler) notifyCreateCommission() {
 }
 
 func (h *Handler) CreateCommission(ctx context.Context) (*npool.Commission, error) {
+	id := uuid.NewString()
+	if h.EntID == nil {
+		h.EntID = &id
+	}
+
 	handler := &createHandler{
 		Handler: h,
 	}
@@ -310,10 +316,7 @@ func (h *Handler) CreateCommission(ctx context.Context) (*npool.Commission, erro
 	if err := handler.createCommission(ctx); err != nil {
 		return nil, err
 	}
-	info, err := h.GetCommission(ctx)
-	if err != nil {
-		return nil, err
-	}
 	handler.notifyCreateCommission()
-	return info, nil
+
+	return h.GetCommission(ctx)
 }

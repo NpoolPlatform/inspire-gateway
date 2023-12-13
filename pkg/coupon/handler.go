@@ -15,7 +15,8 @@ import (
 )
 
 type Handler struct {
-	ID               *string
+	ID               *uint32
+	EntID            *string
 	AppID            *string
 	UserID           *string
 	IssuedBy         *string
@@ -44,22 +45,41 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithID(id *string) func(context.Context, *Handler) error {
+func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
 			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
 		}
 		h.ID = id
 		return nil
 	}
 }
 
-func WithAppID(id *string) func(context.Context, *Handler) error {
+func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid entid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.EntID = id
+		return nil
+	}
+}
+
+func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appid")
+			}
 			return nil
 		}
 		exist, err := appmwcli.ExistApp(ctx, *id)
@@ -74,9 +94,12 @@ func WithAppID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithUserID(id *string) func(context.Context, *Handler) error {
+func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid userid")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
@@ -87,9 +110,12 @@ func WithUserID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithIssuedBy(id *string) func(context.Context, *Handler) error {
+func WithIssuedBy(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid issueby")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
@@ -100,9 +126,12 @@ func WithIssuedBy(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithCouponType(couponType *types.CouponType) func(context.Context, *Handler) error {
+func WithCouponType(couponType *types.CouponType, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if couponType == nil {
+			if must {
+				return fmt.Errorf("invalid coupontype")
+			}
 			return nil
 		}
 		switch *couponType {
@@ -117,9 +146,12 @@ func WithCouponType(couponType *types.CouponType) func(context.Context, *Handler
 	}
 }
 
-func WithDenomination(amount *string) func(context.Context, *Handler) error {
+func WithDenomination(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
+			if must {
+				return fmt.Errorf("invalid denomination")
+			}
 			return nil
 		}
 		if _, err := decimal.NewFromString(*amount); err != nil {
@@ -130,9 +162,12 @@ func WithDenomination(amount *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithCirculation(amount *string) func(context.Context, *Handler) error {
+func WithCirculation(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
+			if must {
+				return fmt.Errorf("invalid circulation")
+			}
 			return nil
 		}
 		if _, err := decimal.NewFromString(*amount); err != nil {
@@ -143,9 +178,12 @@ func WithCirculation(amount *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithStartAt(value *uint32) func(context.Context, *Handler) error {
+func WithStartAt(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
+			if must {
+				return fmt.Errorf("invalid startat")
+			}
 			return nil
 		}
 		if *value == 0 {
@@ -156,9 +194,12 @@ func WithStartAt(value *uint32) func(context.Context, *Handler) error {
 	}
 }
 
-func WithDurationDays(value *uint32) func(context.Context, *Handler) error {
+func WithDurationDays(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
+			if must {
+				return fmt.Errorf("invalid duration days")
+			}
 			return nil
 		}
 		if *value == 0 {
@@ -169,14 +210,14 @@ func WithDurationDays(value *uint32) func(context.Context, *Handler) error {
 	}
 }
 
-func WithMessage(value *string) func(context.Context, *Handler) error {
+func WithMessage(value *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Message = value
 		return nil
 	}
 }
 
-func WithName(value *string) func(context.Context, *Handler) error {
+func WithName(value *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
 			return nil
@@ -190,7 +231,7 @@ func WithName(value *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithThreshold(amount *string) func(context.Context, *Handler) error {
+func WithThreshold(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
 			return nil
@@ -203,7 +244,7 @@ func WithThreshold(amount *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithCouponConstraint(couponConstraint *types.CouponConstraint) func(context.Context, *Handler) error {
+func WithCouponConstraint(couponConstraint *types.CouponConstraint, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if couponConstraint == nil {
 			return nil
@@ -221,7 +262,7 @@ func WithCouponConstraint(couponConstraint *types.CouponConstraint) func(context
 	}
 }
 
-func WithCouponScope(couponScope *types.CouponScope) func(context.Context, *Handler) error {
+func WithCouponScope(couponScope *types.CouponScope, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if couponScope == nil {
 			return nil
@@ -238,7 +279,7 @@ func WithCouponScope(couponScope *types.CouponScope) func(context.Context, *Hand
 	}
 }
 
-func WithRandom(value *bool) func(context.Context, *Handler) error {
+func WithRandom(value *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		h.Random = value
 		return nil

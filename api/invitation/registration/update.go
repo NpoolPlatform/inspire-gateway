@@ -15,9 +15,10 @@ import (
 func (s *Server) UpdateRegistration(ctx context.Context, in *npool.UpdateRegistrationRequest) (*npool.UpdateRegistrationResponse, error) {
 	handler, err := registration1.NewHandler(
 		ctx,
-		registration1.WithID(&in.ID),
-		registration1.WithAppID(&in.AppID),
-		registration1.WithInviterID(&in.InviterID),
+		registration1.WithID(&in.ID, true),
+		registration1.WithEntID(&in.EntID, true),
+		registration1.WithAppID(&in.AppID, true),
+		registration1.WithInviterID(&in.InviterID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -11,6 +11,7 @@ import (
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
+	"github.com/google/uuid"
 )
 
 type createHandler struct {
@@ -39,26 +40,22 @@ func (h *createHandler) createSpecialOffer(ctx context.Context) (*couponmwpb.Cou
 }
 
 func (h *Handler) CreateCoupon(ctx context.Context) (*couponmwpb.Coupon, error) {
-	if h.CouponType == nil {
-		return nil, fmt.Errorf("invalid coupontype")
-	}
-	if h.AppID == nil {
-		return nil, fmt.Errorf("invalid appid")
+	id := uuid.NewString()
+	if h.EntID == nil {
+		h.EntID = &id
 	}
 
 	handler := &createHandler{
 		Handler: h,
 	}
-
 	if err := handler.validateIssuer(ctx); err != nil {
 		return nil, err
 	}
-
 	if *h.CouponType == types.CouponType_SpecialOffer {
 		return handler.createSpecialOffer(ctx)
 	}
 	return couponmwcli.CreateCoupon(ctx, &couponmwpb.CouponReq{
-		ID:               h.ID,
+		EntID:            h.EntID,
 		AppID:            h.AppID,
 		CouponType:       h.CouponType,
 		Denomination:     h.Denomination,

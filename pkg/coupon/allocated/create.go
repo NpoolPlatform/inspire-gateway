@@ -12,13 +12,6 @@ import (
 )
 
 func (h *Handler) CreateCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) {
-	if h.AppID == nil {
-		return nil, fmt.Errorf("invalid appid")
-	}
-	if h.UserID == nil {
-		return nil, fmt.Errorf("invalid userid")
-	}
-
 	exist, err := usermwcli.ExistUser(ctx, *h.AppID, *h.UserID)
 	if err != nil {
 		return nil, err
@@ -28,14 +21,14 @@ func (h *Handler) CreateCoupon(ctx context.Context) (*allocatedmwpb.Coupon, erro
 	}
 
 	id := uuid.NewString()
-	if h.ID == nil {
-		h.ID = &id
+	if h.EntID == nil {
+		h.EntID = &id
 	}
 
 	if _, err := allocatedmwcli.CreateCoupon(
 		ctx,
 		&allocatedmwpb.CouponReq{
-			ID:       h.ID,
+			EntID:    h.EntID,
 			AppID:    h.AppID,
 			UserID:   h.UserID,
 			CouponID: h.CouponID,

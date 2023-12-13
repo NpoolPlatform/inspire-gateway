@@ -1,4 +1,3 @@
-//nolint:dupl
 package achievement
 
 import (
@@ -16,8 +15,8 @@ import (
 func (s *Server) GetAchievements(ctx context.Context, in *npool.GetAchievementsRequest) (*npool.GetAchievementsResponse, error) {
 	handler, err := achievement1.NewHandler(
 		ctx,
-		achievement1.WithAppID(&in.AppID),
-		achievement1.WithUserID(&in.UserID),
+		achievement1.WithAppID(&in.AppID, true),
+		achievement1.WithUserID(&in.UserID, true),
 		achievement1.WithOffset(in.GetOffset()),
 		achievement1.WithLimit(in.GetLimit()),
 	)
@@ -49,7 +48,7 @@ func (s *Server) GetAchievements(ctx context.Context, in *npool.GetAchievementsR
 func (s *Server) GetUserAchievements(ctx context.Context, in *npool.GetUserAchievementsRequest) (*npool.GetUserAchievementsResponse, error) {
 	handler, err := achievement1.NewHandler(
 		ctx,
-		achievement1.WithAppID(&in.AppID),
+		achievement1.WithAppID(&in.AppID, true),
 		achievement1.WithUserIDs(&in.UserIDs),
 		achievement1.WithOffset(in.GetOffset()),
 		achievement1.WithLimit(in.GetLimit()),

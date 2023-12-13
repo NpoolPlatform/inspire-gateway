@@ -45,16 +45,6 @@ func (h *cloneHandler) checkGoods(ctx context.Context) error {
 }
 
 func (h *Handler) CloneCommissions(ctx context.Context) error {
-	if h.AppID == nil {
-		return fmt.Errorf("invalid appid")
-	}
-	if h.FromAppGoodID == nil {
-		return fmt.Errorf("invalid fromgoodid")
-	}
-	if h.ToAppGoodID == nil {
-		return fmt.Errorf("invalid togoodid")
-	}
-
 	handler := &cloneHandler{
 		Handler: h,
 	}

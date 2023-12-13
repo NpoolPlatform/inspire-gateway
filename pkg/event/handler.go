@@ -13,7 +13,8 @@ import (
 )
 
 type Handler struct {
-	ID             *string
+	ID             *uint32
+	EntID          *string
 	AppID          *string
 	EventType      *basetypes.UsedFor
 	CouponIDs      []string
@@ -36,22 +37,41 @@ func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) 
 	return handler, nil
 }
 
-func WithID(id *string) func(context.Context, *Handler) error {
+func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid id")
+			}
 			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
 		}
 		h.ID = id
 		return nil
 	}
 }
 
-func WithAppID(id *string) func(context.Context, *Handler) error {
+func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid entid")
+			}
+			return nil
+		}
+		if _, err := uuid.Parse(*id); err != nil {
+			return err
+		}
+		h.EntID = id
+		return nil
+	}
+}
+
+func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appid")
+			}
 			return nil
 		}
 		exist, err := appmwcli.ExistApp(ctx, *id)
@@ -66,9 +86,12 @@ func WithAppID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithEventType(eventType *basetypes.UsedFor) func(context.Context, *Handler) error {
+func WithEventType(eventType *basetypes.UsedFor, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if eventType == nil {
+			if must {
+				return fmt.Errorf("invalid eventtype")
+			}
 			return nil
 		}
 		switch *eventType {
@@ -89,8 +112,13 @@ func WithEventType(eventType *basetypes.UsedFor) func(context.Context, *Handler)
 	}
 }
 
-func WithCouponIDs(ids []string) func(context.Context, *Handler) error {
+func WithCouponIDs(ids []string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
+		if len(ids) == 0 {
+			if must {
+				return fmt.Errorf("invalid couponids")
+			}
+		}
 		for _, id := range ids {
 			if _, err := uuid.Parse(id); err != nil {
 				return err
@@ -101,9 +129,12 @@ func WithCouponIDs(ids []string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithAppGoodID(id *string) func(context.Context, *Handler) error {
+func WithAppGoodID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
+			if must {
+				return fmt.Errorf("invalid appgoodid")
+			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
@@ -114,9 +145,12 @@ func WithAppGoodID(id *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithCredits(amount *string) func(context.Context, *Handler) error {
+func WithCredits(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
+			if must {
+				return fmt.Errorf("invalid amount")
+			}
 			return nil
 		}
 		if _, err := decimal.NewFromString(*amount); err != nil {
@@ -127,9 +161,12 @@ func WithCredits(amount *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithCreditsPerUSD(value *string) func(context.Context, *Handler) error {
+func WithCreditsPerUSD(value *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
+			if must {
+				return fmt.Errorf("invalid creditsperusd")
+			}
 			return nil
 		}
 		if _, err := decimal.NewFromString(*value); err != nil {
@@ -140,15 +177,27 @@ func WithCreditsPerUSD(value *string) func(context.Context, *Handler) error {
 	}
 }
 
-func WithMaxConsecutive(consecutive *uint32) func(context.Context, *Handler) error {
+func WithMaxConsecutive(consecutive *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
+		if consecutive == nil {
+			if must {
+				return fmt.Errorf("invalid consecutive")
+			}
+			return nil
+		}
 		h.MaxConsecutive = consecutive
 		return nil
 	}
 }
 
-func WithInviterLayers(layers *uint32) func(context.Context, *Handler) error {
+func WithInviterLayers(layers *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
+		if layers == nil {
+			if must {
+				return fmt.Errorf("invalid layers")
+			}
+			return nil
+		}
 		h.InviterLayers = layers
 		return nil
 	}

@@ -27,9 +27,6 @@ type queryHandler struct {
 }
 
 func (h *queryHandler) getApp(ctx context.Context) error {
-	if h.AppID == nil {
-		return fmt.Errorf("invalid appid")
-	}
 	app, err := appmwcli.GetApp(ctx, *h.AppID)
 	if err != nil {
 		return err
@@ -69,8 +66,8 @@ func (h *queryHandler) getCoupons(ctx context.Context) error {
 	coupons, _, err := couponmwcli.GetCoupons(
 		ctx,
 		&couponmwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			IDs:   &basetypes.StringSliceVal{Op: cruder.IN, Value: couponIDs},
+			AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: couponIDs},
 		},
 		0,
 		int32(len(couponIDs)),
@@ -79,7 +76,7 @@ func (h *queryHandler) getCoupons(ctx context.Context) error {
 		return err
 	}
 	for _, coupon := range coupons {
-		h.coupons[coupon.ID] = coupon
+		h.coupons[coupon.EntID] = coupon
 	}
 	return nil
 }
@@ -88,6 +85,7 @@ func (h *queryHandler) formalize() {
 	for _, event := range h.events {
 		info := &npool.Event{
 			ID:             event.ID,
+			EntID:          event.EntID,
 			AppID:          event.AppID,
 			AppName:        h.app.Name,
 			EventType:      event.EventType,
@@ -120,11 +118,11 @@ func (h *queryHandler) formalize() {
 }
 
 func (h *Handler) GetEvent(ctx context.Context) (*npool.Event, error) {
-	if h.ID == nil {
+	if h.EntID == nil {
 		return nil, fmt.Errorf("invalid id")
 	}
 
-	info, err := eventmwcli.GetEvent(ctx, *h.ID)
+	info, err := eventmwcli.GetEvent(ctx, *h.EntID)
 	if err != nil {
 		return nil, err
 	}
@@ -156,18 +154,9 @@ func (h *Handler) GetEvent(ctx context.Context) (*npool.Event, error) {
 }
 
 func (h *Handler) GetEvents(ctx context.Context) ([]*npool.Event, uint32, error) {
-	if h.AppID == nil {
-		return nil, 0, fmt.Errorf("invalid appid")
-	}
-
-	infos, total, err := eventmwcli.GetEvents(
-		ctx,
-		&eventmwpb.Conds{
-			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		},
-		h.Offset,
-		h.Limit,
-	)
+	infos, total, err := eventmwcli.GetEvents(ctx, &eventmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+	}, h.Offset, h.Limit)
 	if err != nil {
 		return nil, 0, err
 	}
