@@ -21,6 +21,7 @@ func (s *Server) UpdateCoupon(ctx context.Context, in *npool.UpdateCouponRequest
 		coupon1.WithDenomination(in.Denomination, false),
 		coupon1.WithCirculation(in.Circulation, false),
 		coupon1.WithStartAt(in.StartAt, false),
+		coupon1.WithEndAt(in.EndAt, false),
 		coupon1.WithDurationDays(in.DurationDays, false),
 		coupon1.WithMessage(in.Message, false),
 		coupon1.WithName(in.Name, false),
@@ -29,6 +30,7 @@ func (s *Server) UpdateCoupon(ctx context.Context, in *npool.UpdateCouponRequest
 		coupon1.WithCouponConstraint(in.CouponConstraint, false),
 		coupon1.WithRandom(in.Random, false),
 		coupon1.WithCouponScope(in.CouponScope, false),
+		coupon1.WithCashableProbabilityPerMillion(in.CashableProbabilityPerMillion, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
