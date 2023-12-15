@@ -258,7 +258,7 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 			break
 		}
 		for _, good := range goods {
-			h.appGoods[good.ID] = good
+			h.appGoods[good.EntID] = good
 		}
 		offset += limit
 	}
@@ -384,7 +384,7 @@ func (h *queryHandler) formalizeAchievements() {
 			GoodID:                     achievement.GoodID,
 			GoodName:                   good.GoodName,
 			GoodUnit:                   good.Unit,
-			AppGoodID:                  good.ID,
+			AppGoodID:                  good.EntID,
 			CommissionValue:            commission.AmountOrPercent,
 			CommissionThreshold:        commission.Threshold,
 			CommissionSettleType:       commission.SettleType,
@@ -415,7 +415,7 @@ func (h *queryHandler) formalizeAchievements() {
 func (h *queryHandler) formalizeNew() {
 	for _, user := range h.users {
 		for _, good := range h.appGoods {
-			achievedGoods, ok := h.achievedGoods[good.ID]
+			achievedGoods, ok := h.achievedGoods[good.EntID]
 			if ok {
 				if _, ok := achievedGoods[user.EntID]; ok {
 					continue
@@ -441,12 +441,12 @@ func (h *queryHandler) formalizeNew() {
 				continue
 			}
 
-			commission := h.userGoodCommission(good.AppID, good.GoodID, good.ID, user.EntID)
+			commission := h.userGoodCommission(good.AppID, good.GoodID, good.EntID, user.EntID)
 			info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 				GoodID:                     good.GoodID,
 				GoodName:                   good.GoodName,
 				GoodUnit:                   good.Unit,
-				AppGoodID:                  good.ID,
+				AppGoodID:                  good.EntID,
 				CommissionValue:            commission.AmountOrPercent,
 				CommissionThreshold:        commission.Threshold,
 				CommissionSettleType:       commission.SettleType,

@@ -76,7 +76,7 @@ func (h reconcileHandler) orderGoodValue(ctx context.Context, order *ordermwpb.O
 func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.Order) error { //nolint
 	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: order.AppID},
-		ID:    &basetypes.StringVal{Op: cruder.EQ, Value: order.AppGoodID},
+		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: order.AppGoodID},
 	})
 	if err != nil {
 		return err

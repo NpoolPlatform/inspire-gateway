@@ -22,7 +22,7 @@ func (h *cloneHandler) checkGoods(ctx context.Context) error {
 	const limit = 2
 	goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: []string{
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: []string{
 			*h.FromAppGoodID,
 			*h.ToAppGoodID,
 		}},
@@ -34,7 +34,7 @@ func (h *cloneHandler) checkGoods(ctx context.Context) error {
 		return fmt.Errorf("invalid goodid")
 	}
 	for _, good := range goods {
-		switch good.ID {
+		switch good.EntID {
 		case *h.FromAppGoodID:
 			h.fromGoodID = good.GoodID
 		case *h.ToAppGoodID:

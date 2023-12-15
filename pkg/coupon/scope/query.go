@@ -27,13 +27,13 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 	}
 
 	goods, _, err := goodmwcli.GetGoods(ctx, &goodmwpb.Conds{
-		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 	}, int32(0), int32(len(ids)))
 	if err != nil {
 		return err
 	}
 	for _, good := range goods {
-		h.goods[good.ID] = good
+		h.goods[good.EntID] = good
 	}
 	return nil
 }

@@ -26,7 +26,7 @@ func (h *createHandler) checkAppGood(ctx context.Context) error {
 
 	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		ID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
+		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 	})
 	if err != nil {
 		return err
