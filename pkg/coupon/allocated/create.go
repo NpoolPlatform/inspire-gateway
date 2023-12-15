@@ -6,12 +6,13 @@ import (
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	allocatedmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/allocated"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon/allocated"
 	allocatedmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/allocated"
 
 	"github.com/google/uuid"
 )
 
-func (h *Handler) CreateCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) {
+func (h *Handler) CreateCoupon(ctx context.Context) (*npool.Coupon, error) {
 	exist, err := usermwcli.ExistUser(ctx, *h.AppID, *h.UserID)
 	if err != nil {
 		return nil, err
