@@ -22,12 +22,12 @@ func (s *Server) CreateCoupon(ctx context.Context, in *npool.CreateCouponRequest
 		coupon1.WithDenomination(&in.Denomination, true),
 		coupon1.WithCirculation(&in.Circulation, true),
 		coupon1.WithStartAt(&in.StartAt, true),
+		coupon1.WithEndAt(&in.EndAT, true),
 		coupon1.WithDurationDays(&in.DurationDays, true),
 		coupon1.WithCouponConstraint(&in.CouponConstraint, true),
 		coupon1.WithCouponScope(&in.CouponScope, true),
 		coupon1.WithIssuedBy(&in.UserID, true),
 		coupon1.WithRandom(&in.Random, false),
-		coupon1.WithUserID(in.TargetUserID, false),
 		coupon1.WithThreshold(in.Threshold, false),
 		coupon1.WithCashableProbabilityPerMillion(in.CashableProbabilityPerMillion, false),
 	)
