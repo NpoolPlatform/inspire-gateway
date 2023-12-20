@@ -18,6 +18,7 @@ type Handler struct {
 	ID                            *uint32
 	EntID                         *string
 	AppID                         *string
+	TargetAppID                   *string
 	UserID                        *string
 	IssuedBy                      *string
 	CouponType                    *types.CouponType
@@ -96,6 +97,25 @@ func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 	}
 }
 
+func WithTargetAppID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid targetappid")
+			}
+			return nil
+		}
+		exist, err := appmwcli.ExistApp(ctx, *id)
+		if err != nil {
+			return err
+		}
+		if !exist {
+			return fmt.Errorf("invalid targetappid")
+		}
+		h.TargetAppID = id
+		return nil
+	}
+}
 func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
