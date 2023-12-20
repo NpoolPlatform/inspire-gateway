@@ -48,7 +48,7 @@ func (h *Handler) CreateCoupon(ctx context.Context) (*couponmwpb.Coupon, error) 
 	}
 	return couponmwcli.CreateCoupon(ctx, &couponmwpb.CouponReq{
 		EntID:                         h.EntID,
-		AppID:                         h.AppID,
+		AppID:                         h.TargetAppID,
 		CouponType:                    h.CouponType,
 		Denomination:                  h.Denomination,
 		Circulation:                   h.Circulation,

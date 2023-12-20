@@ -15,7 +15,9 @@ import (
 func (s *Server) CreateCoupon(ctx context.Context, in *npool.CreateCouponRequest) (*npool.CreateCouponResponse, error) {
 	handler, err := coupon1.NewHandler(
 		ctx,
-		coupon1.WithAppID(&in.TargetAppID, true),
+		coupon1.WithAppID(&in.AppID, true),
+		coupon1.WithIssuedBy(&in.UserID, true),
+		coupon1.WithTargetAppID(&in.TargetAppID, true),
 		coupon1.WithName(&in.Name, true),
 		coupon1.WithMessage(&in.Message, true),
 		coupon1.WithCouponType(&in.CouponType, true),
@@ -26,7 +28,6 @@ func (s *Server) CreateCoupon(ctx context.Context, in *npool.CreateCouponRequest
 		coupon1.WithDurationDays(&in.DurationDays, true),
 		coupon1.WithCouponConstraint(&in.CouponConstraint, true),
 		coupon1.WithCouponScope(&in.CouponScope, true),
-		coupon1.WithIssuedBy(&in.UserID, true),
 		coupon1.WithRandom(&in.Random, false),
 		coupon1.WithThreshold(in.Threshold, false),
 		coupon1.WithCashableProbabilityPerMillion(in.CashableProbabilityPerMillion, false),
