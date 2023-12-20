@@ -22,7 +22,7 @@ func (s *Server) CreateCoupon(ctx context.Context, in *npool.CreateCouponRequest
 		coupon1.WithDenomination(&in.Denomination, true),
 		coupon1.WithCirculation(&in.Circulation, true),
 		coupon1.WithStartAt(&in.StartAt, true),
-		coupon1.WithEndAt(&in.EndAT, true),
+		coupon1.WithEndAt(&in.EndAt, true),
 		coupon1.WithDurationDays(&in.DurationDays, true),
 		coupon1.WithCouponConstraint(&in.CouponConstraint, true),
 		coupon1.WithCouponScope(&in.CouponScope, true),

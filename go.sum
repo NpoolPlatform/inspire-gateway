@@ -82,6 +82,7 @@ github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6/go.mod
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/NpoolPlatform/message v0.0.0-20231221025842-bc160e20ab33 h1:o/MsZJZ0sSHm1f4rXLwSROtGkiTgjpkYzyJMhZMRgFs=
 github.com/NpoolPlatform/message v0.0.0-20231221025842-bc160e20ab33/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 =======
@@ -100,6 +101,10 @@ github.com/NpoolPlatform/message v0.0.0-20231219070828-0a12fabd706d/go.mod h1:Px
 github.com/NpoolPlatform/message v0.0.0-20231220064041-845ad9f8c43f h1:9eGY8cz5PwDkZeLM1k9DspHdsSNJX5piK4OLEu8OFaw=
 github.com/NpoolPlatform/message v0.0.0-20231220064041-845ad9f8c43f/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 >>>>>>> ad50996 (fix create coupon)
+=======
+github.com/NpoolPlatform/message v0.0.0-20231220064718-400f650ab218 h1:eOXsDFO7G8f3BmC3KNekXR3qqZR+KarTEGqSPCcL8vQ=
+github.com/NpoolPlatform/message v0.0.0-20231220064718-400f650ab218/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
+>>>>>>> e5a084a (fix create coupon)
 github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a h1:+gVUfl0pCMHIBNXpwxseDxxapqmed8/ZAf+Oewl3UpQ=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a/go.mod h1:4Du89hzmz5gfqyxqXyzCOIWWpbPlDhKDRirekueAoRk=
 github.com/NpoolPlatform/order-middleware v0.0.0-20231207022847-d562f0898e06 h1:uJGd9iPnFBu80NU9zxGhAAlWxTo5ZsloP0oRwNTAtXg=
