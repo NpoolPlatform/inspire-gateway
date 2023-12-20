@@ -25,7 +25,6 @@ func (s *Server) UpdateCoupon(ctx context.Context, in *npool.UpdateCouponRequest
 		coupon1.WithDurationDays(in.DurationDays, false),
 		coupon1.WithMessage(in.Message, false),
 		coupon1.WithName(in.Name, false),
-		coupon1.WithUserID(in.TargetUserID, false),
 		coupon1.WithThreshold(in.Threshold, false),
 		coupon1.WithCouponConstraint(in.CouponConstraint, false),
 		coupon1.WithRandom(in.Random, false),
