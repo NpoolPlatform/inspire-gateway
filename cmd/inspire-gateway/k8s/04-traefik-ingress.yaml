@@ -47,6 +47,8 @@ spec:
       http: *http_rules
     - host: api.cryptomore.io
       http: *http_rules
+    - host: api.development.npool.top
+      http: *http_rules
 
 ---
 
