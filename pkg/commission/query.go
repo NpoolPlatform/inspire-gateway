@@ -68,15 +68,15 @@ func (h *queryHandler) getAppGoods(ctx context.Context) error {
 	}
 
 	goods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: h.comms[0].AppID},
-		IDs:   &basetypes.StringSliceVal{Op: cruder.IN, Value: goodIDs},
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: h.comms[0].AppID},
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: goodIDs},
 	}, int32(0), int32(len(goodIDs)))
 	if err != nil {
 		return err
 	}
 
 	for _, good := range goods {
-		h.appGoods[good.ID] = good
+		h.appGoods[good.EntID] = good
 	}
 	return nil
 }
@@ -94,14 +94,14 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 	}
 
 	goods, _, err := goodmwcli.GetGoods(ctx, &goodmwpb.Conds{
-		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 	}, int32(0), int32(len(ids)))
 	if err != nil {
 		return err
 	}
 
 	for _, good := range goods {
-		h.goods[good.ID] = good
+		h.goods[good.EntID] = good
 	}
 	return nil
 }

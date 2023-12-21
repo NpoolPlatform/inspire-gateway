@@ -30,13 +30,13 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 	}
 
 	goods, _, err := goodmwcli.GetGoods(ctx, &goodmwpb.Conds{
-		IDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 	}, int32(0), int32(len(ids)))
 	if err != nil {
 		return err
 	}
 	for _, good := range goods {
-		h.goods[good.ID] = good
+		h.goods[good.EntID] = good
 	}
 	return nil
 }
@@ -48,14 +48,14 @@ func (h *queryHandler) getAppGoods(ctx context.Context) error {
 	}
 
 	appgoods, _, err := appgoodmwcli.GetGoods(ctx, &appgoodmwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		IDs:   &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
 	}, int32(0), int32(len(ids)))
 	if err != nil {
 		return err
 	}
 	for _, appgood := range appgoods {
-		h.appgoods[appgood.ID] = appgood
+		h.appgoods[appgood.EntID] = appgood
 	}
 	return nil
 }
@@ -76,7 +76,7 @@ func (h *queryHandler) formalize() {
 			AppID:              info.AppID,
 			AppGoodID:          info.AppGoodID,
 			GoodName:           appgood.GoodName,
-			GoodID:             good.ID,
+			GoodID:             good.EntID,
 			CouponID:           info.CouponID,
 			CouponName:         info.CouponName,
 			CouponType:         info.CouponType,
