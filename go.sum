@@ -84,6 +84,7 @@ github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6/go.mod
 <<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 github.com/NpoolPlatform/message v0.0.0-20231221025842-bc160e20ab33 h1:o/MsZJZ0sSHm1f4rXLwSROtGkiTgjpkYzyJMhZMRgFs=
 github.com/NpoolPlatform/message v0.0.0-20231221025842-bc160e20ab33/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 =======
@@ -110,6 +111,10 @@ github.com/NpoolPlatform/message v0.0.0-20231220064718-400f650ab218/go.mod h1:Px
 github.com/NpoolPlatform/message v0.0.0-20231220072000-e76d0e654670 h1:JpYReBh9eAdZywAzE566kg9z7HjcT2dzoUwRwEYPQ6E=
 github.com/NpoolPlatform/message v0.0.0-20231220072000-e76d0e654670/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
 >>>>>>> 7a3410a (fix create coupon)
+=======
+github.com/NpoolPlatform/message v0.0.0-20231220101425-f6069e950b91 h1:ZGrXwevfWRAHgn/W8t+/zZ5abg+3qSB+rHkevr86sRY=
+github.com/NpoolPlatform/message v0.0.0-20231220101425-f6069e950b91/go.mod h1:PxJpF0vSSOke+NJskbRBRQ2fK2K3SRe8zaEja+GxSHk=
+>>>>>>> 8a69bf0 (update commit id)
 github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a h1:+gVUfl0pCMHIBNXpwxseDxxapqmed8/ZAf+Oewl3UpQ=
 github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a/go.mod h1:4Du89hzmz5gfqyxqXyzCOIWWpbPlDhKDRirekueAoRk=
 github.com/NpoolPlatform/order-middleware v0.0.0-20231207022847-d562f0898e06 h1:uJGd9iPnFBu80NU9zxGhAAlWxTo5ZsloP0oRwNTAtXg=
