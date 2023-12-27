@@ -223,6 +223,9 @@ func WithEndAt(value *uint32, must bool) func(context.Context, *Handler) error {
 			}
 			return nil
 		}
+		if *value == 0 {
+			return fmt.Errorf("invalid endat")
+		}
 		h.EndAt = value
 		return nil
 	}
