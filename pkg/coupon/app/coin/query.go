@@ -33,7 +33,7 @@ func (h *queryHandler) getAppCoins(ctx context.Context) error {
 		return err
 	}
 	for _, appcoin := range appcoins {
-		h.appcoins[appcoin.EntID] = appcoin
+		h.appcoins[appcoin.CoinTypeID] = appcoin
 	}
 	return nil
 }
