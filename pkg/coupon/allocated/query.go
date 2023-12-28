@@ -62,17 +62,19 @@ func (h *queryHandler) formalize() {
 			Expired:             info.Expired,
 			Valid:               info.Valid,
 			Used:                info.Used,
-			UsedAt:              info.UpdatedAt,
+			UsedAt:              info.UsedAt,
 			UsedByOrderID:       info.UsedByOrderID,
-			Threshold:           info.Threshold,
 			CouponTypeStr:       info.CouponTypeStr,
 			CouponType:          info.CouponType,
 			CouponConstraint:    info.CouponConstraint,
 			CouponConstraintStr: info.CouponConstraintStr,
+			Threshold:           info.Threshold,
 			Random:              info.Random,
 			CouponScope:         info.CouponScope,
 			CouponScopeStr:      info.CouponScopeStr,
 			Cashable:            info.Cashable,
+			CreatedAt:           info.CreatedAt,
+			UpdatedAt:           info.UpdatedAt,
 		})
 	}
 }
