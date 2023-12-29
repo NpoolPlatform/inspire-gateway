@@ -31,6 +31,9 @@ func (h *createHandler) getAppCoin(ctx context.Context) error {
 	if appcoin == nil {
 		return fmt.Errorf("appcoin not exist")
 	}
+	if !appcoin.StableUSD {
+		return fmt.Errorf("not stable usd coin")
+	}
 	h.appcoin = appcoin
 	return nil
 }
