@@ -116,9 +116,11 @@ func (h *Handler) GetCouponCoin(ctx context.Context) (*npool.CouponCoin, error) 
 }
 
 func (h *Handler) GetCouponCoins(ctx context.Context) ([]*npool.CouponCoin, uint32, error) {
-	couponcoins, total, err := couponcoinmwcli.GetCouponCoins(ctx, &couponcoinmwpb.Conds{
-		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-	}, h.Offset, h.Limit)
+	conds := &couponcoinmwpb.Conds{}
+	if h.AppID != nil {
+		conds.AppID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID}
+	}
+	couponcoins, total, err := couponcoinmwcli.GetCouponCoins(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
 		return nil, 0, err
 	}

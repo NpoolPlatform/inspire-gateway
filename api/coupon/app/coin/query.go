@@ -15,7 +15,6 @@ import (
 func (s *Server) GetCouponCoins(ctx context.Context, in *npool.GetCouponCoinsRequest) (*npool.GetCouponCoinsResponse, error) {
 	handler, err := couponcoin1.NewHandler(
 		ctx,
-		couponcoin1.WithAppID(&in.AppID, true),
 		couponcoin1.WithOffset(in.GetOffset()),
 		couponcoin1.WithLimit(in.GetLimit()),
 	)
@@ -39,6 +38,38 @@ func (s *Server) GetCouponCoins(ctx context.Context, in *npool.GetCouponCoinsReq
 	}
 
 	return &npool.GetCouponCoinsResponse{
+		Infos: infos,
+		Total: total,
+	}, nil
+}
+
+func (s *Server) GetAppCouponCoins(ctx context.Context, in *npool.GetAppCouponCoinsRequest) (*npool.GetAppCouponCoinsResponse, error) {
+	handler, err := couponcoin1.NewHandler(
+		ctx,
+		couponcoin1.WithAppID(&in.AppID, true),
+		couponcoin1.WithOffset(in.GetOffset()),
+		couponcoin1.WithLimit(in.GetLimit()),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetCouponCoins",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.GetAppCouponCoinsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	infos, total, err := handler.GetCouponCoins(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetCouponCoins",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.GetAppCouponCoinsResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.GetAppCouponCoinsResponse{
 		Infos: infos,
 		Total: total,
 	}, nil

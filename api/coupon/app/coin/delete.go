@@ -17,7 +17,7 @@ func (s *Server) DeleteCouponCoin(ctx context.Context, in *npool.DeleteCouponCoi
 		ctx,
 		couponcoin1.WithID(&in.ID, true),
 		couponcoin1.WithEntID(&in.EntID, true),
-		couponcoin1.WithAppID(&in.AppID, true),
+		couponcoin1.WithAppID(&in.TargetAppID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
