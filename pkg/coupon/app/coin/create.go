@@ -45,7 +45,6 @@ func (h *createHandler) createCouponCoin(ctx context.Context) error {
 			EntID:      h.EntID,
 			AppID:      h.AppID,
 			CoinTypeID: h.CoinTypeID,
-			CouponID:   h.CouponID,
 		},
 	); err != nil {
 		return err

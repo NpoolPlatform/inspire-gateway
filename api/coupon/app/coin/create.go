@@ -1,4 +1,3 @@
-//nolint
 package coin
 
 import (
@@ -18,7 +17,6 @@ func (s *Server) CreateCouponCoin(ctx context.Context, in *npool.CreateCouponCoi
 		ctx,
 		couponcoin1.WithAppID(&in.AppID, true),
 		couponcoin1.WithCoinTypeID(&in.CoinTypeID, true),
-		couponcoin1.WithCouponID(&in.CouponID, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
 	couponcoinmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/app/coin"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon/app/coin"
@@ -18,12 +20,13 @@ type queryHandler struct {
 	infos       []*npool.CouponCoin
 	couponcoins []*couponcoinmwpb.CouponCoin
 	appcoins    map[string]*appcoinmwpb.Coin
+	apps        map[string]*appmwpb.App
 }
 
 func (h *queryHandler) getAppCoins(ctx context.Context) error {
 	ids := []string{}
 	for _, info := range h.couponcoins {
-		ids = append(ids, info.CoinTypeID)
+		ids = append(ids, info.AppID)
 	}
 
 	appcoins, _, err := appcoinmwcli.GetCoins(ctx, &appcoinmwpb.Conds{
@@ -38,24 +41,44 @@ func (h *queryHandler) getAppCoins(ctx context.Context) error {
 	return nil
 }
 
+func (h *queryHandler) getApps(ctx context.Context) error {
+	ids := []string{}
+	for _, info := range h.couponcoins {
+		ids = append(ids, info.CoinTypeID)
+	}
+
+	apps, _, err := appmwcli.GetApps(ctx, &appmwpb.Conds{
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
+	}, int32(0), int32(len(ids)))
+	if err != nil {
+		return err
+	}
+	for _, app := range apps {
+		h.apps[app.EntID] = app
+	}
+	return nil
+}
+
 func (h *queryHandler) formalize() {
 	for _, info := range h.couponcoins {
 		appcoin, ok := h.appcoins[info.CoinTypeID]
 		if !ok {
 			continue
 		}
+		app, ok := h.apps[info.AppID]
+		if !ok {
+			continue
+		}
 		h.infos = append(h.infos, &npool.CouponCoin{
-			ID:                 info.ID,
-			EntID:              info.EntID,
-			AppID:              info.AppID,
-			CouponID:           info.CouponID,
-			CouponName:         info.CouponName,
-			CouponDenomination: info.CouponDenomination,
-			CoinTypeID:         info.CoinTypeID,
-			CoinName:           appcoin.CoinName,
-			CoinENV:            appcoin.ENV,
-			CreatedAt:          info.CreatedAt,
-			UpdatedAt:          info.UpdatedAt,
+			ID:         info.ID,
+			EntID:      info.EntID,
+			AppID:      info.AppID,
+			AppName:    app.Name,
+			CoinTypeID: info.CoinTypeID,
+			CoinName:   appcoin.CoinName,
+			CoinENV:    appcoin.ENV,
+			CreatedAt:  info.CreatedAt,
+			UpdatedAt:  info.UpdatedAt,
 		})
 	}
 }
@@ -76,8 +99,12 @@ func (h *Handler) GetCouponCoin(ctx context.Context) (*npool.CouponCoin, error) 
 		Handler:     h,
 		couponcoins: []*couponcoinmwpb.CouponCoin{info},
 		appcoins:    map[string]*appcoinmwpb.Coin{},
+		apps:        map[string]*appmwpb.App{},
 	}
 	if err := handler.getAppCoins(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getApps(ctx); err != nil {
 		return nil, err
 	}
 
@@ -100,8 +127,12 @@ func (h *Handler) GetCouponCoins(ctx context.Context) ([]*npool.CouponCoin, uint
 		Handler:     h,
 		couponcoins: couponcoins,
 		appcoins:    map[string]*appcoinmwpb.Coin{},
+		apps:        map[string]*appmwpb.App{},
 	}
 	if err := handler.getAppCoins(ctx); err != nil {
+		return nil, 0, err
+	}
+	if err := handler.getApps(ctx); err != nil {
 		return nil, 0, err
 	}
 

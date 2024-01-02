@@ -15,27 +15,27 @@ import (
 )
 
 type Handler struct {
-	ID                            *uint32
-	EntID                         *string
-	AppID                         *string
-	TargetAppID                   *string
-	UserID                        *string
-	IssuedBy                      *string
-	CouponType                    *types.CouponType
-	Denomination                  *string
-	Circulation                   *string
-	StartAt                       *uint32
-	EndAt                         *uint32
-	DurationDays                  *uint32
-	Message                       *string
-	Name                          *string
-	Threshold                     *string
-	CouponConstraint              *types.CouponConstraint
-	CouponScope                   *types.CouponScope
-	Random                        *bool
-	CashableProbabilityPerMillion *string
-	Offset                        int32
-	Limit                         int32
+	ID                  *uint32
+	EntID               *string
+	AppID               *string
+	TargetAppID         *string
+	UserID              *string
+	IssuedBy            *string
+	CouponType          *types.CouponType
+	Denomination        *string
+	Circulation         *string
+	StartAt             *uint32
+	EndAt               *uint32
+	DurationDays        *uint32
+	Message             *string
+	Name                *string
+	Threshold           *string
+	CouponConstraint    *types.CouponConstraint
+	CouponScope         *types.CouponScope
+	Random              *bool
+	CashableProbability *string
+	Offset              int32
+	Limit               int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -280,7 +280,7 @@ func WithThreshold(amount *string, must bool) func(context.Context, *Handler) er
 	}
 }
 
-func WithCashableProbabilityPerMillion(probability *string, must bool) func(context.Context, *Handler) error {
+func WithCashableProbability(probability *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if probability == nil {
 			if must {
@@ -295,7 +295,7 @@ func WithCashableProbabilityPerMillion(probability *string, must bool) func(cont
 		if _probability.Cmp(decimal.NewFromInt(0)) < 0 || _probability.Cmp(decimal.NewFromInt(1)) > 0 {
 			return fmt.Errorf("invalid probability")
 		}
-		h.CashableProbabilityPerMillion = probability
+		h.CashableProbability = probability
 		return nil
 	}
 }

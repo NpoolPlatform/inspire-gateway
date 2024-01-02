@@ -14,7 +14,6 @@ type Handler struct {
 	EntID      *string
 	AppID      *string
 	CoinTypeID *string
-	CouponID   *string
 	Offset     int32
 	Limit      int32
 }
@@ -94,22 +93,6 @@ func WithCoinTypeID(id *string, must bool) func(context.Context, *Handler) error
 			return err
 		}
 		h.CoinTypeID = id
-		return nil
-	}
-}
-
-func WithCouponID(id *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			if must {
-				return fmt.Errorf("invalid couponid")
-			}
-			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		h.CouponID = id
 		return nil
 	}
 }
