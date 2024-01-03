@@ -7,7 +7,6 @@ import (
 	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 	cashcontrolmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon/app/cashcontrol"
 	cashcontrolmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/app/cashcontrol"
-	npool "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/app/cashcontrol"
 	"github.com/google/uuid"
 )
 
@@ -43,7 +42,7 @@ func (h *createHandler) createCashControl(ctx context.Context) error {
 	return nil
 }
 
-func (h *Handler) CreateCashControl(ctx context.Context) (*npool.CashControl, error) {
+func (h *Handler) CreateCashControl(ctx context.Context) (*cashcontrolmwpb.CashControl, error) {
 	id := uuid.NewString()
 	if h.EntID == nil {
 		h.EntID = &id

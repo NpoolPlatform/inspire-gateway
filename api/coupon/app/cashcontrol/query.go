@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) GetCashControls(ctx context.Context, in *npool.GetCashControlsRequest) (*npool.GetCashControlsResponse, error) {
+func (s *Server) GetCashControls(ctx context.Context, in *npool.GetCashControlsRequest) (*npool.GetCashControlsResponse, error) { //nolint
 	handler, err := cashcontrol1.NewHandler(
 		ctx,
 		cashcontrol1.WithAppID(&in.TargetAppID, true),
@@ -44,7 +44,7 @@ func (s *Server) GetCashControls(ctx context.Context, in *npool.GetCashControlsR
 	}, nil
 }
 
-func (s *Server) GetAppCashControls(ctx context.Context, in *npool.GetAppCashControlsRequest) (*npool.GetAppCashControlsResponse, error) {
+func (s *Server) GetAppCashControls(ctx context.Context, in *npool.GetAppCashControlsRequest) (*npool.GetAppCashControlsResponse, error) { //nolint
 	handler, err := cashcontrol1.NewHandler(
 		ctx,
 		cashcontrol1.WithAppID(&in.AppID, true),
