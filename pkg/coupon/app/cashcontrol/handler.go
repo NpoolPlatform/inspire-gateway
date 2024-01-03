@@ -111,7 +111,7 @@ func WithControlType(controlType *types.ControlType, must bool) func(context.Con
 		}
 		switch *controlType {
 		case types.ControlType_KycApproved:
-		case types.ControlType_CreditsThreshold:
+		case types.ControlType_CreditThreshold:
 		case types.ControlType_OrderThreshold:
 		case types.ControlType_PaymentAmountThreshold:
 		default:
