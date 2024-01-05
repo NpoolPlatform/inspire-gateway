@@ -15,6 +15,7 @@ import (
 func (s *Server) GetCouponCoins(ctx context.Context, in *npool.GetCouponCoinsRequest) (*npool.GetCouponCoinsResponse, error) {
 	handler, err := couponcoin1.NewHandler(
 		ctx,
+		couponcoin1.WithAppID(&in.TargetAppID, true),
 		couponcoin1.WithOffset(in.GetOffset()),
 		couponcoin1.WithLimit(in.GetLimit()),
 	)
