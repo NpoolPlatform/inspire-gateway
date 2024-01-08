@@ -47,6 +47,8 @@ spec:
       http: *http_rules
     - host: api.cryptomore.io
       http: *http_rules
+    - host: api.development.npool.top
+      http: *http_rules
 
 ---
 
@@ -198,6 +200,22 @@ spec:
               serviceName: inspire-gateway
               servicePort: 50390
           - path: /api/inspire/v1/delete/appgoodscope
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/create/couponcoin
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/delete/couponcoin
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/get/couponcoins
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/get/app/couponcoins
             backend:
               serviceName: inspire-gateway
               servicePort: 50390

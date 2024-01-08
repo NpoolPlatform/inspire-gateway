@@ -15,24 +15,27 @@ import (
 )
 
 type Handler struct {
-	ID               *uint32
-	EntID            *string
-	AppID            *string
-	UserID           *string
-	IssuedBy         *string
-	CouponType       *types.CouponType
-	Denomination     *string
-	Circulation      *string
-	StartAt          *uint32
-	DurationDays     *uint32
-	Message          *string
-	Name             *string
-	Threshold        *string
-	CouponConstraint *types.CouponConstraint
-	CouponScope      *types.CouponScope
-	Random           *bool
-	Offset           int32
-	Limit            int32
+	ID                  *uint32
+	EntID               *string
+	AppID               *string
+	TargetAppID         *string
+	UserID              *string
+	IssuedBy            *string
+	CouponType          *types.CouponType
+	Denomination        *string
+	Circulation         *string
+	StartAt             *uint32
+	EndAt               *uint32
+	DurationDays        *uint32
+	Message             *string
+	Name                *string
+	Threshold           *string
+	CouponConstraint    *types.CouponConstraint
+	CouponScope         *types.CouponScope
+	Random              *bool
+	CashableProbability *string
+	Offset              int32
+	Limit               int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -94,6 +97,25 @@ func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 	}
 }
 
+func WithTargetAppID(id *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if id == nil {
+			if must {
+				return fmt.Errorf("invalid targetappid")
+			}
+			return nil
+		}
+		exist, err := appmwcli.ExistApp(ctx, *id)
+		if err != nil {
+			return err
+		}
+		if !exist {
+			return fmt.Errorf("invalid targetappid")
+		}
+		h.TargetAppID = id
+		return nil
+	}
+}
 func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
@@ -137,7 +159,6 @@ func WithCouponType(couponType *types.CouponType, must bool) func(context.Contex
 		switch *couponType {
 		case types.CouponType_FixAmount:
 		case types.CouponType_Discount:
-		case types.CouponType_SpecialOffer:
 		default:
 			return fmt.Errorf("invalid coupontype")
 		}
@@ -194,6 +215,21 @@ func WithStartAt(value *uint32, must bool) func(context.Context, *Handler) error
 	}
 }
 
+func WithEndAt(value *uint32, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			if must {
+				return fmt.Errorf("invalid endat")
+			}
+			return nil
+		}
+		if *value == 0 {
+			return fmt.Errorf("invalid endat")
+		}
+		h.EndAt = value
+		return nil
+	}
+}
 func WithDurationDays(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
@@ -244,6 +280,26 @@ func WithThreshold(amount *string, must bool) func(context.Context, *Handler) er
 	}
 }
 
+func WithCashableProbability(probability *string, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if probability == nil {
+			if must {
+				return fmt.Errorf("invalid probability")
+			}
+			return nil
+		}
+		_probability, err := decimal.NewFromString(*probability)
+		if err != nil {
+			return err
+		}
+		if _probability.Cmp(decimal.NewFromInt(0)) < 0 || _probability.Cmp(decimal.NewFromInt(1)) > 0 {
+			return fmt.Errorf("invalid probability")
+		}
+		h.CashableProbability = probability
+		return nil
+	}
+}
+
 func WithCouponConstraint(couponConstraint *types.CouponConstraint, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if couponConstraint == nil {
@@ -252,8 +308,6 @@ func WithCouponConstraint(couponConstraint *types.CouponConstraint, must bool) f
 		switch *couponConstraint {
 		case types.CouponConstraint_Normal:
 		case types.CouponConstraint_PaymentThreshold:
-		case types.CouponConstraint_GoodOnly:
-		case types.CouponConstraint_GoodThreshold:
 		default:
 			return fmt.Errorf("invalid couponconstraint")
 		}

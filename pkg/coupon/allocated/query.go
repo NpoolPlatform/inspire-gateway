@@ -9,13 +9,15 @@ import (
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coupon/allocated"
 	allocatedmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon/allocated"
 )
 
 type queryHandler struct {
 	*Handler
-	infos []*allocatedmwpb.Coupon
-	users map[string]*usermwpb.User
+	coupons []*allocatedmwpb.Coupon
+	infos   []*npool.Coupon
+	users   map[string]*usermwpb.User
 }
 
 func (h *queryHandler) getUsers(ctx context.Context) error {
@@ -37,18 +39,47 @@ func (h *queryHandler) getUsers(ctx context.Context) error {
 }
 
 func (h *queryHandler) formalize() {
-	for _, info := range h.infos {
+	for _, info := range h.coupons {
 		user, ok := h.users[info.UserID]
 		if !ok {
 			continue
 		}
-		info.Username = user.Username
-		info.EmailAddress = user.EmailAddress
-		info.PhoneNO = user.PhoneNO
+		h.infos = append(h.infos, &npool.Coupon{
+			ID:                  info.ID,
+			EntID:               info.EntID,
+			AppID:               info.AppID,
+			UserID:              info.UserID,
+			EmailAddress:        user.EmailAddress,
+			PhoneNO:             user.PhoneNO,
+			Denomination:        info.Denomination,
+			Circulation:         info.Circulation,
+			StartAt:             info.StartAt,
+			EndAt:               info.EndAt,
+			DurationDays:        info.DurationDays,
+			CouponID:            info.CouponID,
+			CouponName:          info.CouponName,
+			Message:             info.Message,
+			Expired:             info.Expired,
+			Valid:               info.Valid,
+			Used:                info.Used,
+			UsedAt:              info.UsedAt,
+			UsedByOrderID:       info.UsedByOrderID,
+			CouponTypeStr:       info.CouponTypeStr,
+			CouponType:          info.CouponType,
+			CouponConstraint:    info.CouponConstraint,
+			CouponConstraintStr: info.CouponConstraintStr,
+			Threshold:           info.Threshold,
+			Random:              info.Random,
+			CouponScope:         info.CouponScope,
+			CouponScopeStr:      info.CouponScopeStr,
+			Cashable:            info.Cashable,
+			CreatedAt:           info.CreatedAt,
+			UpdatedAt:           info.UpdatedAt,
+		})
 	}
 }
 
-func (h *Handler) GetCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) {
+func (h *Handler) GetCoupon(ctx context.Context) (*npool.Coupon, error) {
 	if h.EntID == nil {
 		return nil, fmt.Errorf("invalid entid")
 	}
@@ -62,7 +93,7 @@ func (h *Handler) GetCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) 
 
 	handler := &queryHandler{
 		Handler: h,
-		infos:   []*allocatedmwpb.Coupon{info},
+		coupons: []*allocatedmwpb.Coupon{info},
 		users:   map[string]*usermwpb.User{},
 	}
 	if err := handler.getUsers(ctx); err != nil {
@@ -76,7 +107,7 @@ func (h *Handler) GetCoupon(ctx context.Context) (*allocatedmwpb.Coupon, error) 
 	return handler.infos[0], nil
 }
 
-func (h *Handler) GetCoupons(ctx context.Context) ([]*allocatedmwpb.Coupon, uint32, error) {
+func (h *Handler) GetCoupons(ctx context.Context) ([]*npool.Coupon, uint32, error) {
 	conds := &allocatedmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}
@@ -84,17 +115,17 @@ func (h *Handler) GetCoupons(ctx context.Context) ([]*allocatedmwpb.Coupon, uint
 		conds.UserID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID}
 	}
 
-	infos, total, err := allocatedmwcli.GetCoupons(ctx, conds, h.Offset, h.Limit)
+	coupons, total, err := allocatedmwcli.GetCoupons(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
 		return nil, 0, err
 	}
-	if len(infos) == 0 {
+	if len(coupons) == 0 {
 		return nil, total, nil
 	}
 
 	handler := &queryHandler{
 		Handler: h,
-		infos:   infos,
+		coupons: coupons,
 		users:   map[string]*usermwpb.User{},
 	}
 	if err := handler.getUsers(ctx); err != nil {

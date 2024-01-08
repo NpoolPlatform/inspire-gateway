@@ -1,4 +1,4 @@
-package allocated
+package coin
 
 import (
 	"context"
@@ -6,18 +6,16 @@ import (
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
-
 	"github.com/google/uuid"
 )
 
 type Handler struct {
-	ID       *uint32
-	EntID    *string
-	AppID    *string
-	UserID   *string
-	CouponID *string
-	Offset   int32
-	Limit    int32
+	ID         *uint32
+	EntID      *string
+	AppID      *string
+	CoinTypeID *string
+	Offset     int32
+	Limit      int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -70,63 +68,48 @@ func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
+
 		exist, err := appmwcli.ExistApp(ctx, *id)
 		if err != nil {
 			return err
 		}
 		if !exist {
-			return fmt.Errorf("invalid appid")
+			return fmt.Errorf("invalid app")
 		}
 		h.AppID = id
 		return nil
 	}
 }
 
-func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
+func WithCoinTypeID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid userid")
+				return fmt.Errorf("invalid cointypeid")
 			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
 			return err
 		}
-		h.UserID = id
+		h.CoinTypeID = id
 		return nil
 	}
 }
 
-func WithCouponID(id *string, must bool) func(context.Context, *Handler) error {
+func WithOffset(value int32) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			if must {
-				return fmt.Errorf("invalid couponid")
-			}
-			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		h.CouponID = id
+		h.Offset = value
 		return nil
 	}
 }
 
-func WithOffset(offset int32) func(context.Context, *Handler) error {
+func WithLimit(value int32) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.Offset = offset
-		return nil
-	}
-}
-
-func WithLimit(limit int32) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if limit == 0 {
-			limit = constant.DefaultRowLimit
+		if value == 0 {
+			value = constant.DefaultRowLimit
 		}
-		h.Limit = limit
+		h.Limit = value
 		return nil
 	}
 }
