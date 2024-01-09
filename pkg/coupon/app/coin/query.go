@@ -26,7 +26,7 @@ type queryHandler struct {
 func (h *queryHandler) getAppCoins(ctx context.Context) error {
 	ids := []string{}
 	for _, info := range h.couponcoins {
-		ids = append(ids, info.AppID)
+		ids = append(ids, info.CoinTypeID)
 	}
 
 	appcoins, _, err := appcoinmwcli.GetCoins(ctx, &appcoinmwpb.Conds{
@@ -44,7 +44,7 @@ func (h *queryHandler) getAppCoins(ctx context.Context) error {
 func (h *queryHandler) getApps(ctx context.Context) error {
 	ids := []string{}
 	for _, info := range h.couponcoins {
-		ids = append(ids, info.CoinTypeID)
+		ids = append(ids, info.AppID)
 	}
 
 	apps, _, err := appmwcli.GetApps(ctx, &appmwpb.Conds{

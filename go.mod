@@ -3,14 +3,14 @@ module github.com/NpoolPlatform/inspire-gateway
 go 1.17
 
 require (
-	github.com/NpoolPlatform/appuser-middleware v0.0.0-20231130084704-4550aabac9c7
+	github.com/NpoolPlatform/appuser-middleware v0.0.0-20240108100407-73a6fe90209e
 	github.com/NpoolPlatform/basal-middleware v0.0.0-20231015112137-254853c60eec
 	github.com/NpoolPlatform/chain-middleware v0.0.0-20231020114413-49166aeb1ec8
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20231026021135-ec3cd368fc24
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230930023319-e48074d9472e
 	github.com/NpoolPlatform/good-middleware v0.0.0-20231221030302-2e4c9171b07b
 	github.com/NpoolPlatform/inspire-middleware v0.0.0-20240109030003-3ad3f9b862b5
-	github.com/NpoolPlatform/ledger-middleware v0.0.0-20231228095239-939d4d04d313
+	github.com/NpoolPlatform/ledger-middleware v0.0.0-20240108100325-6208a538cb21
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6
 	github.com/NpoolPlatform/message v0.0.0-20240109022512-0ffee28cfe53
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a

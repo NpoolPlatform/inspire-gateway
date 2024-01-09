@@ -12,9 +12,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) GetCouponCoins(ctx context.Context, in *npool.GetCouponCoinsRequest) (*npool.GetCouponCoinsResponse, error) {
+func (s *Server) GetCouponCoins(ctx context.Context, in *npool.GetCouponCoinsRequest) (*npool.GetCouponCoinsResponse, error) { //nolint
 	handler, err := couponcoin1.NewHandler(
 		ctx,
+		couponcoin1.WithAppID(&in.TargetAppID, true),
 		couponcoin1.WithOffset(in.GetOffset()),
 		couponcoin1.WithLimit(in.GetLimit()),
 	)
@@ -43,7 +44,7 @@ func (s *Server) GetCouponCoins(ctx context.Context, in *npool.GetCouponCoinsReq
 	}, nil
 }
 
-func (s *Server) GetAppCouponCoins(ctx context.Context, in *npool.GetAppCouponCoinsRequest) (*npool.GetAppCouponCoinsResponse, error) {
+func (s *Server) GetAppCouponCoins(ctx context.Context, in *npool.GetAppCouponCoinsRequest) (*npool.GetAppCouponCoinsResponse, error) { //nolint
 	handler, err := couponcoin1.NewHandler(
 		ctx,
 		couponcoin1.WithAppID(&in.AppID, true),
