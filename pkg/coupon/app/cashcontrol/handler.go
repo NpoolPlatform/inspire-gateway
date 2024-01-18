@@ -130,8 +130,12 @@ func WithValue(value *string, must bool) func(context.Context, *Handler) error {
 			}
 			return nil
 		}
-		if _, err := decimal.NewFromString(*value); err != nil {
+		amount, err := decimal.NewFromString(*value)
+		if err != nil {
 			return err
+		}
+		if amount.Cmp(decimal.NewFromInt(0)) < 0 {
+			return fmt.Errorf("invalid value")
 		}
 		h.Value = value
 		return nil
