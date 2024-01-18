@@ -223,6 +223,10 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          - path: /api/inspire/v1/update/cashcontrol
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
           - path: /api/inspire/v1/delete/cashcontrol
             backend:
               serviceName: inspire-gateway
