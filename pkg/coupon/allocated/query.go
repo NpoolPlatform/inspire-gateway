@@ -23,6 +23,9 @@ func (h *queryHandler) getUsers(ctx context.Context) error {
 	for _, info := range h.infos {
 		userIDs = append(userIDs, info.UserID)
 	}
+	if h.UserID != nil {
+		userIDs = append(userIDs, *h.UserID)
+	}
 	users, _, err := usermwcli.GetUsers(ctx, &usermwpb.Conds{
 		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
