@@ -383,7 +383,7 @@ func (h *queryHandler) formalizeAchievements() {
 		info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 			GoodID:                     achievement.GoodID,
 			GoodName:                   good.GoodName,
-			GoodUnit:                   good.Unit,
+			GoodUnit:                   good.QuantityUnit,
 			AppGoodID:                  good.EntID,
 			CommissionValue:            commission.AmountOrPercent,
 			CommissionThreshold:        commission.Threshold,
@@ -445,7 +445,7 @@ func (h *queryHandler) formalizeNew() {
 			info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 				GoodID:                     good.GoodID,
 				GoodName:                   good.GoodName,
-				GoodUnit:                   good.Unit,
+				GoodUnit:                   good.QuantityUnit,
 				AppGoodID:                  good.EntID,
 				CommissionValue:            commission.AmountOrPercent,
 				CommissionThreshold:        commission.Threshold,
