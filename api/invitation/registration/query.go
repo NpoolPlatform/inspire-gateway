@@ -13,6 +13,39 @@ import (
 	"google.golang.org/grpc/status"
 )
 
+func (s *Server) GetUserRegistrations(ctx context.Context, in *npool.GetUserRegistrationsRequest) (*npool.GetUserRegistrationsResponse, error) {
+	handler, err := registration1.NewHandler(
+		ctx,
+		registration1.WithAppID(&in.AppID, true),
+		registration1.WithInviterID(&in.UserID, true),
+		registration1.WithOffset(in.GetOffset()),
+		registration1.WithLimit(in.GetLimit()),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetUserRegistration",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.GetUserRegistrationsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	infos, total, err := handler.GetRegistrations(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"GetUserRegistration",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.GetUserRegistrationsResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.GetUserRegistrationsResponse{
+		Infos: infos,
+		Total: total,
+	}, nil
+}
+
 func (s *Server) GetRegistrations(ctx context.Context, in *npool.GetRegistrationsRequest) (*npool.GetRegistrationsResponse, error) {
 	handler, err := registration1.NewHandler(
 		ctx,

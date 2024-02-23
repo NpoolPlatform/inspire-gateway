@@ -97,9 +97,14 @@ func (h *Handler) GetRegistration(ctx context.Context) (*npool.Registration, err
 }
 
 func (h *Handler) GetRegistrations(ctx context.Context) ([]*npool.Registration, uint32, error) {
-	infos, total, err := regmwcli.GetRegistrations(ctx, &regmwpb.Conds{
+	conds := &regmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-	}, h.Offset, h.Limit)
+	}
+	if h.InviterID != nil {
+		conds.InviterID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.InviterID}
+	}
+
+	infos, total, err := regmwcli.GetRegistrations(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
 		return nil, 0, err
 	}
