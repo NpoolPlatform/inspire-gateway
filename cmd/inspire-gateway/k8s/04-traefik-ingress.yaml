@@ -104,6 +104,10 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          - path: /api/inspire/v1/get/user/registrationinvitations
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
           - path: /api/inspire/v1/update/registrationinvitation
             backend:
               serviceName: inspire-gateway
