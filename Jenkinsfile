@@ -362,6 +362,7 @@ pipeline {
             REPLICAS_COUNT=2
           fi
           sed -i "s/replicas: 2/replicas: $REPLICAS_COUNT/g" cmd/inspire-gateway/k8s/02-inspire-gateway.yaml
+          sed -i "s/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g" cmd/inspire-gateway/k8s/02-inspire-gateway.yaml
           make deploy-to-k8s-cluster
         '''.stripIndent())
       }
@@ -390,6 +391,7 @@ pipeline {
             REPLICAS_COUNT=2
           fi
           sed -i "s/replicas: 2/replicas: $REPLICAS_COUNT/g" cmd/inspire-gateway/k8s/02-inspire-gateway.yaml
+          sed -i "s/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g" cmd/inspire-gateway/k8s/02-inspire-gateway.yaml
           make deploy-to-k8s-cluster
         '''.stripIndent())
       }
