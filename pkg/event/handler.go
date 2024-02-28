@@ -106,6 +106,7 @@ func WithEventType(eventType *basetypes.UsedFor, must bool) func(context.Context
 		case basetypes.UsedFor_Transfer:
 		case basetypes.UsedFor_WithdrawalRequest:
 		case basetypes.UsedFor_Purchase:
+		case basetypes.UsedFor_SimulateOrderProfit:
 		}
 		h.EventType = eventType
 		return nil

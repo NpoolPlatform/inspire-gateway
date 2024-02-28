@@ -8,13 +8,13 @@ require (
 	github.com/NpoolPlatform/chain-middleware v0.0.0-20240206054529-d5a31563da6c
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20231026021135-ec3cd368fc24
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20230930023319-e48074d9472e
-	github.com/NpoolPlatform/good-middleware v0.0.0-20240206054338-ba6163372165
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20240206054615-e7c6bad99cd5
-	github.com/NpoolPlatform/ledger-middleware v0.0.0-20240206053955-735419c86935
+	github.com/NpoolPlatform/good-middleware v0.0.0-20240228064006-1dc716ef5c7b
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20240228062203-9e45ada9dd45
+	github.com/NpoolPlatform/ledger-middleware v0.0.0-20240228063533-abd254687b1b
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20231008051607-f64457cf6ab6
-	github.com/NpoolPlatform/message v0.0.0-20240223042131-70e9dd96927d
+	github.com/NpoolPlatform/message v0.0.0-20240228034341-03bb1244685e
 	github.com/NpoolPlatform/notif-middleware v0.0.0-20231110071848-7e72bb63090a
-	github.com/NpoolPlatform/order-middleware v0.0.0-20240206052824-352d90c4d6b0
+	github.com/NpoolPlatform/order-middleware v0.0.0-20240228061543-c7a0d1bfbc15
 	github.com/NpoolPlatform/third-middleware v0.0.0-20231011073243-59e4e2a0a8ac
 	github.com/go-resty/resty/v2 v2.7.0
 	github.com/google/uuid v1.3.0
