@@ -190,6 +190,7 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordertypes.OrderType) error {
 	offset := int32(0)
 	limit := constant.DefaultRowLimit
+	simulate := false
 	for {
 		orders, _, err := ordermwcli.GetOrders(ctx, &ordermwpb.Conds{
 			AppID:       &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
@@ -201,6 +202,7 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 				uint32(ordertypes.OrderState_OrderStateInService),
 				uint32(ordertypes.OrderState_OrderStateExpired),
 			}},
+			Simulate: &basetypes.BoolVal{Op: cruder.EQ, Value: simulate},
 		}, offset, limit)
 		if err != nil {
 			return err
