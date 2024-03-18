@@ -25,6 +25,7 @@ import (
 	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -208,9 +209,15 @@ func (h *queryHandler) getAchievements(ctx context.Context) error {
 func (h *queryHandler) getCoins(ctx context.Context) error {
 	coinTypeIDs := []string{}
 	for _, achievement := range h.achievements {
+		if _, err := uuid.Parse(achievement.CoinTypeID); err != nil {
+			continue
+		}
 		coinTypeIDs = append(coinTypeIDs, achievement.CoinTypeID)
 	}
 	for _, good := range h.appGoods {
+		if _, err := uuid.Parse(good.CoinTypeID); err != nil {
+			continue
+		}
 		coinTypeIDs = append(coinTypeIDs, good.CoinTypeID)
 	}
 	coins, _, err := appcoinmwcli.GetCoins(ctx, &appcoinmwpb.Conds{
