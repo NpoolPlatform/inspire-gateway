@@ -133,6 +133,9 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 			Amount:                 &statement.Amount,
 			USDAmount:              &statement.USDAmount,
 			Commission:             &statement.Commission,
+			AppConfigID:            &statement.AppConfigID,
+			CommissionConfigID:     &statement.CommissionConfigID,
+			CommissionConfigType:   &statement.CommissionConfigType,
 		}
 		if _, err := uuid.Parse(statement.DirectContributorID); err == nil {
 			req.DirectContributorID = &statement.DirectContributorID
