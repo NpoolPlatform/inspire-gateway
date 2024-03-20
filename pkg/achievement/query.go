@@ -11,6 +11,7 @@ import (
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	achievementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement"
 	statementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/statement"
+	achievementusermwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/user"
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
 	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -22,6 +23,7 @@ import (
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/achievement"
 	achievementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement"
 	statementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement"
+	achievementusermwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/user"
 	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 
@@ -30,19 +32,20 @@ import (
 
 type queryHandler struct {
 	*Handler
-	registrations map[string]*registrationmwpb.Registration
-	inviteIDs     []string
-	achievements  []*achievementmwpb.Achievement
-	inviteesCount map[string]uint32
-	coins         map[string]*appcoinmwpb.Coin
-	users         map[string]*usermwpb.User
-	appGoods      map[string]*appgoodmwpb.Good
-	commissions   map[string]map[string]*commissionmwpb.Commission
-	total         uint32
-	achievedGoods map[string]map[string]struct{}
-	statements    []*statementmwpb.Statement
-	infoMap       map[string]*npool.Achievement
-	infos         []*npool.Achievement
+	registrations    map[string]*registrationmwpb.Registration
+	inviteIDs        []string
+	achievements     []*achievementmwpb.Achievement
+	inviteesCount    map[string]uint32
+	coins            map[string]*appcoinmwpb.Coin
+	users            map[string]*usermwpb.User
+	appGoods         map[string]*appgoodmwpb.Good
+	commissions      map[string]map[string]*commissionmwpb.Commission
+	total            uint32
+	achievedGoods    map[string]map[string]struct{}
+	achievementUsers map[string]*npool.UserAchievement
+	statements       []*statementmwpb.Statement
+	infoMap          map[string]*npool.Achievement
+	infos            []*npool.Achievement
 }
 
 func (h *queryHandler) getInvitees(ctx context.Context) error {
@@ -205,6 +208,40 @@ func (h *queryHandler) getAchievements(ctx context.Context) error {
 	return nil
 }
 
+func (h *queryHandler) getAchievementUsers(ctx context.Context) error {
+	if len(h.inviteIDs) == 0 {
+		return nil
+	}
+
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+
+	for {
+		achievements, _, err := achievementusermwcli.GetAchievementUsers(ctx, &achievementusermwpb.Conds{
+			AppID:   &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			UserIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.inviteIDs},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(achievements) == 0 {
+			break
+		}
+		for _, achievement := range achievements {
+			h.achievementUsers[achievement.UserID] = &npool.UserAchievement{
+				TotalCommission:      achievement.TotalCommission,
+				SelfCommission:       achievement.SelfCommission,
+				DirectInvites:        achievement.DirectInvites,
+				IndirectInvites:      achievement.IndirectInvites,
+				DirectConsumeAmount:  achievement.DirectConsumeAmount,
+				InviteeConsumeAmount: achievement.InviteeConsumeAmount,
+			}
+		}
+		offset += limit
+	}
+	return nil
+}
+
 func (h *queryHandler) getCoins(ctx context.Context) error {
 	coinTypeIDs := []string{}
 	for _, achievement := range h.achievements {
@@ -311,17 +348,18 @@ func (h *queryHandler) formalizeUsers() {
 		}
 
 		h.infoMap[user.EntID] = &npool.Achievement{
-			InviterID:     inviterID,
-			UserID:        user.EntID,
-			Username:      user.Username,
-			EmailAddress:  user.EmailAddress,
-			PhoneNO:       user.PhoneNO,
-			FirstName:     user.FirstName,
-			LastName:      user.LastName,
-			Kol:           user.Kol,
-			TotalInvitees: h.inviteesCount[user.EntID],
-			CreatedAt:     user.CreatedAt,
-			InvitedAt:     invitedAt,
+			InviterID:       inviterID,
+			UserID:          user.EntID,
+			Username:        user.Username,
+			EmailAddress:    user.EmailAddress,
+			PhoneNO:         user.PhoneNO,
+			FirstName:       user.FirstName,
+			LastName:        user.LastName,
+			Kol:             user.Kol,
+			TotalInvitees:   h.inviteesCount[user.EntID],
+			CreatedAt:       user.CreatedAt,
+			InvitedAt:       invitedAt,
+			UserAchievement: h.achievementUsers[user.EntID],
 		}
 	}
 }
@@ -550,6 +588,9 @@ func (h *Handler) GetAchievements(ctx context.Context) ([]*npool.Achievement, ui
 		return nil, 0, err
 	}
 	if err := handler.getAchievements(ctx); err != nil {
+		return nil, 0, err
+	}
+	if err := handler.getAchievementUsers(ctx); err != nil {
 		return nil, 0, err
 	}
 	if err := handler.getUsers(ctx); err != nil {
