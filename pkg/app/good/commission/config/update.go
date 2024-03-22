@@ -74,6 +74,7 @@ func (h *Handler) UpdateCommission(ctx context.Context) (*npool.AppGoodCommissio
 		ID:              h.ID,
 		StartAt:         h.StartAt,
 		ThresholdAmount: h.ThresholdAmount,
+		Invites:         h.Invites,
 	})
 	if err != nil {
 		return nil, err

@@ -1,4 +1,4 @@
-package commission
+package config
 
 import (
 	"context"

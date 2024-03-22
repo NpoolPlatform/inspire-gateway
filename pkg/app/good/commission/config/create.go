@@ -8,11 +8,13 @@ import (
 
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
+	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
 	commissionconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/app/good/commission/config"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
+	goodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/app/good/commission/config"
 	commissionconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/app/good/commission/config"
 )
@@ -28,9 +30,21 @@ func (h *createHandler) checkGood(ctx context.Context) error {
 		return nil
 	}
 
-	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
+	appgood, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
+	})
+	if err != nil {
+		return err
+	}
+	if appgood == nil {
+		return fmt.Errorf("invalid appgood")
+	}
+
+	h.goodID = &appgood.GoodID
+
+	good, err := goodmwcli.GetGoodOnly(ctx, &goodmwpb.Conds{
+		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: appgood.GoodID},
 	})
 	if err != nil {
 		return err
@@ -39,11 +53,9 @@ func (h *createHandler) checkGood(ctx context.Context) error {
 		return fmt.Errorf("invalid good")
 	}
 
-	h.goodID = &good.GoodID
-
 	coin, err := appcoinmwcli.GetCoinOnly(ctx, &appcoinmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		CoinTypeID: &basetypes.StringVal{Op: cruder.EQ, Value: good.CoinTypeID},
+		CoinTypeID: &basetypes.StringVal{Op: cruder.EQ, Value: appgood.CoinTypeID},
 	})
 	if err != nil {
 		return err

@@ -44,7 +44,7 @@ func (h *cloneHandler) checkGoods(ctx context.Context) error {
 	return nil
 }
 
-func (h *Handler) CloneCommissions(ctx context.Context) error {
+func (h *Handler) CloneCommissionConfigs(ctx context.Context) error {
 	handler := &cloneHandler{
 		Handler: h,
 	}

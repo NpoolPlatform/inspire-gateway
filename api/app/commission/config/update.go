@@ -1,4 +1,4 @@
-package commission
+package config
 
 import (
 	"context"
@@ -19,6 +19,7 @@ func (s *Server) UpdateAppCommissionConfig(ctx context.Context, in *npool.Update
 		commissionconfig1.WithEntID(&in.EntID, true),
 		commissionconfig1.WithAppID(&in.AppID, true),
 		commissionconfig1.WithThresholdAmount(in.ThresholdAmount, false),
+		commissionconfig1.WithInvites(in.Invites, false),
 		commissionconfig1.WithStartAt(in.StartAt, false),
 	)
 	if err != nil {
