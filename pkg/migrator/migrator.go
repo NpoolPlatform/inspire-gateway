@@ -66,7 +66,7 @@ func CreateSubordinateProcedure(ctx context.Context) error {
 func getInvites(ctx context.Context, tx *ent.Tx, inviterID string) ([]uuid.UUID, error) {
 	inviterIDs := []uuid.UUID{}
 	selectInviteeIDsStr := fmt.Sprintf("CALL get_subordinates(\"%v\")\n", inviterID)
-	logger.Sugar().Infow("exec selectInviteeIDsStr", selectInviteeIDsStr)
+	logger.Sugar().Infow("Migrate inspire", "exec selectInviteeIDsStr", selectInviteeIDsStr)
 	rows, err := tx.QueryContext(
 		ctx,
 		selectInviteeIDsStr,
@@ -99,7 +99,7 @@ func getInvites(ctx context.Context, tx *ent.Tx, inviterID string) ([]uuid.UUID,
 func getDirectInvites(ctx context.Context, tx *ent.Tx, userID, appID string) ([]uuid.UUID, error) {
 	directInviterIDs := []uuid.UUID{}
 	selectDirectInvitesStr := fmt.Sprintf("select id,app_id,inviter_id,invitee_id,deleted_at from registrations where inviter_id = '%v' and app_id='%v' and deleted_at=0", userID, appID)
-	logger.Sugar().Infow("exec selectDirectInvitesStr", selectDirectInvitesStr)
+	logger.Sugar().Infow("Migrate inspire", "exec selectDirectInvitesStr", selectDirectInvitesStr)
 	r, err := tx.QueryContext(ctx, selectDirectInvitesStr)
 	if err != nil {
 		return directInviterIDs, err
@@ -141,7 +141,7 @@ func getPaymentAmount(ctx context.Context, tx *ent.Tx, userIDs []uuid.UUID, appI
 	sb.WriteString(")")
 	stateStr := fmt.Sprintf("('%v', '%v', '%v')", ordertypes.OrderState_OrderStatePaid.String(), ordertypes.OrderState_OrderStateInService.String(), ordertypes.OrderState_OrderStateExpired.String())
 	selectOrderStr := fmt.Sprintf("select a.id,a.app_id,a.user_id,a.payment_amount,b.order_state as state,a.deleted_at from order_manager.orders a left join order_manager.order_states b on a.ent_id=b.order_id where a.app_id='%v' and a.user_id in %s and b.order_state in %v and a.deleted_at=0", appID, sb.String(), stateStr)
-	logger.Sugar().Infow("exec selectOrderStr", selectOrderStr)
+	logger.Sugar().Infow("Migrate inspire", "exec selectOrderStr", selectOrderStr)
 	r, err := tx.QueryContext(ctx, selectOrderStr)
 	if err != nil {
 		return paymentAmount, err
@@ -198,12 +198,12 @@ func migrateAchievementUser(ctx context.Context, tx *ent.Tx) error {
 		return nil
 	}
 
-	logger.Sugar().Infow("exec len(users)", len(users))
+	logger.Sugar().Warnw("Migrate inspire", "exec len(users)", len(users))
 	count := 0
 	for _, user := range users {
 		count++
 		selectAchievementUserStr := fmt.Sprintf("select id,app_id,user_id,deleted_at from archivement_users where user_id='%v' and deleted_at=0", user.EntID)
-		logger.Sugar().Infow("exec selectAchievementUserStr", selectAchievementUserStr)
+		logger.Sugar().Warnw("Migrate inspire", "exec selectAchievementUserStr", selectAchievementUserStr)
 		r, err = tx.QueryContext(ctx, selectAchievementUserStr)
 		if err != nil {
 			return err
@@ -273,7 +273,7 @@ func migrateAchievementUser(ctx context.Context, tx *ent.Tx) error {
 
 		// commission
 		selectAchievementStr := fmt.Sprintf("select id,app_id,user_id,total_commission,self_commission,deleted_at from archivement_generals where app_id='%v' and user_id='%v' and deleted_at=0", user.AppID, user.EntID)
-		logger.Sugar().Warnw("exec selectAchievementStr", selectAchievementStr)
+		logger.Sugar().Warnw("Migrate inspire", "exec selectAchievementStr", selectAchievementStr)
 		r, err = tx.QueryContext(ctx, selectAchievementStr)
 		if err != nil {
 			return err
@@ -306,7 +306,7 @@ func migrateAchievementUser(ctx context.Context, tx *ent.Tx) error {
 		_achievedUser.TotalCommission = totalCommission
 		_achievedUser.SelfCommission = selfCommission
 
-		logger.Sugar().Warnw("create _achievedUser", _achievedUser)
+		logger.Sugar().Warnw("Migrate inspire", "create _achievedUser", _achievedUser)
 		if _, err := tx.
 			AchievementUser.
 			Create().
@@ -327,7 +327,7 @@ func migrateAchievementUser(ctx context.Context, tx *ent.Tx) error {
 }
 
 func Migrate(ctx context.Context) error {
-	logger.Sugar().Infow("Migrate order", "Start", "...")
+	logger.Sugar().Infow("Migrate inspire", "Start", "...")
 	if err := redis2.TryLock(lockKey(), 0); err != nil {
 		return err
 	}
