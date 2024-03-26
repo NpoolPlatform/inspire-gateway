@@ -199,7 +199,7 @@ func migrateStatement(ctx context.Context, tx *ent.Tx) error {
 			}
 			statements = append(statements, statement)
 		}
-		r.Close()
+
 		logger.Sugar().Warnw("Migrate inspire", "exec len(statements)", len(statements))
 		if len(statements) == 0 {
 			break
@@ -218,9 +218,6 @@ func migrateStatement(ctx context.Context, tx *ent.Tx) error {
 			}
 		}
 
-		if len(statements) < limit {
-			break
-		}
 		offset += limit
 	}
 
