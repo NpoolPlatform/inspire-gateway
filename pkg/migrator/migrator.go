@@ -13,6 +13,8 @@ import (
 	servicename "github.com/NpoolPlatform/inspire-gateway/pkg/servicename"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db/ent"
+	entstatement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/statement"
+	inspiretypes "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	ordertypes "github.com/NpoolPlatform/message/npool/basetypes/order/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	"github.com/shopspring/decimal"
@@ -171,6 +173,58 @@ func getPaymentAmount(ctx context.Context, tx *ent.Tx, userIDs []uuid.UUID, appI
 		}
 	}
 	return paymentAmount, nil
+}
+
+func migrateStatement(ctx context.Context, tx *ent.Tx) error {
+	offset := 0
+	limit := 1000
+	for {
+		selectStatementStr := fmt.Sprintf("select id,app_id,ent_id,deleted_at from archivement_details where deleted_at=0 and commission_config_type='%v' limit %v, %v", inspiretypes.CommissionConfigType_DefaultCommissionConfigType.String(), offset, limit)
+		logger.Sugar().Warnw("Migrate inspire", "exec selectStatementStr", selectStatementStr)
+		r, err := tx.QueryContext(ctx, selectStatementStr)
+		if err != nil {
+			return err
+		}
+		type ad struct {
+			ID        uint32
+			AppID     uuid.UUID
+			EntID     uuid.UUID
+			DeletedAt uint32
+		}
+		statements := []*ad{}
+		for r.Next() {
+			statement := &ad{}
+			if err := r.Scan(&statement.ID, &statement.AppID, &statement.EntID, &statement.DeletedAt); err != nil {
+				return err
+			}
+			statements = append(statements, statement)
+		}
+		r.Close()
+		logger.Sugar().Warnw("Migrate inspire", "exec len(statements)", len(statements))
+		if len(statements) == 0 {
+			break
+		}
+
+		for _, statement := range statements {
+			if _, err := tx.
+				Statement.
+				Update().
+				Where(
+					entstatement.ID(statement.ID),
+				).
+				SetCommissionConfigType(inspiretypes.CommissionConfigType_LegacyCommissionConfig.String()).
+				Save(ctx); err != nil {
+				return err
+			}
+		}
+
+		if len(statements) < limit {
+			break
+		}
+		offset += limit
+	}
+
+	return nil
 }
 
 func migrateAchievementUser(ctx context.Context, tx *ent.Tx) error {
@@ -341,6 +395,10 @@ func Migrate(ctx context.Context) error {
 
 	return db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
 		if err := migrateAchievementUser(_ctx, tx); err != nil {
+			logger.Sugar().Errorw("Migrate", "error", err)
+			return err
+		}
+		if err := migrateStatement(_ctx, tx); err != nil {
 			logger.Sugar().Errorw("Migrate", "error", err)
 			return err
 		}
