@@ -26,6 +26,7 @@ func (h *queryHandler) formalize() {
 			SettleType:      comm.SettleType,
 			AmountOrPercent: comm.AmountOrPercent,
 			ThresholdAmount: comm.ThresholdAmount,
+			Invites:         comm.Invites,
 			StartAt:         comm.StartAt,
 			EndAt:           comm.EndAt,
 			CreatedAt:       comm.CreatedAt,
