@@ -217,8 +217,6 @@ func migrateStatement(ctx context.Context, tx *ent.Tx) error {
 				return err
 			}
 		}
-
-		offset += limit
 	}
 
 	return nil
