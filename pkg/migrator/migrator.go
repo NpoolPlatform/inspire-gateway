@@ -212,6 +212,8 @@ func migrateStatement(ctx context.Context, tx *ent.Tx) error {
 				Where(
 					entstatement.ID(statement.ID),
 				).
+				SetAppConfigID(uuid.Nil).
+				SetCommissionConfigID(uuid.Nil).
 				SetCommissionConfigType(inspiretypes.CommissionConfigType_LegacyCommissionConfig.String()).
 				Save(ctx); err != nil {
 				return err
