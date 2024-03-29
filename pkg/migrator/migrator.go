@@ -176,6 +176,71 @@ func getPaymentAmount(ctx context.Context, tx *ent.Tx, userIDs []uuid.UUID, appI
 }
 
 func migrateStatement(ctx context.Context, tx *ent.Tx) error {
+	r, err := tx.QueryContext(ctx, "select id, ent_id, app_id, start_at, end_at, deleted_at from app_configs where deleted_at=0 and end_at=0")
+	if err != nil {
+		return err
+	}
+	type cf struct {
+		ID        uint32
+		EntID     uuid.UUID
+		AppID     uuid.UUID
+		StartAt   uint32
+		EndAt     uint32
+		DeletedAt uint32
+	}
+	configMap := map[uuid.UUID]*cf{}
+	for r.Next() {
+		conf := &cf{}
+		if err := r.Scan(&conf.ID, &conf.EntID, &conf.AppID, &conf.StartAt, &conf.EndAt, &conf.DeletedAt); err != nil {
+			return err
+		}
+		configMap[conf.AppID] = conf
+	}
+	r.Close()
+
+	r, err = tx.QueryContext(ctx, "select id,ent_id,deleted_at from appuser_manager.apps where deleted_at=0")
+	if err != nil {
+		return err
+	}
+	type ap struct {
+		ID        uint32
+		EntID     uuid.UUID
+		DeletedAt uint32
+	}
+	for r.Next() {
+		app := &ap{}
+		if err := r.Scan(&app.ID, &app.EntID, &app.DeletedAt); err != nil {
+			return err
+		}
+		_, ok := configMap[app.EntID]
+		if !ok {
+			id := uuid.New()
+			newConf := &cf{
+				EntID:   id,
+				AppID:   app.EntID,
+				StartAt: 0,
+				EndAt:   0,
+			}
+			if _, err := tx.
+				AppConfig.
+				Create().
+				SetEntID(newConf.EntID).
+				SetAppID(newConf.AppID).
+				SetSettleMode(inspiretypes.SettleMode_SettleWithGoodValue.String()).
+				SetSettleAmountType(inspiretypes.SettleAmountType_SettleByPercent.String()).
+				SetSettleInterval(inspiretypes.SettleInterval_SettleEveryOrder.String()).
+				SetCommissionType(inspiretypes.CommissionConfigType_LegacyCommissionConfig.String()).
+				SetSettleBenefit(false).
+				SetStartAt(newConf.StartAt).
+				SetEndAt(newConf.EndAt).
+				Save(ctx); err != nil {
+				return err
+			}
+			configMap[app.EntID] = newConf
+		}
+	}
+	r.Close()
+
 	offset := 0
 	limit := 1000
 	for {
@@ -206,13 +271,18 @@ func migrateStatement(ctx context.Context, tx *ent.Tx) error {
 		}
 
 		for _, statement := range statements {
+			appConfigID := uuid.Nil
+			conf, ok := configMap[statement.AppID]
+			if ok {
+				appConfigID = conf.EntID
+			}
 			if _, err := tx.
 				Statement.
 				Update().
 				Where(
 					entstatement.ID(statement.ID),
 				).
-				SetAppConfigID(uuid.Nil).
+				SetAppConfigID(appConfigID).
 				SetCommissionConfigID(uuid.Nil).
 				SetCommissionConfigType(inspiretypes.CommissionConfigType_LegacyCommissionConfig.String()).
 				Save(ctx); err != nil {
