@@ -239,7 +239,7 @@ func migrateStatement(ctx context.Context, tx *ent.Tx) error {
 			SetSettleMode(inspiretypes.SettleMode_SettleWithGoodValue.String()).
 			SetSettleAmountType(inspiretypes.SettleAmountType_SettleByPercent.String()).
 			SetSettleInterval(inspiretypes.SettleInterval_SettleEveryOrder.String()).
-			SetCommissionType(inspiretypes.CommissionConfigType_LegacyCommissionConfig.String()).
+			SetCommissionType(inspiretypes.CommissionType_LegacyCommission.String()).
 			SetSettleBenefit(false).
 			SetStartAt(conf.StartAt).
 			SetEndAt(conf.EndAt).
