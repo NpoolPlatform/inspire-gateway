@@ -139,6 +139,12 @@ func WithThresholdAmount(amount *string, must bool) func(context.Context, *Handl
 			}
 			return nil
 		}
+		if *amount == "" {
+			if must {
+				return fmt.Errorf("invalid thresholdamount")
+			}
+			return nil
+		}
 		if _, err := decimal.NewFromString(*amount); err != nil {
 			return err
 		}
