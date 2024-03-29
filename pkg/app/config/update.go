@@ -17,6 +17,7 @@ type updateHandler struct {
 	info *appconfigmwpb.AppConfig
 }
 
+//nolint:dupl
 func (h *updateHandler) validateAppConfigs(ctx context.Context) error {
 	if h.StartAt == nil {
 		return nil

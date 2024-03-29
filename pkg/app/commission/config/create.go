@@ -56,7 +56,7 @@ func (h *Handler) CreateCommissionConfig(ctx context.Context) (*npool.AppCommiss
 		h.EntID = &id
 	}
 
-	handler := &updateHandler{
+	handler := &createHandler{
 		Handler: h,
 	}
 	if err := handler.validateCommissions(ctx); err != nil {

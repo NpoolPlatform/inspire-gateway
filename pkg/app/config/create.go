@@ -37,6 +37,7 @@ func (h *createHandler) createAppConfig(ctx context.Context) error {
 	return nil
 }
 
+//nolint:dupl
 func (h *createHandler) validateAppConfigs(ctx context.Context) error {
 	if h.StartAt == nil {
 		return nil
