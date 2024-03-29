@@ -176,7 +176,9 @@ func getPaymentAmount(ctx context.Context, tx *ent.Tx, userIDs []uuid.UUID, appI
 }
 
 func migrateStatement(ctx context.Context, tx *ent.Tx) error {
-	r, err := tx.QueryContext(ctx, "select id, ent_id, app_id, start_at, end_at, deleted_at from app_configs where deleted_at=0 and end_at=0")
+	selectAppConfigStr := "select id, ent_id, app_id, start_at, end_at, deleted_at from app_configs where deleted_at=0 and end_at=0"
+	r, err := tx.QueryContext(ctx, selectAppConfigStr)
+	logger.Sugar().Warnw("Migrate inspire", "exec selectAppConfigStr", selectAppConfigStr)
 	if err != nil {
 		return err
 	}
@@ -189,6 +191,7 @@ func migrateStatement(ctx context.Context, tx *ent.Tx) error {
 		DeletedAt uint32
 	}
 	configMap := map[uuid.UUID]*cf{}
+	newConfigMap := map[uuid.UUID]*cf{}
 	for r.Next() {
 		conf := &cf{}
 		if err := r.Scan(&conf.ID, &conf.EntID, &conf.AppID, &conf.StartAt, &conf.EndAt, &conf.DeletedAt); err != nil {
@@ -196,9 +199,10 @@ func migrateStatement(ctx context.Context, tx *ent.Tx) error {
 		}
 		configMap[conf.AppID] = conf
 	}
-	r.Close()
 
-	r, err = tx.QueryContext(ctx, "select id,ent_id,deleted_at from appuser_manager.apps where deleted_at=0")
+	selectAppStr := "select id,ent_id,deleted_at from appuser_manager.apps where deleted_at=0"
+	r, err = tx.QueryContext(ctx, selectAppStr)
+	logger.Sugar().Warnw("Migrate inspire", "exec selectAppStr", selectAppStr)
 	if err != nil {
 		return err
 	}
@@ -221,25 +225,28 @@ func migrateStatement(ctx context.Context, tx *ent.Tx) error {
 				StartAt: 0,
 				EndAt:   0,
 			}
-			if _, err := tx.
-				AppConfig.
-				Create().
-				SetEntID(newConf.EntID).
-				SetAppID(newConf.AppID).
-				SetSettleMode(inspiretypes.SettleMode_SettleWithGoodValue.String()).
-				SetSettleAmountType(inspiretypes.SettleAmountType_SettleByPercent.String()).
-				SetSettleInterval(inspiretypes.SettleInterval_SettleEveryOrder.String()).
-				SetCommissionType(inspiretypes.CommissionConfigType_LegacyCommissionConfig.String()).
-				SetSettleBenefit(false).
-				SetStartAt(newConf.StartAt).
-				SetEndAt(newConf.EndAt).
-				Save(ctx); err != nil {
-				return err
-			}
+			newConfigMap[app.EntID] = newConf
 			configMap[app.EntID] = newConf
 		}
 	}
-	r.Close()
+
+	for _, conf := range newConfigMap {
+		if _, err := tx.
+			AppConfig.
+			Create().
+			SetEntID(conf.EntID).
+			SetAppID(conf.AppID).
+			SetSettleMode(inspiretypes.SettleMode_SettleWithGoodValue.String()).
+			SetSettleAmountType(inspiretypes.SettleAmountType_SettleByPercent.String()).
+			SetSettleInterval(inspiretypes.SettleInterval_SettleEveryOrder.String()).
+			SetCommissionType(inspiretypes.CommissionConfigType_LegacyCommissionConfig.String()).
+			SetSettleBenefit(false).
+			SetStartAt(conf.StartAt).
+			SetEndAt(conf.EndAt).
+			Save(ctx); err != nil {
+			return err
+		}
+	}
 
 	offset := 0
 	limit := 1000
