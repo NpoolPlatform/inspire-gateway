@@ -9,6 +9,7 @@ import (
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
+	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	commissionconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/app/good/commission/config"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
@@ -84,6 +85,38 @@ func (h *createHandler) createCommissionConfig(ctx context.Context) error {
 	return nil
 }
 
+func (h *createHandler) validateCommissions(ctx context.Context) error {
+	if h.StartAt == nil {
+		return nil
+	}
+
+	commissions := []*commissionconfigmwpb.AppGoodCommissionConfig{}
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+
+	for {
+		_commissions, _, err := commissionconfigmwcli.GetCommissionConfigs(ctx, &commissionconfigmwpb.Conds{
+			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.goodID},
+			EndAt:      &basetypes.Uint32Val{Op: cruder.NEQ, Value: 0},
+			SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.SettleType)},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(_commissions) == 0 {
+			break
+		}
+		commissions = append(commissions, _commissions...)
+		offset += limit
+	}
+	for _, commission := range commissions {
+		if commission.EndAt > *h.StartAt {
+			return fmt.Errorf("invalid startat")
+		}
+	}
+	return nil
+}
 func (h *Handler) CreateCommissionConfig(ctx context.Context) (*npool.AppGoodCommissionConfig, error) {
 	id := uuid.NewString()
 	if h.EntID == nil {
@@ -95,6 +128,9 @@ func (h *Handler) CreateCommissionConfig(ctx context.Context) (*npool.AppGoodCom
 	}
 
 	if err := handler.checkGood(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.validateCommissions(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.createCommissionConfig(ctx); err != nil {
