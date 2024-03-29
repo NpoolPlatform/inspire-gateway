@@ -568,18 +568,19 @@ func (h *queryHandler) formalize(ctx context.Context) error {
 
 func (h *Handler) GetAchievements(ctx context.Context) ([]*npool.Achievement, uint32, error) {
 	handler := &queryHandler{
-		Handler:       h,
-		registrations: map[string]*registrationmwpb.Registration{},
-		inviteIDs:     []string{},
-		inviteesCount: map[string]uint32{},
-		coins:         map[string]*appcoinmwpb.Coin{},
-		users:         map[string]*usermwpb.User{},
-		appGoods:      map[string]*appgoodmwpb.Good{},
-		commissions:   map[string]map[string]*commissionmwpb.Commission{},
-		achievedGoods: map[string]map[string]struct{}{},
-		statements:    []*statementmwpb.Statement{},
-		infoMap:       map[string]*npool.Achievement{},
-		infos:         []*npool.Achievement{},
+		Handler:          h,
+		registrations:    map[string]*registrationmwpb.Registration{},
+		inviteIDs:        []string{},
+		inviteesCount:    map[string]uint32{},
+		coins:            map[string]*appcoinmwpb.Coin{},
+		users:            map[string]*usermwpb.User{},
+		appGoods:         map[string]*appgoodmwpb.Good{},
+		commissions:      map[string]map[string]*commissionmwpb.Commission{},
+		achievedGoods:    map[string]map[string]struct{}{},
+		statements:       []*statementmwpb.Statement{},
+		infoMap:          map[string]*npool.Achievement{},
+		infos:            []*npool.Achievement{},
+		achievementUsers: map[string]*npool.UserAchievement{},
 	}
 	if err := handler.getRegistrations(ctx); err != nil {
 		return nil, 0, err
