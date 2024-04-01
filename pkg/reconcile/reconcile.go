@@ -10,6 +10,7 @@ import (
 
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	achievementstatementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/statement"
+	appconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/app/config"
 	calculatemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/calculate"
 	ledgerstatementmwcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger/statement"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
@@ -18,6 +19,7 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	achievementstatementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement"
+	appconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/app/config"
 	calculatemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/calculate"
 	ledgerstatementmwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
 	ordermwpb "github.com/NpoolPlatform/message/npool/order/mw/v1/order"
@@ -190,6 +192,23 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 	return nil
 }
 
+func (h *reconcileHandler) checkAppCommissionType(ctx context.Context) error {
+	appConfig, err := appconfigmwcli.GetAppConfigOnly(ctx, &appconfigmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EndAt: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(0)},
+	})
+	if err != nil {
+		return err
+	}
+	if appConfig == nil {
+		return fmt.Errorf("invalid inspire appconfig")
+	}
+	if appConfig.CommissionType != types.CommissionType_LegacyCommission {
+		return fmt.Errorf("invalid commissiontype")
+	}
+	return nil
+}
+
 func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordertypes.OrderType) error {
 	offset := int32(0)
 	limit := constant.DefaultRowLimit
@@ -234,6 +253,9 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 func (h *Handler) Reconcile(ctx context.Context) error {
 	handler := &reconcileHandler{
 		Handler: h,
+	}
+	if err := handler.checkAppCommissionType(ctx); err != nil {
+		return err
 	}
 	if err := handler.reconcileOrders(ctx, ordertypes.OrderType_Normal); err != nil {
 		return err
