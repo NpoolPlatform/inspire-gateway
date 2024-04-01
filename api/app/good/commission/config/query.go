@@ -16,6 +16,7 @@ func (s *Server) GetAppGoodCommissionConfigs(ctx context.Context, in *npool.GetA
 	handler, err := commissionconfig1.NewHandler(
 		ctx,
 		commissionconfig1.WithAppID(&in.AppID, true),
+		commissionconfig1.WithEndAt(in.EndAt, false),
 		commissionconfig1.WithOffset(in.GetOffset()),
 		commissionconfig1.WithLimit(in.GetLimit()),
 	)
