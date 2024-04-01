@@ -142,7 +142,7 @@ func getPaymentAmount(ctx context.Context, tx *ent.Tx, userIDs []uuid.UUID, appI
 	}
 	sb.WriteString(")")
 	stateStr := fmt.Sprintf("('%v', '%v', '%v')", ordertypes.OrderState_OrderStatePaid.String(), ordertypes.OrderState_OrderStateInService.String(), ordertypes.OrderState_OrderStateExpired.String())
-	selectOrderStr := fmt.Sprintf("select a.id,a.app_id,a.user_id,a.payment_amount,b.order_state as state,a.deleted_at from order_manager.orders a left join order_manager.order_states b on a.ent_id=b.order_id where a.app_id='%v' and a.user_id in %s and b.order_state in %v and a.deleted_at=0", appID, sb.String(), stateStr)
+	selectOrderStr := fmt.Sprintf("select a.id,a.app_id,a.user_id,a.payment_amount,a.good_value_usd,b.order_state as state,a.deleted_at from order_manager.orders a left join order_manager.order_states b on a.ent_id=b.order_id where a.app_id='%v' and a.user_id in %s and b.order_state in %v and a.deleted_at=0", appID, sb.String(), stateStr)
 	logger.Sugar().Infow("Migrate inspire", "exec selectOrderStr", selectOrderStr)
 	r, err := tx.QueryContext(ctx, selectOrderStr)
 	if err != nil {
@@ -153,13 +153,14 @@ func getPaymentAmount(ctx context.Context, tx *ent.Tx, userIDs []uuid.UUID, appI
 		AppID         uuid.UUID
 		UserID        uuid.UUID
 		PaymentAmount decimal.Decimal
+		GoodValueUSD  decimal.Decimal
 		State         string
 		DeletedAt     uint32
 	}
 	orders := []*od{}
 	for r.Next() {
 		order := &od{}
-		if err := r.Scan(&order.ID, &order.AppID, &order.UserID, &order.PaymentAmount, &order.State, &order.DeletedAt); err != nil {
+		if err := r.Scan(&order.ID, &order.AppID, &order.UserID, &order.PaymentAmount, &order.GoodValueUSD, &order.State, &order.DeletedAt); err != nil {
 			return paymentAmount, err
 		}
 		orders = append(orders, order)
@@ -167,7 +168,7 @@ func getPaymentAmount(ctx context.Context, tx *ent.Tx, userIDs []uuid.UUID, appI
 	r.Close()
 
 	for _, order := range orders {
-		_paymentAmount := order.PaymentAmount
+		_paymentAmount := order.GoodValueUSD
 		if _paymentAmount.Cmp(decimal.NewFromInt(0)) > 0 {
 			paymentAmount = paymentAmount.Add(_paymentAmount)
 		}
