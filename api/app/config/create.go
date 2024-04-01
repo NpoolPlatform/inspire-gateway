@@ -20,8 +20,8 @@ func (s *Server) CreateAppConfig(ctx context.Context, in *npool.CreateAppConfigR
 		appconfig1.WithSettleAmountType(&in.SettleAmountType, true),
 		appconfig1.WithSettleInterval(&in.SettleInterval, true),
 		appconfig1.WithCommissionType(&in.CommissionType, true),
-		appconfig1.WithSettleBenefit(&in.SettleBenefit, true),
-		appconfig1.WithStartAt(&in.StartAt, false),
+		appconfig1.WithSettleBenefit(in.SettleBenefit, false),
+		appconfig1.WithStartAt(in.StartAt, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -55,8 +55,8 @@ func (s *Server) CreateNAppConfig(ctx context.Context, in *npool.CreateNAppConfi
 		appconfig1.WithSettleAmountType(&in.SettleAmountType, true),
 		appconfig1.WithSettleInterval(&in.SettleInterval, true),
 		appconfig1.WithCommissionType(&in.CommissionType, true),
-		appconfig1.WithSettleBenefit(&in.SettleBenefit, true),
-		appconfig1.WithStartAt(&in.StartAt, false),
+		appconfig1.WithSettleBenefit(in.SettleBenefit, false),
+		appconfig1.WithStartAt(in.StartAt, false),
 		appconfig1.WithCheckAffiliate(false),
 	)
 	if err != nil {
