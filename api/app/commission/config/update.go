@@ -1,3 +1,4 @@
+//nolint:dupl
 package config
 
 import (
@@ -42,6 +43,40 @@ func (s *Server) UpdateAppCommissionConfig(ctx context.Context, in *npool.Update
 	}
 
 	return &npool.UpdateAppCommissionConfigResponse{
+		Info: info,
+	}, nil
+}
+
+func (s *Server) UpdateNAppCommissionConfig(ctx context.Context, in *npool.UpdateNAppCommissionConfigRequest) (*npool.UpdateNAppCommissionConfigResponse, error) {
+	handler, err := commissionconfig1.NewHandler(
+		ctx,
+		commissionconfig1.WithID(&in.ID, true),
+		commissionconfig1.WithEntID(&in.EntID, true),
+		commissionconfig1.WithAppID(&in.TargetAppID, true),
+		commissionconfig1.WithThresholdAmount(in.ThresholdAmount, false),
+		commissionconfig1.WithInvites(in.Invites, false),
+		commissionconfig1.WithStartAt(in.StartAt, false),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UpdateNAppCommissionConfig",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.UpdateNAppCommissionConfigResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	info, err := handler.UpdateCommission(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UpdateNAppCommissionConfig",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.UpdateNAppCommissionConfigResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.UpdateNAppCommissionConfigResponse{
 		Info: info,
 	}, nil
 }

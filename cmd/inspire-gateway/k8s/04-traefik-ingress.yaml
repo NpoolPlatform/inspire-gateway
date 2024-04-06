@@ -257,6 +257,10 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          - path: /api/inspire/v1/update/n/app/commission/config
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
           - path: /api/inspire/v1/get/app/commission/configs
             backend:
               serviceName: inspire-gateway
@@ -277,6 +281,10 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          - path: /api/inspire/v1/update/n/app/config
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
           - path: /api/inspire/v1/get/app/configs
             backend:
               serviceName: inspire-gateway
@@ -294,6 +302,10 @@ spec:
               serviceName: inspire-gateway
               servicePort: 50390
           - path: /api/inspire/v1/update/app/good/commission/config
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/update/n/app/good/commission/config
             backend:
               serviceName: inspire-gateway
               servicePort: 50390

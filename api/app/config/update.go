@@ -1,3 +1,4 @@
+//nolint:dupl
 package config
 
 import (
@@ -40,6 +41,38 @@ func (s *Server) UpdateAppConfig(ctx context.Context, in *npool.UpdateAppConfigR
 	}
 
 	return &npool.UpdateAppConfigResponse{
+		Info: info,
+	}, nil
+}
+
+func (s *Server) UpdateNAppConfig(ctx context.Context, in *npool.UpdateNAppConfigRequest) (*npool.UpdateNAppConfigResponse, error) {
+	handler, err := appconfig1.NewHandler(
+		ctx,
+		appconfig1.WithID(&in.ID, true),
+		appconfig1.WithEntID(&in.EntID, true),
+		appconfig1.WithAppID(&in.TargetAppID, true),
+		appconfig1.WithStartAt(in.StartAt, false),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UpdateNAppConfig",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.UpdateNAppConfigResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	info, err := handler.UpdateAppConfig(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"UpdateNAppConfig",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.UpdateNAppConfigResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.UpdateNAppConfigResponse{
 		Info: info,
 	}, nil
 }
