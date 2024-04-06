@@ -1,3 +1,4 @@
+//nolint:dupl
 package config
 
 import (
@@ -16,6 +17,7 @@ func (s *Server) GetAppConfigs(ctx context.Context, in *npool.GetAppConfigsReque
 	handler, err := commissionconfig1.NewHandler(
 		ctx,
 		commissionconfig1.WithAppID(&in.AppID, true),
+		commissionconfig1.WithEndAt(in.EndAt, false),
 		commissionconfig1.WithOffset(in.GetOffset()),
 		commissionconfig1.WithLimit(in.GetLimit()),
 	)
