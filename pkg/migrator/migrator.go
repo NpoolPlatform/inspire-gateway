@@ -142,7 +142,7 @@ func getPaymentAmount(ctx context.Context, tx *ent.Tx, userIDs []uuid.UUID, appI
 	}
 	sb.WriteString(")")
 	stateStr := fmt.Sprintf("('%v', '%v', '%v')", ordertypes.OrderState_OrderStatePaid.String(), ordertypes.OrderState_OrderStateInService.String(), ordertypes.OrderState_OrderStateExpired.String())
-	selectOrderStr := fmt.Sprintf("select a.id,a.app_id,a.user_id,a.payment_amount,a.good_value_usd,b.order_state as state,a.deleted_at from order_manager.orders a left join order_manager.order_states b on a.ent_id=b.order_id where a.app_id='%v' and a.user_id in %s and b.order_state in %v and a.deleted_at=0", appID, sb.String(), stateStr)
+	selectOrderStr := fmt.Sprintf("select a.id,a.app_id,a.user_id,a.payment_amount,a.good_value_usd,b.order_state as state,a.deleted_at from order_manager.orders a left join order_manager.order_states b on a.ent_id=b.order_id where a.app_id='%v' and a.user_id in %s and b.order_state in %v and a.deleted_at=0 and a.simulate=0 and a.order_type in ('Normal', 'Offline')", appID, sb.String(), stateStr)
 	logger.Sugar().Infow("Migrate inspire", "exec selectOrderStr", selectOrderStr)
 	r, err := tx.QueryContext(ctx, selectOrderStr)
 	if err != nil {
