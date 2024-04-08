@@ -133,6 +133,7 @@ func (h *queryHandler) formalize() {
 			CoinName:        coin.Name,
 			CoinLogo:        coin.Logo,
 			Invites:         comm.Invites,
+			Disabled:        comm.Disabled,
 			CreatedAt:       comm.CreatedAt,
 			UpdatedAt:       comm.UpdatedAt,
 		})

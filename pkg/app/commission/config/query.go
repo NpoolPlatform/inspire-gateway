@@ -29,6 +29,7 @@ func (h *queryHandler) formalize() {
 			Invites:         comm.Invites,
 			StartAt:         comm.StartAt,
 			EndAt:           comm.EndAt,
+			Disabled:        comm.Disabled,
 			CreatedAt:       comm.CreatedAt,
 			UpdatedAt:       comm.UpdatedAt,
 		})

@@ -71,6 +71,7 @@ func (h *Handler) CreateCommissionConfig(ctx context.Context) (*npool.AppCommiss
 		StartAt:         h.StartAt,
 		AmountOrPercent: h.AmountOrPercent,
 		ThresholdAmount: h.ThresholdAmount,
+		Disabled:        h.Disabled,
 	}); err != nil {
 		return nil, err
 	}

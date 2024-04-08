@@ -78,6 +78,7 @@ func (h *createHandler) createCommissionConfig(ctx context.Context) error {
 		StartAt:         h.StartAt,
 		AmountOrPercent: h.AmountOrPercent,
 		ThresholdAmount: h.ThresholdAmount,
+		Disabled:        h.Disabled,
 	}
 	if _, err := commissionconfigmwcli.CreateCommissionConfig(ctx, h.req); err != nil {
 		return err

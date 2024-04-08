@@ -27,6 +27,7 @@ type Handler struct {
 	FromAppGoodID   *string
 	ToAppGoodID     *string
 	ScalePercent    *string
+	Disabled        *bool
 	CheckAffiliate  bool
 	Offset          int32
 	Limit           int32
@@ -191,6 +192,19 @@ func WithEndAt(value *uint32, must bool) func(context.Context, *Handler) error {
 			return nil
 		}
 		h.EndAt = value
+		return nil
+	}
+}
+
+func WithDisabled(value *bool, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			if must {
+				return fmt.Errorf("invalid disabled")
+			}
+			return nil
+		}
+		h.Disabled = value
 		return nil
 	}
 }
