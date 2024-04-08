@@ -18,10 +18,11 @@ func (s *Server) CreateAppGoodCommissionConfig(ctx context.Context, in *npool.Cr
 		commissionconfig1.WithAppID(&in.AppID, true),
 		commissionconfig1.WithAppGoodID(&in.AppGoodID, true),
 		commissionconfig1.WithAmountOrPercent(&in.AmountOrPercent, true),
-		commissionconfig1.WithStartAt(&in.StartAt, false),
+		commissionconfig1.WithStartAt(in.StartAt, false),
 		commissionconfig1.WithInvites(&in.Invites, true),
 		commissionconfig1.WithThresholdAmount(&in.ThresholdAmount, true),
 		commissionconfig1.WithSettleType(&in.SettleType, true),
+		commissionconfig1.WithDisabled(in.Disabled, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -53,10 +54,11 @@ func (s *Server) CreateNAppGoodCommissionConfig(ctx context.Context, in *npool.C
 		commissionconfig1.WithAppID(&in.TargetAppID, true),
 		commissionconfig1.WithAppGoodID(&in.AppGoodID, true),
 		commissionconfig1.WithAmountOrPercent(&in.AmountOrPercent, true),
-		commissionconfig1.WithStartAt(&in.StartAt, false),
+		commissionconfig1.WithStartAt(in.StartAt, false),
 		commissionconfig1.WithInvites(&in.Invites, true),
 		commissionconfig1.WithThresholdAmount(&in.ThresholdAmount, true),
 		commissionconfig1.WithSettleType(&in.SettleType, true),
+		commissionconfig1.WithDisabled(in.Disabled, false),
 		commissionconfig1.WithCheckAffiliate(false),
 	)
 	if err != nil {

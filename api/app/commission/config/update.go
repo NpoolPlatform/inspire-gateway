@@ -22,6 +22,7 @@ func (s *Server) UpdateAppCommissionConfig(ctx context.Context, in *npool.Update
 		commissionconfig1.WithThresholdAmount(in.ThresholdAmount, false),
 		commissionconfig1.WithInvites(in.Invites, false),
 		commissionconfig1.WithStartAt(in.StartAt, false),
+		commissionconfig1.WithDisabled(in.Disabled, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -56,6 +57,7 @@ func (s *Server) UpdateNAppCommissionConfig(ctx context.Context, in *npool.Updat
 		commissionconfig1.WithThresholdAmount(in.ThresholdAmount, false),
 		commissionconfig1.WithInvites(in.Invites, false),
 		commissionconfig1.WithStartAt(in.StartAt, false),
+		commissionconfig1.WithDisabled(in.Disabled, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
