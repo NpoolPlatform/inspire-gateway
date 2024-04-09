@@ -58,7 +58,7 @@ func (h *Handler) UpdateCommission(ctx context.Context) (*npool.AppGoodCommissio
 	if info == nil {
 		return nil, fmt.Errorf("invalid commission")
 	}
-	if info.ID != *h.ID || info.AppID != *h.AppID {
+	if info.ID != *h.ID || info.AppID != *h.AppID || info.EndAt != 0 {
 		return nil, fmt.Errorf("permission denied")
 	}
 
