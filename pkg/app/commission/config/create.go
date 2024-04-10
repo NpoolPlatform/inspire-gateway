@@ -3,6 +3,7 @@ package config
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 
@@ -21,6 +22,21 @@ type createHandler struct {
 func (h *createHandler) validateCommissions(ctx context.Context) error {
 	if h.StartAt == nil {
 		return nil
+	}
+
+	exist, err := commissionconfigmwcli.ExistCommissionConfigConds(ctx, &commissionconfigmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
+		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.SettleType)},
+	})
+	if err != nil {
+		return err
+	}
+	if exist {
+		now := uint32(time.Now().Unix())
+		if *h.StartAt < now {
+			return fmt.Errorf("invalid startat")
+		}
 	}
 
 	commissions := []*commissionconfigmwpb.AppCommissionConfig{}

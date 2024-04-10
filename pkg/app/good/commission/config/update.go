@@ -22,6 +22,10 @@ func (h *updateHandler) validateCommissions(ctx context.Context) error {
 		return nil
 	}
 
+	if h.info.StartAt == *h.StartAt {
+		return nil
+	}
+
 	commissions := []*commissionconfigmwpb.AppGoodCommissionConfig{}
 	offset := int32(0)
 	limit := constant.DefaultRowLimit

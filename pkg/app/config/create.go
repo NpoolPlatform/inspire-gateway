@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"time"
 
 	"fmt"
 
@@ -37,10 +38,23 @@ func (h *createHandler) createAppConfig(ctx context.Context) error {
 	return nil
 }
 
-//nolint:dupl
 func (h *createHandler) validateAppConfigs(ctx context.Context) error {
 	if h.StartAt == nil {
 		return nil
+	}
+
+	exist, err := appconfigmwcli.ExistAppConfigConds(ctx, &appconfigmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EndAt: &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
+	})
+	if err != nil {
+		return err
+	}
+	if exist {
+		now := uint32(time.Now().Unix())
+		if *h.StartAt < now {
+			return fmt.Errorf("invalid startat")
+		}
 	}
 
 	appConfigs := []*appconfigmwpb.AppConfig{}
