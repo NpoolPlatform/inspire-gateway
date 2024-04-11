@@ -23,15 +23,13 @@ type Handler struct {
 	SettleBenefit    *bool
 	StartAt          *uint32
 	EndAt            *uint32
-	CheckAffiliate   bool
+	MaxLevelCount    *uint32
 	Offset           int32
 	Limit            int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
-	handler := &Handler{
-		CheckAffiliate: true,
-	}
+	handler := &Handler{}
 	for _, opt := range options {
 		if err := opt(ctx, handler); err != nil {
 			return nil, err
@@ -213,9 +211,15 @@ func WithSettleBenefit(value *bool, must bool) func(context.Context, *Handler) e
 	}
 }
 
-func WithCheckAffiliate(check bool) func(context.Context, *Handler) error {
+func WithMaxLevelCount(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		h.CheckAffiliate = check
+		if value == nil {
+			if must {
+				return fmt.Errorf("invalid maxlevelcount")
+			}
+			return nil
+		}
+		h.MaxLevelCount = value
 		return nil
 	}
 }

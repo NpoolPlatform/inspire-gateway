@@ -1,3 +1,4 @@
+//nolint:dupl
 package config
 
 import (
@@ -21,7 +22,8 @@ func (s *Server) CreateAppCommissionConfig(ctx context.Context, in *npool.Create
 		commissionconfig1.WithInvites(&in.Invites, true),
 		commissionconfig1.WithThresholdAmount(&in.ThresholdAmount, true),
 		commissionconfig1.WithSettleType(&in.SettleType, true),
-		commissionconfig1.WithDisabled(in.Disabled, false),
+		commissionconfig1.WithDisabled(&in.Disabled, false),
+		commissionconfig1.WithLevel(&in.Level, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -56,8 +58,8 @@ func (s *Server) CreateNAppCommissionConfig(ctx context.Context, in *npool.Creat
 		commissionconfig1.WithInvites(&in.Invites, true),
 		commissionconfig1.WithThresholdAmount(&in.ThresholdAmount, true),
 		commissionconfig1.WithSettleType(&in.SettleType, true),
-		commissionconfig1.WithDisabled(in.Disabled, false),
-		commissionconfig1.WithCheckAffiliate(false),
+		commissionconfig1.WithDisabled(&in.Disabled, false),
+		commissionconfig1.WithLevel(&in.Level, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

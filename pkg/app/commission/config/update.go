@@ -35,6 +35,7 @@ func (h *updateHandler) validateCommissions(ctx context.Context) error {
 			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			EndAt:      &basetypes.Uint32Val{Op: cruder.NEQ, Value: 0},
 			SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(h.info.SettleType)},
+			Level:      &basetypes.Uint32Val{Op: cruder.EQ, Value: *h.Level},
 		}, offset, limit)
 		if err != nil {
 			return err
@@ -79,6 +80,7 @@ func (h *Handler) UpdateCommission(ctx context.Context) (*npool.AppCommissionCon
 		ThresholdAmount: h.ThresholdAmount,
 		Invites:         h.Invites,
 		Disabled:        h.Disabled,
+		Level:           h.Level,
 	})
 	if err != nil {
 		return nil, err

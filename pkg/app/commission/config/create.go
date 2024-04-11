@@ -9,14 +9,46 @@ import (
 
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	commissionconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/app/commission/config"
+	appconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/app/config"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/app/commission/config"
 	commissionconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/app/commission/config"
+	appconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/app/config"
 )
 
 type createHandler struct {
 	*Handler
+}
+
+func (h *createHandler) validateCommissionCount(ctx context.Context) error {
+	appConfig, err := appconfigmwcli.GetAppConfigOnly(ctx, &appconfigmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EndAt: &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
+	})
+	if err != nil {
+		return err
+	}
+	if appConfig == nil {
+		return fmt.Errorf("invalid appconfig")
+	}
+
+	offset := int32(0)
+	limit := int32(appConfig.MaxLevelCount + 1)
+	_commissions, _, err := commissionconfigmwcli.GetCommissionConfigs(ctx, &commissionconfigmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
+		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.SettleType)},
+	}, offset, limit)
+	if err != nil {
+		return err
+	}
+
+	if len(_commissions) > int(appConfig.MaxLevelCount) {
+		return fmt.Errorf("invalid max level")
+	}
+
+	return nil
 }
 
 func (h *createHandler) validateCommissions(ctx context.Context) error {
@@ -28,6 +60,7 @@ func (h *createHandler) validateCommissions(ctx context.Context) error {
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
 		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.SettleType)},
+		Level:      &basetypes.Uint32Val{Op: cruder.EQ, Value: *h.Level},
 	})
 	if err != nil {
 		return err
@@ -48,6 +81,7 @@ func (h *createHandler) validateCommissions(ctx context.Context) error {
 			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			EndAt:      &basetypes.Uint32Val{Op: cruder.NEQ, Value: 0},
 			SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.SettleType)},
+			Level:      &basetypes.Uint32Val{Op: cruder.EQ, Value: *h.Level},
 		}, offset, limit)
 		if err != nil {
 			return err
@@ -75,6 +109,9 @@ func (h *Handler) CreateCommissionConfig(ctx context.Context) (*npool.AppCommiss
 	handler := &createHandler{
 		Handler: h,
 	}
+	if err := handler.validateCommissionCount(ctx); err != nil {
+		return nil, err
+	}
 	if err := handler.validateCommissions(ctx); err != nil {
 		return nil, err
 	}
@@ -88,6 +125,7 @@ func (h *Handler) CreateCommissionConfig(ctx context.Context) (*npool.AppCommiss
 		AmountOrPercent: h.AmountOrPercent,
 		ThresholdAmount: h.ThresholdAmount,
 		Disabled:        h.Disabled,
+		Level:           h.Level,
 	}); err != nil {
 		return nil, err
 	}

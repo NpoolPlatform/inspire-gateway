@@ -30,6 +30,7 @@ func (h *queryHandler) formalize() {
 			StartAt:         comm.StartAt,
 			EndAt:           comm.EndAt,
 			Disabled:        comm.Disabled,
+			Level:           comm.Level,
 			CreatedAt:       comm.CreatedAt,
 			UpdatedAt:       comm.UpdatedAt,
 		})

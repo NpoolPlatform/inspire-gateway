@@ -23,6 +23,7 @@ func (s *Server) UpdateAppGoodCommissionConfig(ctx context.Context, in *npool.Up
 		commissionconfig1.WithInvites(in.Invites, false),
 		commissionconfig1.WithStartAt(in.StartAt, false),
 		commissionconfig1.WithDisabled(in.Disabled, false),
+		commissionconfig1.WithLevel(in.Level, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -58,6 +59,7 @@ func (s *Server) UpdateNAppGoodCommissionConfig(ctx context.Context, in *npool.U
 		commissionconfig1.WithInvites(in.Invites, false),
 		commissionconfig1.WithStartAt(in.StartAt, false),
 		commissionconfig1.WithDisabled(in.Disabled, false),
+		commissionconfig1.WithLevel(in.Level, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

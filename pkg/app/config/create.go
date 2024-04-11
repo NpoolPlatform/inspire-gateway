@@ -31,6 +31,7 @@ func (h *createHandler) createAppConfig(ctx context.Context) error {
 		SettleInterval:   h.SettleInterval,
 		StartAt:          h.StartAt,
 		SettleBenefit:    h.SettleBenefit,
+		MaxLevelCount:    h.MaxLevelCount,
 	}
 	if _, err := appconfigmwcli.CreateAppConfig(ctx, h.req); err != nil {
 		return err

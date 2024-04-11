@@ -28,15 +28,13 @@ type Handler struct {
 	ToAppGoodID     *string
 	ScalePercent    *string
 	Disabled        *bool
-	CheckAffiliate  bool
+	Level           *uint32
 	Offset          int32
 	Limit           int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
-	handler := &Handler{
-		CheckAffiliate: true,
-	}
+	handler := &Handler{}
 	for _, opt := range options {
 		if err := opt(ctx, handler); err != nil {
 			return nil, err
@@ -209,6 +207,19 @@ func WithDisabled(value *bool, must bool) func(context.Context, *Handler) error 
 	}
 }
 
+func WithLevel(value *uint32, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			if must {
+				return fmt.Errorf("invalid level")
+			}
+			return nil
+		}
+		h.Level = value
+		return nil
+	}
+}
+
 func WithAppGoodID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
@@ -269,13 +280,6 @@ func WithScalePercent(percent *string, must bool) func(context.Context, *Handler
 			return err
 		}
 		h.ScalePercent = percent
-		return nil
-	}
-}
-
-func WithCheckAffiliate(check bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		h.CheckAffiliate = check
 		return nil
 	}
 }
