@@ -317,14 +317,6 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/clone/app/good/commission/configs
-            backend:
-              serviceName: inspire-gateway
-              servicePort: 50390
-          - path: /api/inspire/v1/clone/n/app/good/commission/configs
-            backend:
-              serviceName: inspire-gateway
-              servicePort: 50390
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top
