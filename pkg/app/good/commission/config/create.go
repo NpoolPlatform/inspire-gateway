@@ -54,7 +54,7 @@ func (h *createHandler) validateCommissionCount(ctx context.Context) error {
 		return err
 	}
 
-	if len(_commissions) > int(appConfig.MaxLevelCount) {
+	if len(_commissions) >= int(appConfig.MaxLevelCount) {
 		return fmt.Errorf("invalid max level")
 	}
 
