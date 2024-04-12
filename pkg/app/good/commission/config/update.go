@@ -5,16 +5,59 @@ import (
 	"fmt"
 
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
+	appconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/app/config"
 	commissionconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/app/good/commission/config"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/app/good/commission/config"
+	appconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/app/config"
 	commissionconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/app/good/commission/config"
 )
 
 type updateHandler struct {
 	*Handler
 	info *commissionconfigmwpb.AppGoodCommissionConfig
+}
+
+func (h *updateHandler) validateCommissionCount(ctx context.Context) error {
+	if h.Disabled == nil {
+		return nil
+	}
+	if h.info.Disabled == *h.Disabled {
+		return nil
+	}
+	if *h.Disabled {
+		return nil
+	}
+	appConfig, err := appconfigmwcli.GetAppConfigOnly(ctx, &appconfigmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EndAt: &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
+	})
+	if err != nil {
+		return err
+	}
+	if appConfig == nil {
+		return fmt.Errorf("invalid appconfig")
+	}
+
+	offset := int32(0)
+	limit := int32(appConfig.MaxLevelCount + 1)
+	_commissions, _, err := commissionconfigmwcli.GetCommissionConfigs(ctx, &commissionconfigmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: h.info.GoodID},
+		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
+		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.SettleType)},
+		Disabled:   &basetypes.BoolVal{Op: cruder.EQ, Value: false},
+	}, offset, limit)
+	if err != nil {
+		return err
+	}
+
+	if len(_commissions) >= int(appConfig.MaxLevelCount) {
+		return fmt.Errorf("invalid max level")
+	}
+
+	return nil
 }
 
 func (h *updateHandler) validateCommissions(ctx context.Context) error {
@@ -70,6 +113,9 @@ func (h *Handler) UpdateCommission(ctx context.Context) (*npool.AppGoodCommissio
 	handler := &updateHandler{
 		Handler: h,
 		info:    info,
+	}
+	if err := handler.validateCommissionCount(ctx); err != nil {
+		return nil, err
 	}
 	if err := handler.validateCommissions(ctx); err != nil {
 		return nil, err

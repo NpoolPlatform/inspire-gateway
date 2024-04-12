@@ -39,6 +39,7 @@ func (h *createHandler) validateCommissionCount(ctx context.Context) error {
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
 		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.SettleType)},
+		Disabled:   &basetypes.BoolVal{Op: cruder.EQ, Value: false},
 	}, offset, limit)
 	if err != nil {
 		return err
