@@ -45,7 +45,7 @@ func (h *createHandler) validateCommissionCount(ctx context.Context) error {
 	limit := int32(appConfig.MaxLevelCount + 1)
 	_commissions, _, err := commissionconfigmwcli.GetCommissionConfigs(ctx, &commissionconfigmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.goodID},
+		AppGoodID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
 		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.SettleType)},
 		Disabled:   &basetypes.BoolVal{Op: cruder.EQ, Value: false},
@@ -129,7 +129,7 @@ func (h *createHandler) validateCommissions(ctx context.Context) error {
 
 	exist, err := commissionconfigmwcli.ExistCommissionConfigConds(ctx, &commissionconfigmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.goodID},
+		AppGoodID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
 		SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.SettleType)},
 		Level:      &basetypes.Uint32Val{Op: cruder.EQ, Value: *h.Level},
@@ -151,7 +151,7 @@ func (h *createHandler) validateCommissions(ctx context.Context) error {
 	for {
 		_commissions, _, err := commissionconfigmwcli.GetCommissionConfigs(ctx, &commissionconfigmwpb.Conds{
 			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.goodID},
+			AppGoodID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 			EndAt:      &basetypes.Uint32Val{Op: cruder.NEQ, Value: 0},
 			SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.SettleType)},
 			Level:      &basetypes.Uint32Val{Op: cruder.EQ, Value: *h.Level},
