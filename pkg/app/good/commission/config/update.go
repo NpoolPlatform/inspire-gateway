@@ -39,6 +39,9 @@ func (h *updateHandler) validateCommissionCount(ctx context.Context) error {
 	if appConfig == nil {
 		return fmt.Errorf("invalid appconfig")
 	}
+	if h.SettleType == nil {
+		h.SettleType = &h.info.SettleType
+	}
 
 	offset := int32(0)
 	limit := int32(appConfig.MaxLevelCount + 1)
