@@ -50,7 +50,13 @@ func (s *Server) CreateAppGoodCommissionConfig(ctx context.Context, in *npool.Cr
 	}, nil
 }
 
-func (s *Server) CreateNAppGoodCommissionConfig(ctx context.Context, in *npool.CreateNAppGoodCommissionConfigRequest) (*npool.CreateNAppGoodCommissionConfigResponse, error) {
+func (s *Server) AdminCreateAppGoodCommissionConfig(
+	ctx context.Context,
+	in *npool.AdminCreateAppGoodCommissionConfigRequest,
+) (
+	*npool.AdminCreateAppGoodCommissionConfigResponse,
+	error,
+) {
 	handler, err := commissionconfig1.NewHandler(
 		ctx,
 		commissionconfig1.WithAppID(&in.TargetAppID, true),
@@ -65,24 +71,24 @@ func (s *Server) CreateNAppGoodCommissionConfig(ctx context.Context, in *npool.C
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"CreateNAppGoodCommissionConfig",
+			"AdminCreateAppGoodCommissionConfig",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.CreateNAppGoodCommissionConfigResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.AdminCreateAppGoodCommissionConfigResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	info, err := handler.CreateCommissionConfig(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"CreateNAppGoodCommissionConfig",
+			"AdminCreateAppGoodCommissionConfig",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.CreateNAppGoodCommissionConfigResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.AdminCreateAppGoodCommissionConfigResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.CreateNAppGoodCommissionConfigResponse{
+	return &npool.AdminCreateAppGoodCommissionConfigResponse{
 		Info: info,
 	}, nil
 }

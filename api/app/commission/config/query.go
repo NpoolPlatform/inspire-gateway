@@ -46,7 +46,7 @@ func (s *Server) GetAppCommissionConfigs(ctx context.Context, in *npool.GetAppCo
 	}, nil
 }
 
-func (s *Server) GetNAppCommissionConfigs(ctx context.Context, in *npool.GetNAppCommissionConfigsRequest) (*npool.GetNAppCommissionConfigsResponse, error) {
+func (s *Server) AdminGetAppCommissionConfigs(ctx context.Context, in *npool.AdminGetAppCommissionConfigsRequest) (*npool.AdminGetAppCommissionConfigsResponse, error) {
 	handler, err := commissionconfig1.NewHandler(
 		ctx,
 		commissionconfig1.WithAppID(&in.TargetAppID, true),
@@ -56,24 +56,24 @@ func (s *Server) GetNAppCommissionConfigs(ctx context.Context, in *npool.GetNApp
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"GetNAppCommissionConfigs",
+			"AdminGetAppCommissionConfigs",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.GetNAppCommissionConfigsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.AdminGetAppCommissionConfigsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	infos, total, err := handler.GetCommissions(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"GetNAppCommissionConfigs",
+			"AdminGetAppCommissionConfigs",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.GetNAppCommissionConfigsResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.AdminGetAppCommissionConfigsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.GetNAppCommissionConfigsResponse{
+	return &npool.AdminGetAppCommissionConfigsResponse{
 		Infos: infos,
 		Total: total,
 	}, nil

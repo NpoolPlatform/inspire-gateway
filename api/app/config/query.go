@@ -46,7 +46,7 @@ func (s *Server) GetAppConfigs(ctx context.Context, in *npool.GetAppConfigsReque
 	}, nil
 }
 
-func (s *Server) GetNAppConfigs(ctx context.Context, in *npool.GetNAppConfigsRequest) (*npool.GetNAppConfigsResponse, error) {
+func (s *Server) AdminGetAppConfigs(ctx context.Context, in *npool.AdminGetAppConfigsRequest) (*npool.AdminGetAppConfigsResponse, error) {
 	handler, err := commissionconfig1.NewHandler(
 		ctx,
 		commissionconfig1.WithAppID(&in.TargetAppID, true),
@@ -56,24 +56,24 @@ func (s *Server) GetNAppConfigs(ctx context.Context, in *npool.GetNAppConfigsReq
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"GetNAppConfigs",
+			"AdminGetAppConfigs",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.GetNAppConfigsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.AdminGetAppConfigsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	infos, total, err := handler.GetAppConfigs(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"GetNAppConfigs",
+			"AdminGetAppConfigs",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.GetNAppConfigsResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.AdminGetAppConfigsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.GetNAppConfigsResponse{
+	return &npool.AdminGetAppConfigsResponse{
 		Infos: infos,
 		Total: total,
 	}, nil

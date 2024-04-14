@@ -49,7 +49,7 @@ func (s *Server) UpdateAppCommissionConfig(ctx context.Context, in *npool.Update
 	}, nil
 }
 
-func (s *Server) UpdateNAppCommissionConfig(ctx context.Context, in *npool.UpdateNAppCommissionConfigRequest) (*npool.UpdateNAppCommissionConfigResponse, error) {
+func (s *Server) AdminUpdateAppCommissionConfig(ctx context.Context, in *npool.AdminUpdateAppCommissionConfigRequest) (*npool.AdminUpdateAppCommissionConfigResponse, error) {
 	handler, err := commissionconfig1.NewHandler(
 		ctx,
 		commissionconfig1.WithID(&in.ID, true),
@@ -63,24 +63,24 @@ func (s *Server) UpdateNAppCommissionConfig(ctx context.Context, in *npool.Updat
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UpdateNAppCommissionConfig",
+			"AdminUpdateAppCommissionConfig",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.UpdateNAppCommissionConfigResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.AdminUpdateAppCommissionConfigResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	info, err := handler.UpdateCommission(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UpdateNAppCommissionConfig",
+			"AdminUpdateAppCommissionConfig",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.UpdateNAppCommissionConfigResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.AdminUpdateAppCommissionConfigResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.UpdateNAppCommissionConfigResponse{
+	return &npool.AdminUpdateAppCommissionConfigResponse{
 		Info: info,
 	}, nil
 }

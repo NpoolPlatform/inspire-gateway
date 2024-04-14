@@ -42,7 +42,7 @@ type queryHandler struct {
 	commissions      map[string]map[string]*commissionmwpb.Commission
 	total            uint32
 	achievedGoods    map[string]map[string]struct{}
-	achievementUsers map[string]*npool.UserAchievement
+	achievementUsers map[string]*achievementusermwpb.AchievementUser
 	statements       []*statementmwpb.Statement
 	infoMap          map[string]*npool.Achievement
 	infos            []*npool.Achievement
@@ -228,7 +228,7 @@ func (h *queryHandler) getAchievementUsers(ctx context.Context) error {
 			break
 		}
 		for _, achievement := range achievements {
-			h.achievementUsers[achievement.UserID] = &npool.UserAchievement{
+			h.achievementUsers[achievement.UserID] = &achievementusermwpb.AchievementUser{
 				TotalCommission:      achievement.TotalCommission,
 				SelfCommission:       achievement.SelfCommission,
 				DirectInvites:        achievement.DirectInvites,
@@ -347,19 +347,40 @@ func (h *queryHandler) formalizeUsers() {
 			inviterID = &registration.InviterID
 		}
 
+		achievementUser, ok := h.achievementUsers[user.EntID]
+		if ok {
+			h.infoMap[user.EntID] = &npool.Achievement{
+				InviterID:            inviterID,
+				UserID:               user.EntID,
+				Username:             user.Username,
+				EmailAddress:         user.EmailAddress,
+				PhoneNO:              user.PhoneNO,
+				FirstName:            user.FirstName,
+				LastName:             user.LastName,
+				Kol:                  user.Kol,
+				CreatedAt:            user.CreatedAt,
+				InvitedAt:            invitedAt,
+				TotalCommission:      achievementUser.TotalCommission,
+				SelfCommission:       achievementUser.SelfCommission,
+				DirectInvites:        achievementUser.DirectInvites,
+				IndirectInvites:      achievementUser.IndirectInvites,
+				DirectConsumeAmount:  achievementUser.DirectConsumeAmount,
+				InviteeConsumeAmount: achievementUser.InviteeConsumeAmount,
+			}
+			return
+		}
+
 		h.infoMap[user.EntID] = &npool.Achievement{
-			InviterID:       inviterID,
-			UserID:          user.EntID,
-			Username:        user.Username,
-			EmailAddress:    user.EmailAddress,
-			PhoneNO:         user.PhoneNO,
-			FirstName:       user.FirstName,
-			LastName:        user.LastName,
-			Kol:             user.Kol,
-			TotalInvitees:   h.inviteesCount[user.EntID],
-			CreatedAt:       user.CreatedAt,
-			InvitedAt:       invitedAt,
-			UserAchievement: h.achievementUsers[user.EntID],
+			InviterID:    inviterID,
+			UserID:       user.EntID,
+			Username:     user.Username,
+			EmailAddress: user.EmailAddress,
+			PhoneNO:      user.PhoneNO,
+			FirstName:    user.FirstName,
+			LastName:     user.LastName,
+			Kol:          user.Kol,
+			CreatedAt:    user.CreatedAt,
+			InvitedAt:    invitedAt,
 		}
 	}
 }
@@ -580,7 +601,7 @@ func (h *Handler) GetAchievements(ctx context.Context) ([]*npool.Achievement, ui
 		statements:       []*statementmwpb.Statement{},
 		infoMap:          map[string]*npool.Achievement{},
 		infos:            []*npool.Achievement{},
-		achievementUsers: map[string]*npool.UserAchievement{},
+		achievementUsers: map[string]*achievementusermwpb.AchievementUser{},
 	}
 	if err := handler.getRegistrations(ctx); err != nil {
 		return nil, 0, err

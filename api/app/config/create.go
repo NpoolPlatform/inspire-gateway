@@ -49,7 +49,7 @@ func (s *Server) CreateAppConfig(ctx context.Context, in *npool.CreateAppConfigR
 	}, nil
 }
 
-func (s *Server) CreateNAppConfig(ctx context.Context, in *npool.CreateNAppConfigRequest) (*npool.CreateNAppConfigResponse, error) {
+func (s *Server) AdminCreateAppConfig(ctx context.Context, in *npool.AdminCreateAppConfigRequest) (*npool.AdminCreateAppConfigResponse, error) {
 	handler, err := appconfig1.NewHandler(
 		ctx,
 		appconfig1.WithAppID(&in.TargetAppID, true),
@@ -63,24 +63,24 @@ func (s *Server) CreateNAppConfig(ctx context.Context, in *npool.CreateNAppConfi
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"CreateNAppConfig",
+			"AdminCreateAppConfig",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.CreateNAppConfigResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.AdminCreateAppConfigResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	info, err := handler.CreateAppConfig(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"CreateNAppConfig",
+			"AdminCreateAppConfig",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.CreateNAppConfigResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.AdminCreateAppConfigResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.CreateNAppConfigResponse{
+	return &npool.AdminCreateAppConfigResponse{
 		Info: info,
 	}, nil
 }

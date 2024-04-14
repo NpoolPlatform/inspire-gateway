@@ -45,7 +45,7 @@ func (s *Server) UpdateAppConfig(ctx context.Context, in *npool.UpdateAppConfigR
 	}, nil
 }
 
-func (s *Server) UpdateNAppConfig(ctx context.Context, in *npool.UpdateNAppConfigRequest) (*npool.UpdateNAppConfigResponse, error) {
+func (s *Server) AdminUpdateAppConfig(ctx context.Context, in *npool.AdminUpdateAppConfigRequest) (*npool.AdminUpdateAppConfigResponse, error) {
 	handler, err := appconfig1.NewHandler(
 		ctx,
 		appconfig1.WithID(&in.ID, true),
@@ -55,24 +55,24 @@ func (s *Server) UpdateNAppConfig(ctx context.Context, in *npool.UpdateNAppConfi
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UpdateNAppConfig",
+			"AdminUpdateAppConfig",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.UpdateNAppConfigResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.AdminUpdateAppConfigResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	info, err := handler.UpdateAppConfig(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UpdateNAppConfig",
+			"AdminUpdateAppConfig",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.UpdateNAppConfigResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.AdminUpdateAppConfigResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.UpdateNAppConfigResponse{
+	return &npool.AdminUpdateAppConfigResponse{
 		Info: info,
 	}, nil
 }
