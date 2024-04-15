@@ -358,6 +358,7 @@ func (h *queryHandler) formalizeUsers() {
 				FirstName:            user.FirstName,
 				LastName:             user.LastName,
 				Kol:                  user.Kol,
+				TotalInvitees:        h.inviteesCount[user.EntID],
 				CreatedAt:            user.CreatedAt,
 				InvitedAt:            invitedAt,
 				TotalCommission:      achievementUser.TotalCommission,
