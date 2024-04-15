@@ -331,7 +331,7 @@ func migrateAchievementUser(ctx context.Context, tx *ent.Tx) error {
 	count := 0
 	for _, user := range users {
 		count++
-		selectAchievementUserStr := fmt.Sprintf("select id,app_id,user_id,deleted_at from archivement_users where user_id='%v' and deleted_at=0", user.EntID)
+		selectAchievementUserStr := fmt.Sprintf("select id,app_id,user_id,deleted_at from achievement_users where user_id='%v' and deleted_at=0", user.EntID)
 		logger.Sugar().Warnw("Migrate inspire", "exec selectAchievementUserStr", selectAchievementUserStr)
 		r, err = tx.QueryContext(ctx, selectAchievementUserStr)
 		if err != nil {
