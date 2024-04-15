@@ -245,75 +245,75 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/create/app/commission/config
+          - path: /api/inspire/v1/create/appcommissionconfig
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/create/app/commission/config
+          - path: /api/inspire/v1/admin/create/appcommissionconfig
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/update/app/commission/config
+          - path: /api/inspire/v1/update/appcommissionconfig
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/update/app/commission/config
+          - path: /api/inspire/v1/admin/update/appcommissionconfig
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/get/app/commission/configs
+          - path: /api/inspire/v1/get/appcommissionconfigs
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/get/app/commission/configs
+          - path: /api/inspire/v1/admin/get/appcommissionconfigs
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/create/app/config
+          - path: /api/inspire/v1/create/appconfig
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/create/app/config
+          - path: /api/inspire/v1/admin/create/appconfig
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/update/app/config
+          - path: /api/inspire/v1/update/appconfig
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/update/app/config
+          - path: /api/inspire/v1/admin/update/appconfig
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/get/app/configs
+          - path: /api/inspire/v1/get/appconfigs
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/get/app/configs
+          - path: /api/inspire/v1/admin/get/appconfigs
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/create/app/good/commission/config
+          - path: /api/inspire/v1/create/appgoodcommissionconfig
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/create/app/good/commission/config
+          - path: /api/inspire/v1/admin/create/appgoodcommissionconfig
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/update/app/good/commission/config
+          - path: /api/inspire/v1/update/appgoodcommissionconfig
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/update/app/good/commission/config
+          - path: /api/inspire/v1/admin/update/appgoodcommissionconfig
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/get/app/good/commission/configs
+          - path: /api/inspire/v1/get/appgoodcommissionconfigs
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/get/app/good/commission/configs
+          - path: /api/inspire/v1/admin/get/appgoodcommissionconfigs
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
