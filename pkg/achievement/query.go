@@ -368,7 +368,7 @@ func (h *queryHandler) formalizeUsers() {
 				DirectConsumeAmount:  achievementUser.DirectConsumeAmount,
 				InviteeConsumeAmount: achievementUser.InviteeConsumeAmount,
 			}
-			return
+			continue
 		}
 
 		h.infoMap[user.EntID] = &npool.Achievement{
