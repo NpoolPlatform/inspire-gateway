@@ -228,14 +228,7 @@ func (h *queryHandler) getAchievementUsers(ctx context.Context) error {
 			break
 		}
 		for _, achievement := range achievements {
-			h.achievementUsers[achievement.UserID] = &achievementusermwpb.AchievementUser{
-				TotalCommission:      achievement.TotalCommission,
-				SelfCommission:       achievement.SelfCommission,
-				DirectInvites:        achievement.DirectInvites,
-				IndirectInvites:      achievement.IndirectInvites,
-				DirectConsumeAmount:  achievement.DirectConsumeAmount,
-				InviteeConsumeAmount: achievement.InviteeConsumeAmount,
-			}
+			h.achievementUsers[achievement.UserID] = achievement
 		}
 		offset += limit
 	}
@@ -347,31 +340,7 @@ func (h *queryHandler) formalizeUsers() {
 			inviterID = &registration.InviterID
 		}
 
-		achievementUser, ok := h.achievementUsers[user.EntID]
-		if ok {
-			h.infoMap[user.EntID] = &npool.Achievement{
-				InviterID:            inviterID,
-				UserID:               user.EntID,
-				Username:             user.Username,
-				EmailAddress:         user.EmailAddress,
-				PhoneNO:              user.PhoneNO,
-				FirstName:            user.FirstName,
-				LastName:             user.LastName,
-				Kol:                  user.Kol,
-				TotalInvitees:        h.inviteesCount[user.EntID],
-				CreatedAt:            user.CreatedAt,
-				InvitedAt:            invitedAt,
-				TotalCommission:      achievementUser.TotalCommission,
-				SelfCommission:       achievementUser.SelfCommission,
-				DirectInvites:        achievementUser.DirectInvites,
-				IndirectInvites:      achievementUser.IndirectInvites,
-				DirectConsumeAmount:  achievementUser.DirectConsumeAmount,
-				InviteeConsumeAmount: achievementUser.InviteeConsumeAmount,
-			}
-			continue
-		}
-
-		h.infoMap[user.EntID] = &npool.Achievement{
+		info := &npool.Achievement{
 			InviterID:    inviterID,
 			UserID:       user.EntID,
 			Username:     user.Username,
@@ -383,6 +352,18 @@ func (h *queryHandler) formalizeUsers() {
 			CreatedAt:    user.CreatedAt,
 			InvitedAt:    invitedAt,
 		}
+
+		achievementUser, ok := h.achievementUsers[user.EntID]
+		if ok {
+			info.TotalCommission = achievementUser.TotalCommission
+			info.SelfCommission = achievementUser.SelfCommission
+			info.DirectInvites = achievementUser.DirectInvites
+			info.IndirectInvites = achievementUser.IndirectInvites
+			info.DirectConsumeAmount = achievementUser.DirectConsumeAmount
+			info.InviteeConsumeAmount = achievementUser.InviteeConsumeAmount
+		}
+
+		h.infoMap[user.EntID] = info
 	}
 }
 
