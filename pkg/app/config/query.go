@@ -30,7 +30,7 @@ func (h *queryHandler) formalize() {
 			SettleBenefit:    comm.SettleBenefit,
 			StartAt:          comm.StartAt,
 			EndAt:            comm.EndAt,
-			MaxLevelCount:    comm.MaxLevelCount,
+			MaxLevel:         comm.MaxLevel,
 			CreatedAt:        comm.CreatedAt,
 			UpdatedAt:        comm.UpdatedAt,
 		})

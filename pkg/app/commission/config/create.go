@@ -34,7 +34,7 @@ func (h *createHandler) validateCommissionCount(ctx context.Context) error {
 	}
 
 	offset := int32(0)
-	limit := int32(appConfig.MaxLevelCount + 1)
+	limit := int32(appConfig.MaxLevel + 1)
 	_commissions, _, err := commissionconfigmwcli.GetCommissionConfigs(ctx, &commissionconfigmwpb.Conds{
 		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		EndAt:      &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
@@ -51,7 +51,7 @@ func (h *createHandler) validateCommissionCount(ctx context.Context) error {
 		}
 	}
 
-	if len(_commissions) >= int(appConfig.MaxLevelCount) {
+	if len(_commissions) >= int(appConfig.MaxLevel) {
 		return fmt.Errorf("invalid max level")
 	}
 

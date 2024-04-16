@@ -23,7 +23,7 @@ type Handler struct {
 	SettleBenefit    *bool
 	StartAt          *uint32
 	EndAt            *uint32
-	MaxLevelCount    *uint32
+	MaxLevel         *uint32
 	Offset           int32
 	Limit            int32
 }
@@ -211,15 +211,15 @@ func WithSettleBenefit(value *bool, must bool) func(context.Context, *Handler) e
 	}
 }
 
-func WithMaxLevelCount(value *uint32, must bool) func(context.Context, *Handler) error {
+func WithMaxLevel(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
 			if must {
-				return fmt.Errorf("invalid maxlevelcount")
+				return fmt.Errorf("invalid MaxLevel")
 			}
 			return nil
 		}
-		h.MaxLevelCount = value
+		h.MaxLevel = value
 		return nil
 	}
 }

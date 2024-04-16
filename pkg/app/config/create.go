@@ -36,7 +36,7 @@ func (h *createHandler) createAppConfig(ctx context.Context) error {
 		SettleInterval:   h.SettleInterval,
 		StartAt:          h.StartAt,
 		SettleBenefit:    h.SettleBenefit,
-		MaxLevelCount:    h.MaxLevelCount,
+		MaxLevel:         h.MaxLevel,
 	}
 	if _, err := appconfigmwcli.CreateAppConfig(ctx, h.req); err != nil {
 		return err
@@ -94,16 +94,16 @@ func (h *createHandler) validateAppConfigs(ctx context.Context) error {
 	return nil
 }
 
-func (h *createHandler) validateMaxLevelCount(ctx context.Context) error {
+func (h *createHandler) validateMaxLevel(ctx context.Context) error {
 	if h.info == nil {
 		return nil
 	}
-	if *h.MaxLevelCount >= h.info.MaxLevelCount {
+	if *h.MaxLevel >= h.info.MaxLevel {
 		return nil
 	}
 
 	offset := int32(0)
-	limit := int32(h.info.MaxLevelCount*2 + 1)
+	limit := int32(h.info.MaxLevel*2 + 1)
 	_appcommissions, _, err := appcommissionconfigmwcli.GetCommissionConfigs(ctx, &appcommissionconfigmwpb.Conds{
 		AppID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		EndAt:    &basetypes.Uint32Val{Op: cruder.EQ, Value: 0},
@@ -124,8 +124,8 @@ func (h *createHandler) validateMaxLevelCount(ctx context.Context) error {
 	}
 
 	for _, count := range appCommissionCountMap {
-		if count > *h.MaxLevelCount {
-			return fmt.Errorf("invalid maxlevelcount")
+		if count > *h.MaxLevel {
+			return fmt.Errorf("invalid MaxLevel")
 		}
 	}
 
@@ -155,8 +155,8 @@ func (h *createHandler) validateMaxLevelCount(ctx context.Context) error {
 		offset += limit
 	}
 	for _, count := range appGoodCommissionCountMap {
-		if count > *h.MaxLevelCount {
-			return fmt.Errorf("invalid maxlevelcount")
+		if count > *h.MaxLevel {
+			return fmt.Errorf("invalid MaxLevel")
 		}
 	}
 
@@ -181,7 +181,7 @@ func (h *Handler) CreateAppConfig(ctx context.Context) (*npool.AppConfig, error)
 		return nil, err
 	}
 
-	if err := handler.validateMaxLevelCount(ctx); err != nil {
+	if err := handler.validateMaxLevel(ctx); err != nil {
 		return nil, err
 	}
 

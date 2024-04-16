@@ -23,7 +23,7 @@ func (s *Server) CreateAppConfig(ctx context.Context, in *npool.CreateAppConfigR
 		appconfig1.WithCommissionType(&in.CommissionType, true),
 		appconfig1.WithSettleBenefit(&in.SettleBenefit, false),
 		appconfig1.WithStartAt(in.StartAt, false),
-		appconfig1.WithMaxLevelCount(&in.MaxLevelCount, true),
+		appconfig1.WithMaxLevel(&in.MaxLevel, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
@@ -59,7 +59,7 @@ func (s *Server) AdminCreateAppConfig(ctx context.Context, in *npool.AdminCreate
 		appconfig1.WithCommissionType(&in.CommissionType, true),
 		appconfig1.WithSettleBenefit(&in.SettleBenefit, false),
 		appconfig1.WithStartAt(in.StartAt, false),
-		appconfig1.WithMaxLevelCount(&in.MaxLevelCount, true),
+		appconfig1.WithMaxLevel(&in.MaxLevel, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
