@@ -3,7 +3,6 @@ package config
 import (
 	"context"
 	"fmt"
-	"time"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
@@ -24,9 +23,6 @@ type Handler struct {
 	Invites         *uint32
 	StartAt         *uint32
 	EndAt           *uint32
-	FromAppGoodID   *string
-	ToAppGoodID     *string
-	ScalePercent    *string
 	Disabled        *bool
 	Level           *uint32
 	Offset          int32
@@ -138,12 +134,6 @@ func WithThresholdAmount(amount *string, must bool) func(context.Context, *Handl
 			}
 			return nil
 		}
-		if *amount == "" {
-			if must {
-				return fmt.Errorf("invalid thresholdamount")
-			}
-			return nil
-		}
 		if _, err := decimal.NewFromString(*amount); err != nil {
 			return err
 		}
@@ -154,12 +144,6 @@ func WithThresholdAmount(amount *string, must bool) func(context.Context, *Handl
 
 func WithInvites(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if value == nil {
-			if must {
-				return fmt.Errorf("invalid invites")
-			}
-			return nil
-		}
 		h.Invites = value
 		return nil
 	}
@@ -173,9 +157,6 @@ func WithStartAt(value *uint32, must bool) func(context.Context, *Handler) error
 			}
 			return nil
 		}
-		if *value == 0 {
-			*value = uint32(time.Now().Unix())
-		}
 		h.StartAt = value
 		return nil
 	}
@@ -183,12 +164,6 @@ func WithStartAt(value *uint32, must bool) func(context.Context, *Handler) error
 
 func WithEndAt(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if value == nil {
-			if must {
-				return fmt.Errorf("invalid endat")
-			}
-			return nil
-		}
 		h.EndAt = value
 		return nil
 	}
@@ -196,12 +171,6 @@ func WithEndAt(value *uint32, must bool) func(context.Context, *Handler) error {
 
 func WithDisabled(value *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if value == nil {
-			if must {
-				return fmt.Errorf("invalid disabled")
-			}
-			return nil
-		}
 		h.Disabled = value
 		return nil
 	}
@@ -209,12 +178,6 @@ func WithDisabled(value *bool, must bool) func(context.Context, *Handler) error 
 
 func WithLevel(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if value == nil {
-			if must {
-				return fmt.Errorf("invalid level")
-			}
-			return nil
-		}
 		h.Level = value
 		return nil
 	}
@@ -232,54 +195,6 @@ func WithAppGoodID(id *string, must bool) func(context.Context, *Handler) error 
 			return err
 		}
 		h.AppGoodID = id
-		return nil
-	}
-}
-
-func WithFromAppGoodID(id *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			if must {
-				return fmt.Errorf("invalid fromappgoodid")
-			}
-			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		h.FromAppGoodID = id
-		return nil
-	}
-}
-
-func WithToAppGoodID(id *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			if must {
-				return fmt.Errorf("invalid toappgoodid")
-			}
-			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		h.ToAppGoodID = id
-		return nil
-	}
-}
-
-func WithScalePercent(percent *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if percent == nil {
-			if must {
-				return fmt.Errorf("invalid scalepercent")
-			}
-			return nil
-		}
-		if _, err := decimal.NewFromString(*percent); err != nil {
-			return err
-		}
-		h.ScalePercent = percent
 		return nil
 	}
 }

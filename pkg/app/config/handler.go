@@ -3,7 +3,6 @@ package config
 import (
 	"context"
 	"fmt"
-	"time"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
@@ -177,9 +176,6 @@ func WithStartAt(value *uint32, must bool) func(context.Context, *Handler) error
 			}
 			return nil
 		}
-		if *value == 0 {
-			*value = uint32(time.Now().Unix())
-		}
 		h.StartAt = value
 		return nil
 	}
@@ -187,12 +183,6 @@ func WithStartAt(value *uint32, must bool) func(context.Context, *Handler) error
 
 func WithEndAt(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if value == nil {
-			if must {
-				return fmt.Errorf("invalid endat")
-			}
-			return nil
-		}
 		h.EndAt = value
 		return nil
 	}
