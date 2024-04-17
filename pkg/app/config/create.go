@@ -10,13 +10,13 @@ import (
 	appconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/app/config"
 )
 
-type createHandler struct {
-	*Handler
-	req *appconfigmwpb.AppConfigReq
-}
+func (h *Handler) CreateAppConfig(ctx context.Context) (*npool.AppConfig, error) {
+	id := uuid.NewString()
+	if h.EntID == nil {
+		h.EntID = &id
+	}
 
-func (h *createHandler) createAppConfig(ctx context.Context) error {
-	h.req = &appconfigmwpb.AppConfigReq{
+	if _, err := appconfigmwcli.CreateAppConfig(ctx, &appconfigmwpb.AppConfigReq{
 		EntID:            h.EntID,
 		AppID:            h.AppID,
 		CommissionType:   h.CommissionType,
@@ -26,24 +26,7 @@ func (h *createHandler) createAppConfig(ctx context.Context) error {
 		StartAt:          h.StartAt,
 		SettleBenefit:    h.SettleBenefit,
 		MaxLevel:         h.MaxLevel,
-	}
-	if _, err := appconfigmwcli.CreateAppConfig(ctx, h.req); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (h *Handler) CreateAppConfig(ctx context.Context) (*npool.AppConfig, error) {
-	id := uuid.NewString()
-	if h.EntID == nil {
-		h.EntID = &id
-	}
-
-	handler := &createHandler{
-		Handler: h,
-	}
-
-	if err := handler.createAppConfig(ctx); err != nil {
+	}); err != nil {
 		return nil, err
 	}
 
