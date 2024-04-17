@@ -25,6 +25,7 @@ type Handler struct {
 	EndAt           *uint32
 	Disabled        *bool
 	Level           *uint32
+	GoodID          *string
 	Offset          int32
 	Limit           int32
 }
