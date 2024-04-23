@@ -286,6 +286,40 @@ func (h *createHandler) notifyCreateCommission() {
 	}
 }
 
+func (h *createHandler) validateCommissions(ctx context.Context) error {
+	if h.StartAt == nil {
+		return nil
+	}
+
+	commissions := []*commissionmwpb.Commission{}
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+
+	for {
+		_commissions, _, err := commissionmwcli.GetCommissions(ctx, &commissionmwpb.Conds{
+			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			UserID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+			GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.goodID},
+			EndAt:      &basetypes.Uint32Val{Op: cruder.NEQ, Value: 0},
+			SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.SettleType)},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(_commissions) == 0 {
+			break
+		}
+		commissions = append(commissions, _commissions...)
+		offset += limit
+	}
+	for _, commission := range commissions {
+		if commission.EndAt > *h.StartAt {
+			return fmt.Errorf("invalid startat")
+		}
+	}
+	return nil
+}
+
 func (h *Handler) CreateCommission(ctx context.Context) (*npool.Commission, error) {
 	id := uuid.NewString()
 	if h.EntID == nil {
@@ -311,6 +345,9 @@ func (h *Handler) CreateCommission(ctx context.Context) (*npool.Commission, erro
 		return nil, err
 	}
 	if err := handler.validateInvitees(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.validateCommissions(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.createCommission(ctx); err != nil {

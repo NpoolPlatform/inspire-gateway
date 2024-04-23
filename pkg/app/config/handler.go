@@ -1,45 +1,34 @@
-package commission
+package config
 
 import (
 	"context"
 	"fmt"
-	"time"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 )
 
 type Handler struct {
 	ID               *uint32
 	EntID            *string
 	AppID            *string
-	UserID           *string
-	TargetUserID     *string
-	AppGoodID        *string
-	SettleType       *types.SettleType
 	SettleMode       *types.SettleMode
-	SettleInterval   *types.SettleInterval
 	SettleAmountType *types.SettleAmountType
-	AmountOrPercent  *string
-	Threshold        *string
+	SettleInterval   *types.SettleInterval
+	CommissionType   *types.CommissionType
+	SettleBenefit    *bool
 	StartAt          *uint32
 	EndAt            *uint32
-	FromAppGoodID    *string
-	ToAppGoodID      *string
-	ScalePercent     *string
-	CheckAffiliate   bool
+	MaxLevel         *uint32
 	Offset           int32
 	Limit            int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
-	handler := &Handler{
-		CheckAffiliate: true,
-	}
+	handler := &Handler{}
 	for _, opt := range options {
 		if err := opt(ctx, handler); err != nil {
 			return nil, err
@@ -100,53 +89,22 @@ func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 	}
 }
 
-func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
+func WithCommissionType(commissionType *types.CommissionType, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
+		if commissionType == nil {
 			if must {
-				return fmt.Errorf("invalid userid")
+				return fmt.Errorf("invalid commissiontype")
 			}
 			return nil
 		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		h.UserID = id
-		return nil
-	}
-}
-
-func WithTargetUserID(id *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			if must {
-				return fmt.Errorf("invalid targetuserid")
-			}
-			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		h.TargetUserID = id
-		return nil
-	}
-}
-
-func WithSettleType(settleType *types.SettleType, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if settleType == nil {
-			if must {
-				return fmt.Errorf("invalid settletype")
-			}
-			return nil
-		}
-		switch *settleType {
-		case types.SettleType_GoodOrderPayment:
-		case types.SettleType_TechniqueServiceFee:
+		switch *commissionType {
+		case types.CommissionType_LegacyCommission:
+		case types.CommissionType_LayeredCommission:
+		case types.CommissionType_DirectCommission:
 		default:
-			return fmt.Errorf("invalid settletype")
+			return fmt.Errorf("invalid commissiontype")
 		}
-		h.SettleType = settleType
+		h.CommissionType = commissionType
 		return nil
 	}
 }
@@ -210,38 +168,6 @@ func WithSettleInterval(settleInterval *types.SettleInterval, must bool) func(co
 	}
 }
 
-func WithAmountOrPercent(amount *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if amount == nil {
-			if must {
-				return fmt.Errorf("invalid amountorpercent")
-			}
-			return nil
-		}
-		if _, err := decimal.NewFromString(*amount); err != nil {
-			return err
-		}
-		h.AmountOrPercent = amount
-		return nil
-	}
-}
-
-func WithThreshold(amount *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if amount == nil {
-			if must {
-				return fmt.Errorf("invalid threshold")
-			}
-			return nil
-		}
-		if _, err := decimal.NewFromString(*amount); err != nil {
-			return err
-		}
-		h.Threshold = amount
-		return nil
-	}
-}
-
 func WithStartAt(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
@@ -250,9 +176,6 @@ func WithStartAt(value *uint32, must bool) func(context.Context, *Handler) error
 			}
 			return nil
 		}
-		if *value == 0 {
-			*value = uint32(time.Now().Unix())
-		}
 		h.StartAt = value
 		return nil
 	}
@@ -260,84 +183,33 @@ func WithStartAt(value *uint32, must bool) func(context.Context, *Handler) error
 
 func WithEndAt(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if value == nil {
-			if must {
-				return fmt.Errorf("invalid endat")
-			}
-			return nil
-		}
 		h.EndAt = value
 		return nil
 	}
 }
 
-func WithAppGoodID(id *string, must bool) func(context.Context, *Handler) error {
+func WithSettleBenefit(value *bool, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
+		if value == nil {
 			if must {
-				return fmt.Errorf("invalid appgoodid")
+				return fmt.Errorf("invalid settlebenefit")
 			}
 			return nil
 		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		h.AppGoodID = id
+		h.SettleBenefit = value
 		return nil
 	}
 }
 
-func WithFromAppGoodID(id *string, must bool) func(context.Context, *Handler) error {
+func WithMaxLevel(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
+		if value == nil {
 			if must {
-				return fmt.Errorf("invalid fromappgoodid")
+				return fmt.Errorf("invalid MaxLevel")
 			}
 			return nil
 		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		h.FromAppGoodID = id
-		return nil
-	}
-}
-
-func WithToAppGoodID(id *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if id == nil {
-			if must {
-				return fmt.Errorf("invalid toappgoodid")
-			}
-			return nil
-		}
-		if _, err := uuid.Parse(*id); err != nil {
-			return err
-		}
-		h.ToAppGoodID = id
-		return nil
-	}
-}
-
-func WithScalePercent(percent *string, must bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		if percent == nil {
-			if must {
-				return fmt.Errorf("invalid scalepercent")
-			}
-			return nil
-		}
-		if _, err := decimal.NewFromString(*percent); err != nil {
-			return err
-		}
-		h.ScalePercent = percent
-		return nil
-	}
-}
-
-func WithCheckAffiliate(check bool) func(context.Context, *Handler) error {
-	return func(ctx context.Context, h *Handler) error {
-		h.CheckAffiliate = check
+		h.MaxLevel = value
 		return nil
 	}
 }

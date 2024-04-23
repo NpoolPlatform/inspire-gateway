@@ -6,6 +6,9 @@ import (
 	inspire "github.com/NpoolPlatform/message/npool/inspire/gw/v1"
 
 	"github.com/NpoolPlatform/inspire-gateway/api/achievement"
+	appcommissionconfig "github.com/NpoolPlatform/inspire-gateway/api/app/commission/config"
+	appconfig "github.com/NpoolPlatform/inspire-gateway/api/app/config"
+	appgoodcommissionconfig "github.com/NpoolPlatform/inspire-gateway/api/app/good/commission/config"
 	"github.com/NpoolPlatform/inspire-gateway/api/commission"
 	"github.com/NpoolPlatform/inspire-gateway/api/coupon"
 	"github.com/NpoolPlatform/inspire-gateway/api/coupon/allocated"
@@ -38,8 +41,12 @@ func Register(server grpc.ServiceRegistrar) {
 	registration.Register(server)
 	event.Register(server)
 	cashcontrol.Register(server)
+	appgoodcommissionconfig.Register(server)
+	appcommissionconfig.Register(server)
+	appconfig.Register(server)
 }
 
+//nolint:gocyclo
 func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) error {
 	if err := inspire.RegisterGatewayHandlerFromEndpoint(context.Background(), mux, endpoint, opts); err != nil {
 		return err
@@ -75,6 +82,15 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 		return err
 	}
 	if err := cashcontrol.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := appgoodcommissionconfig.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := appcommissionconfig.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := appconfig.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	return nil
