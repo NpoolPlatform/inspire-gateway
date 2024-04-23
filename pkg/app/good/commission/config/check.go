@@ -36,7 +36,7 @@ func (h *checkHandler) checkConfig(ctx context.Context) error {
 	return nil
 }
 
-func (h *createHandler) checkGood(ctx context.Context) error {
+func (h *checkHandler) checkGood(ctx context.Context) error {
 	if h.AppGoodID == nil {
 		return nil
 	}
