@@ -109,6 +109,7 @@ func WithSettleType(settleType *types.SettleType, must bool) func(context.Contex
 	}
 }
 
+//nolint:dupl
 func WithAmountOrPercent(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
@@ -117,14 +118,19 @@ func WithAmountOrPercent(amount *string, must bool) func(context.Context, *Handl
 			}
 			return nil
 		}
-		if _, err := decimal.NewFromString(*amount); err != nil {
+		_amount, err := decimal.NewFromString(*amount)
+		if err != nil {
 			return err
+		}
+		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
+			return fmt.Errorf("invalid amountorpercent")
 		}
 		h.AmountOrPercent = amount
 		return nil
 	}
 }
 
+//nolint:dupl
 func WithThresholdAmount(amount *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if amount == nil {
@@ -133,8 +139,12 @@ func WithThresholdAmount(amount *string, must bool) func(context.Context, *Handl
 			}
 			return nil
 		}
-		if _, err := decimal.NewFromString(*amount); err != nil {
+		_amount, err := decimal.NewFromString(*amount)
+		if err != nil {
 			return err
+		}
+		if _amount.Cmp(decimal.NewFromInt(0)) < 0 {
+			return fmt.Errorf("invalid thresholdamount")
 		}
 		h.ThresholdAmount = amount
 		return nil
