@@ -298,7 +298,7 @@ func (h *createHandler) validateCommissions(ctx context.Context) error {
 	for {
 		_commissions, _, err := commissionmwcli.GetCommissions(ctx, &commissionmwpb.Conds{
 			AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			UserID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
+			UserID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.TargetUserID},
 			GoodID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.goodID},
 			EndAt:      &basetypes.Uint32Val{Op: cruder.NEQ, Value: 0},
 			SettleType: &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(*h.SettleType)},
