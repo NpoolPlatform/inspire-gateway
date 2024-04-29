@@ -238,7 +238,7 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 
 		const legacyStartReconcileTimestamp = 1714363200
 		for _, order := range orders {
-			if order.StartAt < legacyStartReconcileTimestamp {
+			if order.CreatedAt < legacyStartReconcileTimestamp {
 				continue
 			}
 			if err := h.reconcileOrder(ctx, order); err != nil {
