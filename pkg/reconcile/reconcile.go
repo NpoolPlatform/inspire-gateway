@@ -236,7 +236,11 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 			break
 		}
 
+		const legacyStartReconcileTimestamp = 1714363200
 		for _, order := range orders {
+			if order.StartAt < legacyStartReconcileTimestamp {
+				continue
+			}
 			if err := h.reconcileOrder(ctx, order); err != nil {
 				logger.Sugar().Errorw(
 					"reconcileOrders",
