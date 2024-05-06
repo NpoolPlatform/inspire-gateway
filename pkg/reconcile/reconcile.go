@@ -163,11 +163,14 @@ func (h *reconcileHandler) reconcileOrder(ctx context.Context, order *ordermwpb.
 			continue
 		}
 		ioExtra := fmt.Sprintf(
-			`{"PaymentID":"%v","OrderID":"%v","DirectContributorID":"%v","OrderUserID":"%v"}`,
+			`{"PaymentID":"%v","OrderID":"%v","DirectContributorID":"%v","OrderUserID":"%v","InspireAppConfigID":"%v","CommissionConfigID":"%v","CommissionConfigType":"%v"}`,
 			order.PaymentID,
 			order.EntID,
 			statement.GetDirectContributorID(),
 			order.UserID,
+			statement.AppConfigID,
+			statement.CommissionConfigID,
+			statement.CommissionConfigType,
 		)
 
 		ledgerStatementReqs = append(ledgerStatementReqs, &ledgerstatementmwpb.StatementReq{
@@ -233,7 +236,11 @@ func (h *reconcileHandler) reconcileOrders(ctx context.Context, orderType ordert
 			break
 		}
 
+		const legacyStartReconcileTimestamp = 1714363200
 		for _, order := range orders {
+			if order.CreatedAt < legacyStartReconcileTimestamp {
+				continue
+			}
 			if err := h.reconcileOrder(ctx, order); err != nil {
 				logger.Sugar().Errorw(
 					"reconcileOrders",
