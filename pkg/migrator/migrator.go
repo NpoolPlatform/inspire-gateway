@@ -39,11 +39,11 @@ func CreateSubordinateProcedure(ctx context.Context) error {
 
 	const procedure = `
 		DROP PROCEDURE IF EXISTS get_subordinates;
-		SET SESSION GROUP_CONCAT_MAX_LEN = 1024000;
-		CREATE PROCEDURE get_subordinates (IN inviters TEXT)
+		SET SESSION GROUP_CONCAT_MAX_LEN = 65536000;
+		CREATE PROCEDURE get_subordinates (IN inviters MEDIUMTEXT)
 		BEGIN
-		  DECLARE subordinates TEXT;
-		  DECLARE my_inviters TEXT;
+		  DECLARE subordinates MEDIUMTEXT;
+		  DECLARE my_inviters MEDIUMTEXT;
 		  SET subordinates = 'N/A';
 		  SET my_inviters = inviters;
 		  WHILE my_inviters is not null DO
@@ -68,7 +68,7 @@ func CreateSubordinateProcedure(ctx context.Context) error {
 func getInvites(ctx context.Context, tx *ent.Tx, inviterID string) ([]uuid.UUID, error) {
 	inviterIDs := []uuid.UUID{}
 	selectInviteeIDsStr := fmt.Sprintf("CALL get_subordinates(\"%v\")\n", inviterID)
-	logger.Sugar().Infow("Migrate inspire", "exec selectInviteeIDsStr", selectInviteeIDsStr)
+	logger.Sugar().Warnw("Migrate inspire", "exec selectInviteeIDsStr", selectInviteeIDsStr)
 	rows, err := tx.QueryContext(
 		ctx,
 		selectInviteeIDsStr,
