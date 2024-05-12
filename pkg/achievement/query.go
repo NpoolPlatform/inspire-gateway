@@ -6,8 +6,9 @@ import (
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
-	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
+	goodcoinmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good/coin"
+	powerrentalmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/powerrental"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	achievementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement"
 	statementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/statement"
@@ -16,10 +17,13 @@ import (
 	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
+	goodtypes "github.com/NpoolPlatform/message/npool/basetypes/good/v1"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
+	goodcoinmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/good/coin"
+	powerrentalmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/powerrental"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/achievement"
 	achievementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement"
 	statementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement"
@@ -33,20 +37,22 @@ import (
 
 type queryHandler struct {
 	*Handler
-	registrations    map[string]*registrationmwpb.Registration
-	inviteIDs        []string
-	achievements     []*achievementmwpb.Achievement
-	inviteesCount    map[string]uint32
-	coins            map[string]*appcoinmwpb.Coin
-	users            map[string]*usermwpb.User
-	appGoods         map[string]*appgoodmwpb.Good
-	commissions      map[string]map[string]*commissionmwpb.Commission
-	total            uint32
-	achievedGoods    map[string]map[string]struct{}
-	achievementUsers map[string]*achievementusermwpb.AchievementUser
-	statements       []*statementmwpb.Statement
-	infoMap          map[string]*npool.Achievement
-	infos            []*npool.Achievement
+	registrations     map[string]*registrationmwpb.Registration
+	inviteIDs         []string
+	achievements      []*achievementmwpb.Achievement
+	inviteesCount     map[string]uint32
+	coins             map[string]*appcoinmwpb.Coin
+	users             map[string]*usermwpb.User
+	appGoods          map[string]*appgoodmwpb.Good
+	goodQuantityUnits map[string]string
+	goodMainCoins     map[string]*goodcoinmwpb.GoodCoin
+	commissions       map[string]map[string]*commissionmwpb.Commission
+	total             uint32
+	achievedGoods     map[string]map[string]struct{}
+	achievementUsers  map[string]*achievementusermwpb.AchievementUser
+	statements        []*statementmwpb.Statement
+	infoMap           map[string]*npool.Achievement
+	infos             []*npool.Achievement
 }
 
 func (h *queryHandler) getInvitees(ctx context.Context) error {
@@ -236,6 +242,35 @@ func (h *queryHandler) getAchievementUsers(ctx context.Context) error {
 	return nil
 }
 
+func (h *queryHandler) getGoodCoins(ctx context.Context) (err error) {
+	h.goodMainCoins = map[string]*goodcoinmwpb.GoodCoin{}
+
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+
+	for {
+		goodCoins, _, err := goodcoinmwcli.GetGoodCoins(ctx, &goodcoinmwpb.Conds{
+			GoodIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: func() (_goodIDs []string) {
+				for _, appGood := range h.appGoods {
+					_goodIDs = append(_goodIDs, appGood.GoodID)
+				}
+				return
+			}()},
+			Main: &basetypes.BoolVal{Op: cruder.EQ, Value: true},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(goodCoins) == 0 {
+			return nil
+		}
+		offset += limit
+		for _, goodCoin := range goodCoins {
+			h.goodMainCoins[goodCoin.GoodID] = goodCoin
+		}
+	}
+}
+
 func (h *queryHandler) getCoins(ctx context.Context) error {
 	coinTypeIDs := []string{}
 	for _, achievement := range h.achievements {
@@ -244,11 +279,11 @@ func (h *queryHandler) getCoins(ctx context.Context) error {
 		}
 		coinTypeIDs = append(coinTypeIDs, achievement.CoinTypeID)
 	}
-	for _, good := range h.appGoods {
-		if _, err := uuid.Parse(good.CoinTypeID); err != nil {
+	for _, goodCoin := range h.goodMainCoins {
+		if _, err := uuid.Parse(goodCoin.CoinTypeID); err != nil {
 			continue
 		}
-		coinTypeIDs = append(coinTypeIDs, good.CoinTypeID)
+		coinTypeIDs = append(coinTypeIDs, goodCoin.CoinTypeID)
 	}
 	coins, _, err := appcoinmwcli.GetCoins(ctx, &appcoinmwpb.Conds{
 		AppID:       &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
@@ -259,6 +294,30 @@ func (h *queryHandler) getCoins(ctx context.Context) error {
 	}
 	for _, coin := range coins {
 		h.coins[coin.CoinTypeID] = coin
+	}
+	return nil
+}
+
+func (h *queryHandler) getGoodQuantityUnits(ctx context.Context) error {
+	powerRentalIDs := func() (_goodIDs []string) {
+		for _, appGood := range h.appGoods {
+			if appGood.GoodType != goodtypes.GoodType_PowerRental &&
+				appGood.GoodType != goodtypes.GoodType_LegacyPowerRental {
+				continue
+			}
+			_goodIDs = append(_goodIDs, appGood.GoodID)
+		}
+		return
+	}()
+	// TODO: other type should be added when it's implemented
+	powerRentals, _, err := powerrentalmwcli.GetPowerRentals(ctx, &powerrentalmwpb.Conds{
+		GoodIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: powerRentalIDs},
+	}, 0, int32(len(powerRentalIDs)))
+	if err != nil {
+		return err
+	}
+	for _, powerRental := range powerRentals {
+		h.goodQuantityUnits[powerRental.GoodID] = powerRental.QuantityUnit
 	}
 	return nil
 }
@@ -409,19 +468,13 @@ func (h *queryHandler) formalizeAchievements() {
 		if !ok {
 			continue
 		}
-		if good.CoinTypeID != achievement.CoinTypeID {
-			logger.Sugar().Warnw(
-				"formalizeAchievements",
-				"AchievementID", achievement.ID,
-				"GoodID", achievement.GoodID,
-				"AppGoodID", achievement.AppGoodID,
-				"GoodCoinTypeID", good.CoinTypeID,
-				"CoinTypeID", achievement.CoinTypeID,
-				"State", "Achievement cointypeid is not good cointypeid",
-			)
+		goodMainCoin, ok := h.goodMainCoins[good.GoodID]
+		if !ok {
 			continue
 		}
-
+		if goodMainCoin.CoinTypeID != achievement.CoinTypeID {
+			continue
+		}
 		commission := h.userGoodCommission(
 			achievement.AppID,
 			achievement.GoodID,
@@ -431,7 +484,7 @@ func (h *queryHandler) formalizeAchievements() {
 		info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 			GoodID:                     achievement.GoodID,
 			GoodName:                   good.GoodName,
-			GoodUnit:                   good.QuantityUnit,
+			GoodUnit:                   h.goodQuantityUnits[good.GoodID],
 			AppGoodID:                  good.EntID,
 			CommissionValue:            commission.AmountOrPercent,
 			CommissionThreshold:        commission.Threshold,
@@ -469,23 +522,16 @@ func (h *queryHandler) formalizeNew() {
 					continue
 				}
 			}
-			coin, ok := h.coins[good.CoinTypeID]
+			goodMainCoin, ok := h.goodMainCoins[good.GoodID]
 			if !ok {
-				logger.Sugar().Warnw(
-					"formalizeNew",
-					"UserID", user.EntID,
-					"CoinTypeID", good.CoinTypeID,
-					"State", "Invalid coin",
-				)
+				continue
+			}
+			coin, ok := h.coins[goodMainCoin.CoinTypeID]
+			if !ok {
 				continue
 			}
 			info, ok := h.infoMap[user.EntID]
 			if !ok {
-				logger.Sugar().Warnw(
-					"formalizeNew",
-					"UserID", user.EntID,
-					"State", "We should have info here",
-				)
 				continue
 			}
 
@@ -493,7 +539,7 @@ func (h *queryHandler) formalizeNew() {
 			info.Achievements = append(info.Achievements, &npool.GoodAchievement{
 				GoodID:                     good.GoodID,
 				GoodName:                   good.GoodName,
-				GoodUnit:                   good.QuantityUnit,
+				GoodUnit:                   h.goodQuantityUnits[good.GoodID],
 				AppGoodID:                  good.EntID,
 				CommissionValue:            commission.AmountOrPercent,
 				CommissionThreshold:        commission.Threshold,
@@ -610,10 +656,16 @@ func (h *Handler) GetAchievements(ctx context.Context) ([]*npool.Achievement, ui
 	if err := handler.getGoods(ctx); err != nil {
 		return nil, 0, err
 	}
+	if err := handler.getGoodCoins(ctx); err != nil {
+		return nil, 0, err
+	}
 	if err := handler.getCoins(ctx); err != nil {
 		return nil, 0, err
 	}
 	if err := handler.getCommissions(ctx); err != nil {
+		return nil, 0, err
+	}
+	if err := handler.getGoodQuantityUnits(ctx); err != nil {
 		return nil, 0, err
 	}
 	if err := handler.formalize(ctx); err != nil {

@@ -9,7 +9,6 @@ import (
 	"github.com/google/uuid"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
-	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	commissionmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
@@ -18,7 +17,6 @@ import (
 	usermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
 	commissionmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
@@ -205,28 +203,15 @@ func (h *createHandler) checkGood(ctx context.Context) error {
 		return nil
 	}
 
-	good, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
+	exist, err := appgoodmwcli.ExistGoodConds(ctx, &appgoodmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 	})
 	if err != nil {
 		return err
 	}
-	if good == nil {
+	if !exist {
 		return fmt.Errorf("invalid good")
-	}
-
-	h.goodID = &good.GoodID
-
-	coin, err := appcoinmwcli.GetCoinOnly(ctx, &appcoinmwpb.Conds{
-		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-		CoinTypeID: &basetypes.StringVal{Op: cruder.EQ, Value: good.CoinTypeID},
-	})
-	if err != nil {
-		return err
-	}
-	if coin == nil {
-		return fmt.Errorf("invalid coin")
 	}
 	return nil
 }
