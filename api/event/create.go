@@ -23,6 +23,7 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 		event1.WithAppGoodID(in.AppGoodID, false),
 		event1.WithMaxConsecutive(in.MaxConsecutive, false),
 		event1.WithInviterLayers(in.InviterLayers, false),
+		event1.WithCoins(in.GetCoins(), false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

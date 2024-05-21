@@ -23,6 +23,9 @@ func (s *Server) UpdateEvent(ctx context.Context, in *npool.UpdateEventRequest) 
 		event1.WithMaxConsecutive(in.MaxConsecutive, false),
 		event1.WithInviterLayers(in.InviterLayers, false),
 		event1.WithCouponIDs(in.GetCouponIDs(), false),
+		event1.WithCoins(in.GetCoins(), false),
+		event1.WithRemoveCouponIDs(in.RemoveCouponIDs, false),
+		event1.WithRemoveCoins(in.RemoveCoins, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

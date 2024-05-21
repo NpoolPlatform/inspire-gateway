@@ -7,24 +7,28 @@ import (
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	eventcoin "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event/coin"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 type Handler struct {
-	ID             *uint32
-	EntID          *string
-	AppID          *string
-	EventType      *basetypes.UsedFor
-	CouponIDs      []string
-	Credits        *string
-	CreditsPerUSD  *string
-	MaxConsecutive *uint32
-	AppGoodID      *string
-	InviterLayers  *uint32
-	Offset         int32
-	Limit          int32
+	ID              *uint32
+	EntID           *string
+	AppID           *string
+	EventType       *basetypes.UsedFor
+	CouponIDs       []string
+	Credits         *string
+	CreditsPerUSD   *string
+	MaxConsecutive  *uint32
+	AppGoodID       *string
+	Coins           []*eventcoin.EventCoinReq
+	RemoveCouponIDs *bool
+	RemoveCoins     *bool
+	InviterLayers   *uint32
+	Offset          int32
+	Limit           int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -200,6 +204,45 @@ func WithInviterLayers(layers *uint32, must bool) func(context.Context, *Handler
 			return nil
 		}
 		h.InviterLayers = layers
+		return nil
+	}
+}
+
+func WithRemoveCouponIDs(value *bool, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			if must {
+				return fmt.Errorf("invalid removecouponids")
+			}
+			return nil
+		}
+		h.RemoveCouponIDs = value
+		return nil
+	}
+}
+
+func WithRemoveCoins(value *bool, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			if must {
+				return fmt.Errorf("invalid removecoins")
+			}
+			return nil
+		}
+		h.RemoveCoins = value
+		return nil
+	}
+}
+
+func WithCoins(coins []*eventcoin.EventCoinReq, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if coins == nil {
+			if must {
+				return fmt.Errorf("invalid coins")
+			}
+			return nil
+		}
+		h.Coins = coins
 		return nil
 	}
 }

@@ -9,6 +9,8 @@ import (
 	appcommissionconfig "github.com/NpoolPlatform/inspire-gateway/api/app/commission/config"
 	appconfig "github.com/NpoolPlatform/inspire-gateway/api/app/config"
 	appgoodcommissionconfig "github.com/NpoolPlatform/inspire-gateway/api/app/good/commission/config"
+	coinallocated "github.com/NpoolPlatform/inspire-gateway/api/coin/allocated"
+	coinconfig "github.com/NpoolPlatform/inspire-gateway/api/coin/config"
 	"github.com/NpoolPlatform/inspire-gateway/api/commission"
 	"github.com/NpoolPlatform/inspire-gateway/api/coupon"
 	"github.com/NpoolPlatform/inspire-gateway/api/coupon/allocated"
@@ -19,6 +21,9 @@ import (
 	"github.com/NpoolPlatform/inspire-gateway/api/invitation/invitationcode"
 	"github.com/NpoolPlatform/inspire-gateway/api/invitation/registration"
 	"github.com/NpoolPlatform/inspire-gateway/api/reconcile"
+	taskconfig "github.com/NpoolPlatform/inspire-gateway/api/task/config"
+	usercoinreward "github.com/NpoolPlatform/inspire-gateway/api/user/coin/reward"
+	userreward "github.com/NpoolPlatform/inspire-gateway/api/user/reward"
 
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"google.golang.org/grpc"
@@ -44,6 +49,11 @@ func Register(server grpc.ServiceRegistrar) {
 	appgoodcommissionconfig.Register(server)
 	appcommissionconfig.Register(server)
 	appconfig.Register(server)
+	taskconfig.Register(server)
+	coinconfig.Register(server)
+	coinallocated.Register(server)
+	userreward.Register(server)
+	usercoinreward.Register(server)
 }
 
 //nolint:gocyclo
@@ -91,6 +101,21 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 		return err
 	}
 	if err := appconfig.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := taskconfig.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := coinconfig.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := coinallocated.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := userreward.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := usercoinreward.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	return nil
