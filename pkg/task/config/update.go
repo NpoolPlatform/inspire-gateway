@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	configmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/config"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/task/config"
 	configmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/task/config"
 )
 
-func (h *Handler) UpdateTaskConfig(ctx context.Context) (*configmwpb.TaskConfig, error) {
+func (h *Handler) UpdateTaskConfig(ctx context.Context) (*npool.TaskConfig, error) {
 	info, err := h.GetTaskConfig(ctx)
 	if err != nil {
 		return nil, err

@@ -5,10 +5,11 @@ import (
 	"fmt"
 
 	configmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coin/config"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coin/config"
 	configmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coin/config"
 )
 
-func (h *Handler) UpdateCoinConfig(ctx context.Context) (*configmwpb.CoinConfig, error) {
+func (h *Handler) UpdateCoinConfig(ctx context.Context) (*npool.CoinConfig, error) {
 	info, err := h.GetCoinConfig(ctx)
 	if err != nil {
 		return nil, err

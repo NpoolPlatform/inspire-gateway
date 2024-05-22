@@ -6,10 +6,11 @@ import (
 	"github.com/google/uuid"
 
 	coinconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coin/config"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/coin/config"
 	coinconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coin/config"
 )
 
-func (h *Handler) CreateCoinConfig(ctx context.Context) (*coinconfigmwpb.CoinConfig, error) {
+func (h *Handler) CreateCoinConfig(ctx context.Context) (*npool.CoinConfig, error) {
 	id := uuid.NewString()
 	if h.EntID == nil {
 		h.EntID = &id

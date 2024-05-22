@@ -242,6 +242,22 @@ func WithCoins(coins []*eventcoin.EventCoinReq, must bool) func(context.Context,
 			}
 			return nil
 		}
+		for _, coin := range coins {
+			coinPreUSD, err := decimal.NewFromString(*coin.CoinPreUSD)
+			if err != nil {
+				return err
+			}
+			if coinPreUSD.Cmp(decimal.NewFromInt(0)) < 0 {
+				return fmt.Errorf("invalid coinpreusd")
+			}
+			coinValue, err := decimal.NewFromString(*coin.CoinValue)
+			if err != nil {
+				return err
+			}
+			if coinValue.Cmp(decimal.NewFromInt(0)) < 0 {
+				return fmt.Errorf("invalid coinvalue")
+			}
+		}
 		h.Coins = coins
 		return nil
 	}

@@ -6,10 +6,11 @@ import (
 	"github.com/google/uuid"
 
 	taskconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/config"
+	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/task/config"
 	taskconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/task/config"
 )
 
-func (h *Handler) CreateTaskConfig(ctx context.Context) (*taskconfigmwpb.TaskConfig, error) {
+func (h *Handler) CreateTaskConfig(ctx context.Context) (*npool.TaskConfig, error) {
 	id := uuid.NewString()
 	if h.EntID == nil {
 		h.EntID = &id

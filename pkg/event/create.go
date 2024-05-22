@@ -5,11 +5,13 @@ import (
 	"fmt"
 
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
+	coinconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coin/config"
 	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
+	coinconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coin/config"
 	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 	"github.com/google/uuid"
 )
@@ -17,6 +19,31 @@ import (
 type createHandler struct {
 	*Handler
 	appGood *appgoodmwpb.Good
+}
+
+//nolint:dupl
+func (h *createHandler) checkCoinConfigs(ctx context.Context) error {
+	if len(h.Coins) == 0 {
+		return nil
+	}
+	for _, coin := range h.Coins {
+		// check coin config exist
+		if h.AppID != coin.AppID {
+			return fmt.Errorf("invalid coin appid")
+		}
+		exist, err := coinconfigmwcli.ExistCoinConfigConds(ctx, &coinconfigmwpb.Conds{
+			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *coin.CoinConfigID},
+		})
+		if err != nil {
+			return err
+		}
+		if !exist {
+			return fmt.Errorf("invalid coin")
+		}
+	}
+
+	return nil
 }
 
 func (h *createHandler) checkAppGood(ctx context.Context) error {
@@ -46,6 +73,9 @@ func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
 	if err := handler.checkAppGood(ctx); err != nil {
 		return nil, err
 	}
+	if err := handler.checkCoinConfigs(ctx); err != nil {
+		return nil, err
+	}
 
 	id := uuid.NewString()
 	if h.EntID == nil {
@@ -61,6 +91,7 @@ func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
 		CreditsPerUSD:  h.CreditsPerUSD,
 		MaxConsecutive: h.MaxConsecutive,
 		InviterLayers:  h.InviterLayers,
+		Coins:          h.Coins,
 	}
 	if handler.appGood != nil {
 		req.GoodID = &handler.appGood.GoodID

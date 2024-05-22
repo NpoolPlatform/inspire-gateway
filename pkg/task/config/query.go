@@ -10,18 +10,21 @@ import (
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/task/config"
+	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 	taskconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/task/config"
 	taskusermwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/task/user"
 )
 
 type queryHandler struct {
 	*Handler
-	taskConfigs []*taskconfigmwpb.TaskConfig
-	taskUsers   []*taskusermwpb.TaskUser
-	infos       []*npool.UserTaskConfig
+	taskConfigs   []*taskconfigmwpb.TaskConfig
+	taskUsers     []*taskusermwpb.TaskUser
+	events        map[string]*eventmwpb.Event
+	userTaskInfos []*npool.UserTaskConfig
+	taskInfos     []*npool.TaskConfig
 }
 
-func (h *queryHandler) formalize() {
+func (h *queryHandler) formalizeUserTask() {
 	taskMap := map[string]uint32{}
 	for _, taskUser := range h.taskUsers {
 		taskUserCount, ok := taskMap[taskUser.TaskID]
@@ -40,7 +43,7 @@ func (h *queryHandler) formalize() {
 			taskState = types.TaskState_Done
 			rewardState = types.RewardState_Issued
 		}
-		h.infos = append(h.infos, &npool.UserTaskConfig{
+		h.userTaskInfos = append(h.userTaskInfos, &npool.UserTaskConfig{
 			ID:               comm.ID,
 			EntID:            comm.EntID,
 			AppID:            comm.AppID,
@@ -63,6 +66,32 @@ func (h *queryHandler) formalize() {
 	}
 }
 
+func (h *queryHandler) formalize() {
+	for _, val := range h.taskConfigs {
+		task := &npool.TaskConfig{
+			ID:               val.ID,
+			EntID:            val.EntID,
+			AppID:            val.AppID,
+			EventID:          val.EventID,
+			Name:             val.Name,
+			TaskDesc:         val.TaskDesc,
+			StepGuide:        val.StepGuide,
+			RecommendMessage: val.RecommendMessage,
+			Index:            val.Index,
+			LastTaskID:       val.LastTaskID,
+			MaxRewardCount:   val.MaxRewardCount,
+			CooldownSecord:   val.CooldownSecord,
+			CreatedAt:        val.CreatedAt,
+			UpdatedAt:        val.UpdatedAt,
+		}
+		event, ok := h.events[task.EventID]
+		if ok {
+			task.EventType = event.EventType
+		}
+		h.taskInfos = append(h.taskInfos, task)
+	}
+}
+
 func (h *Handler) GetUserTaskConfig(ctx context.Context) (*npool.UserTaskConfig, error) {
 	if h.EntID == nil {
 		return nil, fmt.Errorf("invalid entid")
@@ -77,26 +106,26 @@ func (h *Handler) GetUserTaskConfig(ctx context.Context) (*npool.UserTaskConfig,
 	}
 
 	handler := &queryHandler{
-		Handler:     h,
-		taskConfigs: []*taskconfigmwpb.TaskConfig{info},
-		taskUsers:   []*taskusermwpb.TaskUser{},
-		infos:       []*npool.UserTaskConfig{},
+		Handler:       h,
+		taskConfigs:   []*taskconfigmwpb.TaskConfig{info},
+		taskUsers:     []*taskusermwpb.TaskUser{},
+		userTaskInfos: []*npool.UserTaskConfig{},
 	}
 
-	handler.formalize()
-	if len(handler.infos) == 0 {
+	handler.formalizeUserTask()
+	if len(handler.userTaskInfos) == 0 {
 		return nil, nil
 	}
 
-	return handler.infos[0], nil
+	return handler.userTaskInfos[0], nil
 }
 
 func (h *Handler) GetUserTaskConfigs(ctx context.Context) ([]*npool.UserTaskConfig, uint32, error) {
 	handler := &queryHandler{
-		Handler:     h,
-		infos:       []*npool.UserTaskConfig{},
-		taskConfigs: []*taskconfigmwpb.TaskConfig{},
-		taskUsers:   []*taskusermwpb.TaskUser{},
+		Handler:       h,
+		userTaskInfos: []*npool.UserTaskConfig{},
+		taskConfigs:   []*taskconfigmwpb.TaskConfig{},
+		taskUsers:     []*taskusermwpb.TaskUser{},
 	}
 
 	conds := &taskconfigmwpb.Conds{
@@ -123,17 +152,71 @@ func (h *Handler) GetUserTaskConfigs(ctx context.Context) ([]*npool.UserTaskConf
 	}
 	handler.taskUsers = userInfos
 
+	handler.formalizeUserTask()
+	return handler.userTaskInfos, total, nil
+}
+
+func (h *queryHandler) getEvents(ctx context.Context) error {
+	return nil
+}
+
+func (h *Handler) GetTaskConfig(ctx context.Context) (*npool.TaskConfig, error) {
+	if h.EntID == nil {
+		return nil, fmt.Errorf("invalid entid")
+	}
+
+	info, err := taskconfigmwcli.GetTaskConfig(ctx, *h.EntID)
+	if err != nil {
+		return nil, err
+	}
+	if info == nil {
+		return nil, nil
+	}
+
+	handler := &queryHandler{
+		Handler:     h,
+		taskConfigs: []*taskconfigmwpb.TaskConfig{info},
+		events:      map[string]*eventmwpb.Event{},
+		taskInfos:   []*npool.TaskConfig{},
+	}
+
+	if err := handler.getEvents(ctx); err != nil {
+		return nil, err
+	}
+
 	handler.formalize()
-	return handler.infos, total, nil
+	if len(handler.taskInfos) == 0 {
+		return nil, nil
+	}
+	return handler.taskInfos[0], nil
 }
 
-func (h *Handler) GetTaskConfig(ctx context.Context) (*taskconfigmwpb.TaskConfig, error) {
-	return taskconfigmwcli.GetTaskConfig(ctx, *h.EntID)
-}
+func (h *Handler) GetTaskConfigs(ctx context.Context) ([]*npool.TaskConfig, uint32, error) {
+	handler := &queryHandler{
+		Handler:     h,
+		taskConfigs: []*taskconfigmwpb.TaskConfig{},
+		events:      map[string]*eventmwpb.Event{},
+		taskInfos:   []*npool.TaskConfig{},
+	}
 
-func (h *Handler) GetTaskConfigs(ctx context.Context) ([]*taskconfigmwpb.TaskConfig, uint32, error) {
 	conds := &taskconfigmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}
-	return taskconfigmwcli.GetTaskConfigs(ctx, conds, h.Offset, h.Limit)
+
+	infos, total, err := taskconfigmwcli.GetTaskConfigs(ctx, conds, h.Offset, h.Limit)
+	if err != nil {
+		return nil, 0, err
+	}
+	if len(infos) == 0 {
+		return nil, total, nil
+	}
+	handler.taskConfigs = infos
+
+	if err := handler.getEvents(ctx); err != nil {
+		return nil, 0, err
+	}
+
+	handler.formalize()
+
+	return handler.taskInfos, total, nil
 }
