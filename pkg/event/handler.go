@@ -90,6 +90,7 @@ func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 	}
 }
 
+//nolint:gocyclo
 func WithEventType(eventType *basetypes.UsedFor, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if eventType == nil {
@@ -111,6 +112,7 @@ func WithEventType(eventType *basetypes.UsedFor, must bool) func(context.Context
 		case basetypes.UsedFor_WithdrawalRequest:
 		case basetypes.UsedFor_Purchase:
 		case basetypes.UsedFor_SimulateOrderProfit:
+		case basetypes.UsedFor_NewLogin:
 		}
 		h.EventType = eventType
 		return nil
@@ -243,6 +245,18 @@ func WithCoins(coins []*eventcoin.EventCoinReq, must bool) func(context.Context,
 			return nil
 		}
 		for _, coin := range coins {
+			if coin.CoinConfigID == nil {
+				return fmt.Errorf("invalid coinconfigid")
+			}
+			if coin.CoinPreUSD == nil {
+				return fmt.Errorf("invalid coinpreusd")
+			}
+			if coin.CoinValue == nil {
+				return fmt.Errorf("invalid coinvalue")
+			}
+			if _, err := uuid.Parse(*coin.CoinConfigID); err != nil {
+				return err
+			}
 			coinPreUSD, err := decimal.NewFromString(*coin.CoinPreUSD)
 			if err != nil {
 				return err

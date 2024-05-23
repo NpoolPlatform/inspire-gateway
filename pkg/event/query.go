@@ -51,6 +51,7 @@ func (h *queryHandler) getCoinConfigs(ctx context.Context) error {
 	for _, coin := range coins {
 		h.coinConfigs[coin.EntID] = coin
 	}
+
 	return nil
 }
 

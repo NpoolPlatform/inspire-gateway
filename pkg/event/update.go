@@ -23,8 +23,7 @@ func (h *updateHandler) checkCoinConfigs(ctx context.Context) error {
 		return nil
 	}
 	for _, coin := range h.Coins {
-		// check coin config exist
-		if h.AppID != coin.AppID {
+		if *h.AppID != *coin.AppID {
 			return fmt.Errorf("invalid coin appid")
 		}
 		exist, err := coinconfigmwcli.ExistCoinConfigConds(ctx, &coinconfigmwpb.Conds{
