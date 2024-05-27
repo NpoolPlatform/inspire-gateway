@@ -31,6 +31,22 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          - path: /api/inspire/v1/user/get/userrewards
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/user/get/usercoinrewards
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/user/get/tasks
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/user/get/allocatedcoins
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top
@@ -314,6 +330,50 @@ spec:
               serviceName: inspire-gateway
               servicePort: 50390
           - path: /api/inspire/v1/admin/get/appgoodcommissionconfigs
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/admin/create/coinconfig
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/admin/update/coinconfig
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/admin/get/coinconfigs
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/admin/delete/coinconfig
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/admin/get/app/allocatedcoins
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/admin/create/taskconfig
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/admin/update/taskconfig
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/admin/delete/taskconfig
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/admin/get/taskconfigs
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/admin/get/usercoinrewards
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/admin/get/userrewards
             backend:
               serviceName: inspire-gateway
               servicePort: 50390

@@ -33,5 +33,5 @@ func (h *Handler) CreateTaskConfig(ctx context.Context) (*npool.TaskConfig, erro
 		return nil, err
 	}
 
-	return h.GetTaskConfig(ctx)
+	return h.GetTaskConfig(ctx, nil)
 }

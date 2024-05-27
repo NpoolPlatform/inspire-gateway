@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handler) UpdateTaskConfig(ctx context.Context) (*npool.TaskConfig, error) {
-	info, err := h.GetTaskConfig(ctx)
+	info, err := h.GetTaskConfig(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -38,5 +38,5 @@ func (h *Handler) UpdateTaskConfig(ctx context.Context) (*npool.TaskConfig, erro
 	}); err != nil {
 		return nil, err
 	}
-	return h.GetTaskConfig(ctx)
+	return h.GetTaskConfig(ctx, nil)
 }

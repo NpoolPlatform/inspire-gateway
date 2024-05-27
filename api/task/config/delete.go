@@ -27,7 +27,7 @@ func (s *Server) AdminDeleteTaskConfig(ctx context.Context, in *npool.AdminDelet
 		return &npool.AdminDeleteTaskConfigResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	info, err := handler.UpdateTaskConfig(ctx)
+	info, err := handler.DeleteTaskConfig(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
 			"AdminDeleteTaskConfig",

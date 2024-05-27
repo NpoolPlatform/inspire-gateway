@@ -160,17 +160,20 @@ func (h *queryHandler) getEvents(ctx context.Context) error {
 	return nil
 }
 
-func (h *Handler) GetTaskConfig(ctx context.Context) (*npool.TaskConfig, error) {
+func (h *Handler) GetTaskConfig(ctx context.Context, info *taskconfigmwpb.TaskConfig) (*npool.TaskConfig, error) {
 	if h.EntID == nil {
 		return nil, fmt.Errorf("invalid entid")
 	}
 
-	info, err := taskconfigmwcli.GetTaskConfig(ctx, *h.EntID)
-	if err != nil {
-		return nil, err
-	}
 	if info == nil {
-		return nil, nil
+		taskInfo, err := taskconfigmwcli.GetTaskConfig(ctx, *h.EntID)
+		if err != nil {
+			return nil, err
+		}
+		if taskInfo == nil {
+			return nil, nil
+		}
+		info = taskInfo
 	}
 
 	handler := &queryHandler{
