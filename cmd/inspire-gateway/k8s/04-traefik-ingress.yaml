@@ -381,6 +381,14 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          - path: /api/inspire/v1/admin/create/eventinspire
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
+          - path: /api/inspire/v1/admin/update/eventinspire
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top

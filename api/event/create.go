@@ -1,3 +1,4 @@
+//nolint:dupl
 package event
 
 import (
@@ -45,6 +46,43 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 	}
 
 	return &npool.CreateEventResponse{
+		Info: info,
+	}, nil
+}
+
+func (s *Server) AdminCreateEvent(ctx context.Context, in *npool.AdminCreateEventRequest) (*npool.AdminCreateEventResponse, error) {
+	handler, err := event1.NewHandler(
+		ctx,
+		event1.WithAppID(&in.TargetAppID, true),
+		event1.WithEventType(&in.EventType, true),
+		event1.WithCouponIDs(in.GetCouponIDs(), false),
+		event1.WithCredits(in.Credits, false),
+		event1.WithCreditsPerUSD(in.CreditsPerUSD, false),
+		event1.WithAppGoodID(in.AppGoodID, false),
+		event1.WithMaxConsecutive(in.MaxConsecutive, false),
+		event1.WithInviterLayers(in.InviterLayers, false),
+		event1.WithCoins(in.GetCoins(), false),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"AdminCreateEvent",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.AdminCreateEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	info, err := handler.CreateEvent(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"AdminCreateEvent",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.AdminCreateEventResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.AdminCreateEventResponse{
 		Info: info,
 	}, nil
 }
