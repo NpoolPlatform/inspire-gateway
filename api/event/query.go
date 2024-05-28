@@ -1,3 +1,4 @@
+//nolint:dupl
 package event
 
 import (
@@ -39,6 +40,38 @@ func (s *Server) GetEvents(ctx context.Context, in *npool.GetEventsRequest) (*np
 	}
 
 	return &npool.GetEventsResponse{
+		Infos: infos,
+		Total: total,
+	}, nil
+}
+
+func (s *Server) AdminGetEvents(ctx context.Context, in *npool.AdminGetEventsRequest) (*npool.AdminGetEventsResponse, error) {
+	handler, err := event1.NewHandler(
+		ctx,
+		event1.WithAppID(&in.TargetAppID, true),
+		event1.WithOffset(in.GetOffset()),
+		event1.WithLimit(in.GetLimit()),
+	)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"AdminGetEvents",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.AdminGetEventsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+	}
+
+	infos, total, err := handler.GetEvents(ctx)
+	if err != nil {
+		logger.Sugar().Errorw(
+			"AdminGetEvents",
+			"In", in,
+			"Err", err,
+		)
+		return &npool.AdminGetEventsResponse{}, status.Error(codes.Internal, err.Error())
+	}
+
+	return &npool.AdminGetEventsResponse{
 		Infos: infos,
 		Total: total,
 	}, nil
