@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	taskconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/config"
 	taskusermwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/user"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
@@ -73,6 +74,7 @@ func (h *queryHandler) formalize() {
 			EntID:            val.EntID,
 			AppID:            val.AppID,
 			EventID:          val.EventID,
+			TaskType:         val.TaskType,
 			Name:             val.Name,
 			TaskDesc:         val.TaskDesc,
 			StepGuide:        val.StepGuide,
@@ -84,7 +86,7 @@ func (h *queryHandler) formalize() {
 			CreatedAt:        val.CreatedAt,
 			UpdatedAt:        val.UpdatedAt,
 		}
-		event, ok := h.events[task.EventID]
+		event, ok := h.events[val.EventID]
 		if ok {
 			task.EventType = event.EventType
 		}
@@ -146,7 +148,7 @@ func (h *Handler) GetUserTaskConfigs(ctx context.Context) ([]*npool.UserTaskConf
 		UserID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID},
 	}
 
-	userInfos, total, err := taskusermwcli.GetTaskUsers(ctx, userConds, h.Offset, h.Limit)
+	userInfos, _, err := taskusermwcli.GetTaskUsers(ctx, userConds, h.Offset, h.Limit)
 	if err != nil {
 		return nil, total, err
 	}
@@ -157,6 +159,21 @@ func (h *Handler) GetUserTaskConfigs(ctx context.Context) ([]*npool.UserTaskConf
 }
 
 func (h *queryHandler) getEvents(ctx context.Context) error {
+	eventIDs := []string{}
+	for _, val := range h.taskConfigs {
+		eventIDs = append(eventIDs, val.EventID)
+	}
+	events, _, err := eventmwcli.GetEvents(ctx, &eventmwpb.Conds{
+		AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: eventIDs},
+	}, 0, int32(len(eventIDs)))
+	if err != nil {
+		return err
+	}
+
+	for _, event := range events {
+		h.events[event.EntID] = event
+	}
 	return nil
 }
 
