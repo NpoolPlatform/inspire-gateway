@@ -21,15 +21,27 @@ type createHandler struct {
 	appGood *appgoodmwpb.Good
 }
 
+func (h *createHandler) checkRepeatedCoinConfigs() error {
+	if len(h.Coins) == 0 {
+		return nil
+	}
+	coinConfigIDs := map[string]string{}
+	for _, coin := range h.Coins {
+		_, ok := coinConfigIDs[*coin.CoinConfigID]
+		if ok {
+			return fmt.Errorf("repeated coinconfig")
+		}
+		coinConfigIDs[*coin.CoinConfigID] = *coin.CoinConfigID
+	}
+	return nil
+}
+
 //nolint:dupl
 func (h *createHandler) checkCoinConfigs(ctx context.Context) error {
 	if len(h.Coins) == 0 {
 		return nil
 	}
 	for _, coin := range h.Coins {
-		if *h.AppID != *coin.AppID {
-			return fmt.Errorf("invalid coin appid")
-		}
 		exist, err := coinconfigmwcli.ExistCoinConfigConds(ctx, &coinconfigmwpb.Conds{
 			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *coin.CoinConfigID},
@@ -70,6 +82,9 @@ func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
 		Handler: h,
 	}
 	if err := handler.checkAppGood(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.checkRepeatedCoinConfigs(); err != nil {
 		return nil, err
 	}
 	if err := handler.checkCoinConfigs(ctx); err != nil {

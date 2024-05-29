@@ -17,15 +17,27 @@ type updateHandler struct {
 	*Handler
 }
 
+func (h *updateHandler) checkRepeatedCoinConfigs() error {
+	if len(h.Coins) == 0 {
+		return nil
+	}
+	coinConfigIDs := map[string]string{}
+	for _, coin := range h.Coins {
+		_, ok := coinConfigIDs[*coin.CoinConfigID]
+		if ok {
+			return fmt.Errorf("repeated coinconfig")
+		}
+		coinConfigIDs[*coin.CoinConfigID] = *coin.CoinConfigID
+	}
+	return nil
+}
+
 //nolint:dupl
 func (h *updateHandler) checkCoinConfigs(ctx context.Context) error {
 	if len(h.Coins) == 0 {
 		return nil
 	}
 	for _, coin := range h.Coins {
-		if *h.AppID != *coin.AppID {
-			return fmt.Errorf("invalid coin appid")
-		}
 		exist, err := coinconfigmwcli.ExistCoinConfigConds(ctx, &coinconfigmwpb.Conds{
 			AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *coin.CoinConfigID},
@@ -56,7 +68,9 @@ func (h *Handler) UpdateEvent(ctx context.Context) (*npool.Event, error) {
 	handler := &updateHandler{
 		Handler: h,
 	}
-
+	if err := handler.checkRepeatedCoinConfigs(); err != nil {
+		return nil, err
+	}
 	if err := handler.checkCoinConfigs(ctx); err != nil {
 		return nil, err
 	}
