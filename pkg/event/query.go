@@ -236,6 +236,43 @@ func (h *Handler) GetEvent(ctx context.Context) (*npool.Event, error) {
 	return handler.infos[0], nil
 }
 
+func (h *Handler) GetEventExt(ctx context.Context, info *eventmwpb.Event) (*npool.Event, error) {
+	if info == nil {
+		return nil, nil
+	}
+
+	handler := &queryHandler{
+		Handler:     h,
+		events:      []*eventmwpb.Event{info},
+		appGoods:    map[string]*appgoodmwpb.Good{},
+		coupons:     map[string]*couponmwpb.Coupon{},
+		eventCoins:  map[string]*npool.EventCoin{},
+		appcoin:     map[string]*appcoinmwpb.Coin{},
+		coinConfigs: map[string]*coinconfigmwpb.CoinConfig{},
+	}
+	handler.AppID = &info.AppID
+	if err := handler.getApp(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getAppGoods(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getCoupons(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getCoinConfigs(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getAppCoins(ctx); err != nil {
+		return nil, err
+	}
+	handler.formalize()
+	if len(handler.infos) == 0 {
+		return nil, nil
+	}
+	return handler.infos[0], nil
+}
+
 func (h *Handler) GetEvents(ctx context.Context) ([]*npool.Event, uint32, error) {
 	infos, total, err := eventmwcli.GetEvents(ctx, &eventmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},

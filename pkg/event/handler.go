@@ -112,6 +112,28 @@ func WithEventType(eventType *basetypes.UsedFor, must bool) func(context.Context
 		case basetypes.UsedFor_WithdrawalRequest:
 		case basetypes.UsedFor_Purchase:
 		case basetypes.UsedFor_SimulateOrderProfit:
+		case basetypes.UsedFor_ConsecutiveLogin:
+		case basetypes.UsedFor_GoodSocialSharing:
+		case basetypes.UsedFor_FirstOrderCompleted:
+		case basetypes.UsedFor_SetAddress:
+		case basetypes.UsedFor_Set2FA:
+		case basetypes.UsedFor_FirstBenefit:
+		case basetypes.UsedFor_WriteComment:
+		case basetypes.UsedFor_WriteRecommend:
+		case basetypes.UsedFor_GoodScoring:
+		case basetypes.UsedFor_SubmitTicket:
+		case basetypes.UsedFor_IntallApp:
+		case basetypes.UsedFor_SetNFTAvatar:
+		case basetypes.UsedFor_SetPersonalImage:
+		case basetypes.UsedFor_KYCApproved:
+		case basetypes.UsedFor_OrderCompleted:
+		case basetypes.UsedFor_WithdrawalCompleted:
+		case basetypes.UsedFor_DepositReceived:
+		case basetypes.UsedFor_UpdatePassword:
+		case basetypes.UsedFor_ResetPassword:
+		case basetypes.UsedFor_InternalTransfer:
+		case basetypes.UsedFor_Contact:
+		case basetypes.UsedFor_KYCRejected:
 		case basetypes.UsedFor_NewLogin:
 		}
 		h.EventType = eventType
