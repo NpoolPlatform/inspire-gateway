@@ -283,6 +283,9 @@ func (h *queryHandler) getInvitees(ctx context.Context) error {
 }
 
 func (h *Handler) getUser(ctx context.Context) error {
+	if h.UserID == nil {
+		return nil
+	}
 	user, err := usermwcli.GetUser(ctx, *h.AppID, *h.UserID)
 	if err != nil {
 		return err
