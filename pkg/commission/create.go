@@ -203,16 +203,14 @@ func (h *createHandler) checkGood(ctx context.Context) error {
 		return nil
 	}
 
-	exist, err := appgoodmwcli.ExistGoodConds(ctx, &appgoodmwpb.Conds{
+	appgood, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 	})
 	if err != nil {
 		return err
 	}
-	if !exist {
-		return fmt.Errorf("invalid good")
-	}
+	h.goodID = &appgood.GoodID
 	return nil
 }
 
