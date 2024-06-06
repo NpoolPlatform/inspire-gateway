@@ -14,6 +14,7 @@ import (
 
 type checkHandler struct {
 	*Handler
+	appgood *appgoodmwpb.Good
 }
 
 func (h *checkHandler) checkConfig(ctx context.Context) error {
@@ -37,15 +38,13 @@ func (h *checkHandler) checkGood(ctx context.Context) error {
 		return nil
 	}
 
-	exist, err := appgoodmwcli.ExistGoodConds(ctx, &appgoodmwpb.Conds{
+	appgood, err := appgoodmwcli.GetGoodOnly(ctx, &appgoodmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppGoodID},
 	})
 	if err != nil {
 		return err
 	}
-	if !exist {
-		return fmt.Errorf("invalid appgood")
-	}
+	h.appgood = appgood
 	return nil
 }
