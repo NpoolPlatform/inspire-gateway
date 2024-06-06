@@ -282,7 +282,21 @@ func (h *queryHandler) getInvitees(ctx context.Context) error {
 	return nil
 }
 
+func (h *Handler) getUser(ctx context.Context) error {
+	user, err := usermwcli.GetUser(ctx, *h.AppID, *h.UserID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return fmt.Errorf("invalid user")
+	}
+	return nil
+}
+
 func (h *Handler) GetCommissions(ctx context.Context) ([]*npool.Commission, uint32, error) {
+	if err := h.getUser(ctx); err != nil {
+		return nil, 0, err
+	}
 	handler := &queryHandler{
 		Handler:  h,
 		users:    map[string]*usermwpb.User{},
