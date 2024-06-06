@@ -228,6 +228,7 @@ func (h *Handler) GetCommission(ctx context.Context) (*npool.Commission, error) 
 		Handler:  h,
 		users:    map[string]*usermwpb.User{},
 		appGoods: map[string]*appgoodmwpb.Good{},
+		goods:    map[string]*goodmwpb.Good{},
 		coins:    map[string]*appcoinmwpb.Coin{},
 		comms:    []*commmwpb.Commission{info},
 		infos:    []*npool.Commission{},
@@ -286,6 +287,7 @@ func (h *Handler) GetCommissions(ctx context.Context) ([]*npool.Commission, uint
 		Handler:  h,
 		users:    map[string]*usermwpb.User{},
 		appGoods: map[string]*appgoodmwpb.Good{},
+		goods:    map[string]*goodmwpb.Good{},
 		coins:    map[string]*appcoinmwpb.Coin{},
 		infos:    []*npool.Commission{},
 	}
@@ -323,6 +325,9 @@ func (h *Handler) GetCommissions(ctx context.Context) ([]*npool.Commission, uint
 		return nil, 0, err
 	}
 	if err := handler.getAppGoods(ctx); err != nil {
+		return nil, 0, err
+	}
+	if err := handler.getGoodCoins(ctx); err != nil {
 		return nil, 0, err
 	}
 	if err := handler.getCoins(ctx); err != nil {
