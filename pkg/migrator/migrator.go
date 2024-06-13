@@ -41,6 +41,7 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 		if _, err := tx.
 			GoodAchievement.
 			Create().
+			SetEntID(achievement.EntID).
 			SetAppID(achievement.AppID).
 			SetUserID(achievement.UserID).
 			SetGoodID(achievement.GoodID).
@@ -57,6 +58,7 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 		if _, err := tx.
 			GoodCoinAchievement.
 			Create().
+			SetEntID(achievement.EntID).
 			SetAppID(achievement.AppID).
 			SetUserID(achievement.UserID).
 			SetGoodCoinTypeID(achievement.CoinTypeID).
