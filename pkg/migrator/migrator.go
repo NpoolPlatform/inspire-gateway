@@ -29,20 +29,20 @@ func lockKey() string {
 }
 
 func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
-	achivements, err := tx.GoodAchievement.Query().Where(entgoodachievement.DeletedAt(0)).All(ctx)
+	achievements, err := tx.GoodAchievement.Query().Where(entgoodachievement.DeletedAt(0)).All(ctx)
 	if err != nil {
 		return err
 	}
-	if len(achivements) != 0 {
-		logger.Sugar().Warnf("good achivements not empty")
+	if len(achievements) != 0 {
+		logger.Sugar().Warnf("good achievements not empty")
 		return nil
 	}
-	coinAchivements, err := tx.GoodCoinAchievement.Query().Where(entgoodcoinachievement.DeletedAt(0)).All(ctx)
+	coinAchievements, err := tx.GoodCoinAchievement.Query().Where(entgoodcoinachievement.DeletedAt(0)).All(ctx)
 	if err != nil {
 		return err
 	}
-	if len(coinAchivements) != 0 {
-		logger.Sugar().Warnf("good coin achivements not empty")
+	if len(coinAchievements) != 0 {
+		logger.Sugar().Warnf("good coin achievements not empty")
 		return nil
 	}
 
