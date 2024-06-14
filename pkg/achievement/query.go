@@ -6,6 +6,7 @@ import (
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	goodcoinmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good/coin"
 	powerrentalmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/powerrental"
@@ -56,6 +57,19 @@ type queryHandler struct {
 	statements        []*orderstatementmwpb.Statement
 	infoMap           map[string]*npool.Achievement
 	infos             []*npool.Achievement
+}
+
+func (h *Handler) checkUser(ctx context.Context) error {
+	if h.UserID != nil {
+		user, err := usermwcli.GetUser(ctx, *h.AppID, *h.UserID)
+		if err != nil {
+			return err
+		}
+		if user == nil {
+			return fmt.Errorf("invalid user id")
+		}
+	}
+	return nil
 }
 
 func (h *queryHandler) getInvitees(ctx context.Context) error {
@@ -654,6 +668,10 @@ func (h *queryHandler) formalize(ctx context.Context) error {
 }
 
 func (h *Handler) GetAchievements(ctx context.Context) ([]*npool.Achievement, uint32, error) {
+	if err := h.checkUser(ctx); err != nil {
+		return nil, 0, err
+	}
+
 	handler := &queryHandler{
 		Handler:           h,
 		registrations:     map[string]*registrationmwpb.Registration{},
