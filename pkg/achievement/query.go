@@ -6,7 +6,6 @@ import (
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
-	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	goodcoinmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good/coin"
 	powerrentalmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/powerrental"
