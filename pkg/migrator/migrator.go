@@ -1,3 +1,4 @@
+//nolint
 package migrator
 
 import (
@@ -12,8 +13,6 @@ import (
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db/ent"
 	entgoodachievement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/goodachievement"
 	entgoodcoinachievement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/goodcoinachievement"
-	entorderpaymentstatement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/orderpaymentstatement"
-	entorderstatement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/orderstatement"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -29,23 +28,6 @@ func lockKey() string {
 }
 
 func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
-	achievements, err := tx.GoodAchievement.Query().Where(entgoodachievement.DeletedAt(0)).All(ctx)
-	if err != nil {
-		return err
-	}
-	if len(achievements) != 0 {
-		logger.Sugar().Warnf("good achievements not empty")
-		return nil
-	}
-	coinAchievements, err := tx.GoodCoinAchievement.Query().Where(entgoodcoinachievement.DeletedAt(0)).All(ctx)
-	if err != nil {
-		return err
-	}
-	if len(coinAchievements) != 0 {
-		logger.Sugar().Warnf("good coin achievements not empty")
-		return nil
-	}
-
 	rows, err := tx.QueryContext(ctx, "select ent_id,app_id,user_id,good_id,app_good_id,coin_type_id,total_units_v1,self_units_v1,total_amount,self_amount,total_commission,self_commission,created_at,updated_at from archivement_generals where deleted_at = 0")
 	if err != nil {
 		return err
@@ -87,70 +69,82 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 		); err != nil {
 			return err
 		}
-		if _, err := tx.
+		exist, err := tx.
 			GoodAchievement.
-			Create().
-			SetEntID(achievement.EntID).
-			SetAppID(achievement.AppID).
-			SetUserID(achievement.UserID).
-			SetGoodID(achievement.GoodID).
-			SetAppGoodID(achievement.AppGoodID).
-			SetTotalUnits(achievement.TotalUnitsV1).
-			SetSelfUnits(achievement.SelfUnitsV1).
-			SetTotalAmountUsd(achievement.TotalAmount).
-			SetSelfAmountUsd(achievement.SelfAmount).
-			SetTotalCommissionUsd(achievement.TotalCommission).
-			SetSelfCommissionUsd(achievement.SelfCommission).
-			SetCreatedAt(achievement.CreatedAt).
-			SetUpdatedAt(achievement.UpdatedAt).
-			Save(ctx); err != nil {
+			Query().
+			Where(
+				entgoodachievement.AppID(achievement.AppID),
+				entgoodachievement.UserID(achievement.UserID),
+				entgoodachievement.GoodID(achievement.GoodID),
+				entgoodachievement.AppGoodID(achievement.AppGoodID),
+				entgoodachievement.DeletedAt(0),
+			).Exist(ctx)
+		if err != nil {
 			return err
 		}
-		if _, err := tx.
+		if !exist {
+			if _, err := tx.
+				GoodAchievement.
+				Create().
+				SetEntID(achievement.EntID).
+				SetAppID(achievement.AppID).
+				SetUserID(achievement.UserID).
+				SetGoodID(achievement.GoodID).
+				SetAppGoodID(achievement.AppGoodID).
+				SetTotalUnits(achievement.TotalUnitsV1).
+				SetSelfUnits(achievement.SelfUnitsV1).
+				SetTotalAmountUsd(achievement.TotalAmount).
+				SetSelfAmountUsd(achievement.SelfAmount).
+				SetTotalCommissionUsd(achievement.TotalCommission).
+				SetSelfCommissionUsd(achievement.SelfCommission).
+				SetCreatedAt(achievement.CreatedAt).
+				SetUpdatedAt(achievement.UpdatedAt).
+				Save(ctx); err != nil {
+				return err
+			}
+		}
+		exist, err = tx.
 			GoodCoinAchievement.
-			Create().
-			SetEntID(achievement.EntID).
-			SetAppID(achievement.AppID).
-			SetUserID(achievement.UserID).
-			SetGoodCoinTypeID(achievement.CoinTypeID).
-			SetTotalUnits(achievement.TotalUnitsV1).
-			SetSelfUnits(achievement.SelfUnitsV1).
-			SetTotalAmountUsd(achievement.TotalAmount).
-			SetSelfAmountUsd(achievement.SelfAmount).
-			SetTotalCommissionUsd(achievement.TotalCommission).
-			SetSelfCommissionUsd(achievement.SelfCommission).
-			SetCreatedAt(achievement.CreatedAt).
-			SetUpdatedAt(achievement.UpdatedAt).
-			Save(ctx); err != nil {
+			Query().
+			Where(
+				entgoodcoinachievement.AppID(achievement.AppID),
+				entgoodcoinachievement.UserID(achievement.UserID),
+				entgoodcoinachievement.GoodCoinTypeID(achievement.CoinTypeID),
+				entgoodcoinachievement.DeletedAt(0),
+			).Exist(ctx)
+		if err != nil {
 			return err
+		}
+		if !exist {
+			if _, err := tx.
+				GoodCoinAchievement.
+				Create().
+				SetEntID(achievement.EntID).
+				SetAppID(achievement.AppID).
+				SetUserID(achievement.UserID).
+				SetGoodCoinTypeID(achievement.CoinTypeID).
+				SetTotalUnits(achievement.TotalUnitsV1).
+				SetSelfUnits(achievement.SelfUnitsV1).
+				SetTotalAmountUsd(achievement.TotalAmount).
+				SetSelfAmountUsd(achievement.SelfAmount).
+				SetTotalCommissionUsd(achievement.TotalCommission).
+				SetSelfCommissionUsd(achievement.SelfCommission).
+				SetCreatedAt(achievement.CreatedAt).
+				SetUpdatedAt(achievement.UpdatedAt).
+				Save(ctx); err != nil {
+				return err
+			}
 		}
 	}
 	return nil
 }
 
 func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
-	orderStatements, err := tx.OrderStatement.Query().Where(entorderstatement.DeletedAt(0)).All(ctx)
-	if err != nil {
-		return err
-	}
-	if len(orderStatements) != 0 {
-		logger.Sugar().Warnf("order statements is not empty")
-		return nil
-	}
-	orderPaymentStatements, err := tx.OrderPaymentStatement.Query().Where(entorderpaymentstatement.DeletedAt(0)).All(ctx)
-	if err != nil {
-		return err
-	}
-	if len(orderPaymentStatements) != 0 {
-		logger.Sugar().Warnf("order payment statements is not empty")
-		return nil
-	}
-
 	rows, err := tx.QueryContext(ctx, "select ent_id,app_id,user_id,good_id,app_good_id,order_id,direct_contributor_id,coin_type_id,units_v1,usd_amount,app_config_id,commission_config_id,commission_config_type,payment_coin_type_id,amount,commission,payment_coin_usd_currency,created_at,updated_at from archivement_details where deleted_at = 0")
-
 	if err != nil {
 		return err
 	}
+
 	type Statement struct {
 		EntID                  uuid.UUID
 		AppID                  uuid.UUID
@@ -166,9 +160,9 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 		CommissionConfigID     uuid.UUID
 		CommissionConfigType   string
 		PaymentCoinTypeID      uuid.UUID
+		PaymentCoinUsdCurrency decimal.Decimal
 		Amount                 decimal.Decimal
 		Commission             decimal.Decimal
-		PaymentCoinUsdCurrency decimal.Decimal
 		CreatedAt              uint32
 		UpdatedAt              uint32
 	}
@@ -179,10 +173,10 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 			&statement.EntID,
 			&statement.AppID,
 			&statement.UserID,
-			&statement.GoodID,
-			&statement.AppGoodID,
-			&statement.OrderID,
 			&statement.DirectContributorID,
+			&statement.GoodID,
+			&statement.OrderID,
+			&statement.AppGoodID,
 			&statement.CoinTypeID,
 			&statement.UnitsV1,
 			&statement.UsdAmount,
@@ -202,8 +196,7 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 			logger.Sugar().Warn("invalid payment coin usd currency: %v", statement.PaymentCoinUsdCurrency.String())
 			continue
 		}
-		paymentAmountUSD := statement.PaymentCoinUsdCurrency.Mul(statement.Amount)
-
+		commissionAmountUSD := statement.Commission.Mul(statement.PaymentCoinUsdCurrency)
 		if _, err := tx.
 			OrderStatement.
 			Create().
@@ -216,8 +209,8 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 			SetGoodCoinTypeID(statement.CoinTypeID).
 			SetUnits(statement.UnitsV1).
 			SetGoodValueUsd(statement.UsdAmount).
-			SetPaymentAmountUsd(paymentAmountUSD).
-			SetCommissionAmountUsd(statement.Commission).
+			SetPaymentAmountUsd(statement.UsdAmount).
+			SetCommissionAmountUsd(commissionAmountUSD).
 			SetAppConfigID(statement.AppConfigID).
 			SetCommissionConfigID(statement.CommissionConfigID).
 			SetCommissionConfigType(statement.CommissionConfigType).
