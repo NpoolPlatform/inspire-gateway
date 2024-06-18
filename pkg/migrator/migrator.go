@@ -13,6 +13,8 @@ import (
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db/ent"
 	entgoodachievement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/goodachievement"
 	entgoodcoinachievement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/goodcoinachievement"
+	entorderpaymentstatement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/orderpaymentstatement"
+	entorderstatement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/orderstatement"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -34,21 +36,22 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 	}
 
 	type Achievement struct {
-		EntID           uuid.UUID
-		AppID           uuid.UUID
-		UserID          uuid.UUID
-		GoodID          uuid.UUID
-		AppGoodID       uuid.UUID
-		CoinTypeID      uuid.UUID
-		TotalUnitsV1    decimal.Decimal
-		SelfUnitsV1     decimal.Decimal
-		TotalAmount     decimal.Decimal
-		SelfAmount      decimal.Decimal
-		TotalCommission decimal.Decimal
-		SelfCommission  decimal.Decimal
-		CreatedAt       uint32
-		UpdatedAt       uint32
+		EntID           uuid.UUID       `json:"ent_id"`
+		AppID           uuid.UUID       `json:"app_id"`
+		UserID          uuid.UUID       `json:"user_id"`
+		GoodID          uuid.UUID       `json:"good_id"`
+		AppGoodID       uuid.UUID       `json:"app_good_id"`
+		CoinTypeID      uuid.UUID       `json:"coin_type_id"`
+		TotalUnitsV1    decimal.Decimal `json:"total_units_v1"`
+		SelfUnitsV1     decimal.Decimal `json:"self_units_v1"`
+		TotalAmount     decimal.Decimal `json:"total_amount"`
+		SelfAmount      decimal.Decimal `json:"self_amount"`
+		TotalCommission decimal.Decimal `json:"total_commission"`
+		SelfCommission  decimal.Decimal `json:"self_commission"`
+		CreatedAt       uint32          `json:"created_at"`
+		UpdatedAt       uint32          `json:"updated_at"`
 	}
+	achievements := []*Achievement{}
 	for rows.Next() {
 		achievement := &Achievement{}
 		if err := rows.Scan(
@@ -69,6 +72,10 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 		); err != nil {
 			return err
 		}
+		achievements = append(achievements, achievement)
+	}
+
+	for _, achievement := range achievements {
 		exist, err := tx.
 			GoodAchievement.
 			Query().
@@ -146,37 +153,38 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 	}
 
 	type Statement struct {
-		EntID                  uuid.UUID
-		AppID                  uuid.UUID
-		UserID                 uuid.UUID
-		GoodID                 uuid.UUID
-		AppGoodID              uuid.UUID
-		OrderID                uuid.UUID
-		DirectContributorID    uuid.UUID
-		CoinTypeID             uuid.UUID
-		UnitsV1                decimal.Decimal
-		UsdAmount              decimal.Decimal
-		AppConfigID            uuid.UUID
-		CommissionConfigID     uuid.UUID
-		CommissionConfigType   string
-		PaymentCoinTypeID      uuid.UUID
-		PaymentCoinUsdCurrency decimal.Decimal
-		Amount                 decimal.Decimal
-		Commission             decimal.Decimal
-		CreatedAt              uint32
-		UpdatedAt              uint32
+		EntID                  uuid.UUID       `json:"ent_id"`
+		AppID                  uuid.UUID       `json:"app_id"`
+		UserID                 uuid.UUID       `json:"user_id"`
+		GoodID                 uuid.UUID       `json:"good_id"`
+		AppGoodID              uuid.UUID       `json:"app_good_id"`
+		OrderID                uuid.UUID       `json:"order_id"`
+		DirectContributorID    uuid.UUID       `json:"direct_contributor_id"`
+		CoinTypeID             uuid.UUID       `json:"coin_type_id"`
+		UnitsV1                decimal.Decimal `json:"units_v1"`
+		UsdAmount              decimal.Decimal `json:"usd_amount"`
+		AppConfigID            uuid.UUID       `json:"app_config_id"`
+		CommissionConfigID     uuid.UUID       `json:"commission_config_id"`
+		CommissionConfigType   string          `json:"commission_config_type"`
+		PaymentCoinTypeID      uuid.UUID       `json:"payment_coin_type_id"`
+		PaymentCoinUsdCurrency decimal.Decimal `json:"payment_coin_usd_currency"`
+		Amount                 decimal.Decimal `json:"amount"`
+		Commission             decimal.Decimal `json:"commission"`
+		CreatedAt              uint32          `json:"created_at"`
+		UpdatedAt              uint32          `json:"updated_at"`
 	}
 
+	statements := []*Statement{}
 	for rows.Next() {
 		statement := &Statement{}
 		if err := rows.Scan(
 			&statement.EntID,
 			&statement.AppID,
 			&statement.UserID,
-			&statement.DirectContributorID,
 			&statement.GoodID,
-			&statement.OrderID,
 			&statement.AppGoodID,
+			&statement.OrderID,
+			&statement.DirectContributorID,
 			&statement.CoinTypeID,
 			&statement.UnitsV1,
 			&statement.UsdAmount,
@@ -192,43 +200,74 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 		); err != nil {
 			return err
 		}
-		if statement.PaymentCoinUsdCurrency.Cmp(decimal.NewFromInt(0)) <= 0 {
-			logger.Sugar().Warn("invalid payment coin usd currency: %v", statement.PaymentCoinUsdCurrency.String())
-			continue
-		}
+		statements = append(statements, statement)
+	}
+	for _, statement := range statements {
 		commissionAmountUSD := statement.Commission.Mul(statement.PaymentCoinUsdCurrency)
-		if _, err := tx.
+		exist, err := tx.
 			OrderStatement.
-			Create().
-			SetEntID(statement.EntID).
-			SetAppID(statement.AppID).
-			SetUserID(statement.UserID).
-			SetAppGoodID(statement.AppGoodID).
-			SetOrderID(statement.OrderID).
-			SetOrderUserID(statement.DirectContributorID).
-			SetGoodCoinTypeID(statement.CoinTypeID).
-			SetUnits(statement.UnitsV1).
-			SetGoodValueUsd(statement.UsdAmount).
-			SetPaymentAmountUsd(statement.UsdAmount).
-			SetCommissionAmountUsd(commissionAmountUSD).
-			SetAppConfigID(statement.AppConfigID).
-			SetCommissionConfigID(statement.CommissionConfigID).
-			SetCommissionConfigType(statement.CommissionConfigType).
-			Save(ctx); err != nil {
+			Query().
+			Where(
+				entorderstatement.AppID(statement.AppID),
+				entorderstatement.UserID(statement.UserID),
+				entorderstatement.OrderID(statement.OrderID),
+				entorderstatement.DeletedAt(0),
+			).Exist(ctx)
+		if err != nil {
 			return err
 		}
-		if _, err := tx.
+		if !exist {
+			if _, err := tx.
+				OrderStatement.
+				Create().
+				SetEntID(statement.EntID).
+				SetAppID(statement.AppID).
+				SetUserID(statement.UserID).
+				SetGoodID(statement.GoodID).
+				SetAppGoodID(statement.AppGoodID).
+				SetOrderID(statement.OrderID).
+				SetOrderUserID(statement.DirectContributorID).
+				SetGoodCoinTypeID(statement.CoinTypeID).
+				SetUnits(statement.UnitsV1).
+				SetGoodValueUsd(statement.UsdAmount).
+				SetPaymentAmountUsd(statement.UsdAmount).
+				SetCommissionAmountUsd(commissionAmountUSD).
+				SetAppConfigID(statement.AppConfigID).
+				SetCommissionConfigID(statement.CommissionConfigID).
+				SetCommissionConfigType(statement.CommissionConfigType).
+				SetCreatedAt(statement.CreatedAt).
+				SetUpdatedAt(statement.UpdatedAt).
+				Save(ctx); err != nil {
+				return err
+			}
+		}
+		exist, err = tx.
 			OrderPaymentStatement.
-			Create().
-			SetStatementID(statement.EntID).
-			SetPaymentCoinTypeID(statement.PaymentCoinTypeID).
-			SetAmount(statement.Amount).
-			SetCommissionAmount(statement.Commission).
-			Save(ctx); err != nil {
+			Query().
+			Where(
+				entorderpaymentstatement.StatementID(statement.EntID),
+				entorderpaymentstatement.PaymentCoinTypeID(statement.PaymentCoinTypeID),
+				entorderpaymentstatement.DeletedAt(0),
+			).
+			Exist(ctx)
+		if err != nil {
 			return err
+		}
+		if !exist {
+			if _, err := tx.
+				OrderPaymentStatement.
+				Create().
+				SetStatementID(statement.EntID).
+				SetPaymentCoinTypeID(statement.PaymentCoinTypeID).
+				SetAmount(statement.Amount).
+				SetCommissionAmount(statement.Commission).
+				SetCreatedAt(statement.CreatedAt).
+				SetUpdatedAt(statement.UpdatedAt).
+				Save(ctx); err != nil {
+				return err
+			}
 		}
 	}
-
 	return nil
 }
 
