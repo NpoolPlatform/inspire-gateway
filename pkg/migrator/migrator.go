@@ -147,7 +147,7 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 }
 
 func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
-	rows, err := tx.QueryContext(ctx, "select ent_id,app_id,user_id,good_id,app_good_id,order_id,direct_contributor_id,coin_type_id,units_v1,usd_amount,app_config_id,commission_config_id,commission_config_type,payment_coin_type_id,amount,commission,payment_coin_usd_currency,created_at,updated_at from archivement_details where deleted_at = 0")
+	rows, err := tx.QueryContext(ctx, "select ent_id,app_id,user_id,good_id,app_good_id,order_id,self_order,direct_contributor_id,coin_type_id,units_v1,usd_amount,app_config_id,commission_config_id,commission_config_type,payment_coin_type_id,amount,commission,payment_coin_usd_currency,created_at,updated_at from archivement_details where deleted_at = 0")
 	if err != nil {
 		return err
 	}
@@ -159,6 +159,7 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 		GoodID                 uuid.UUID       `json:"good_id"`
 		AppGoodID              uuid.UUID       `json:"app_good_id"`
 		OrderID                uuid.UUID       `json:"order_id"`
+		SelfOrder              bool            `json:"self_order"`
 		DirectContributorID    uuid.UUID       `json:"direct_contributor_id"`
 		CoinTypeID             uuid.UUID       `json:"coin_type_id"`
 		UnitsV1                decimal.Decimal `json:"units_v1"`
@@ -184,6 +185,7 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 			&statement.GoodID,
 			&statement.AppGoodID,
 			&statement.OrderID,
+			&statement.SelfOrder,
 			&statement.DirectContributorID,
 			&statement.CoinTypeID,
 			&statement.UnitsV1,
@@ -217,6 +219,10 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 			return err
 		}
 		if !exist {
+			orderUserID := statement.UserID
+			if !statement.SelfOrder {
+				orderUserID = statement.DirectContributorID
+			}
 			if _, err := tx.
 				OrderStatement.
 				Create().
@@ -226,7 +232,7 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 				SetGoodID(statement.GoodID).
 				SetAppGoodID(statement.AppGoodID).
 				SetOrderID(statement.OrderID).
-				SetOrderUserID(statement.DirectContributorID).
+				SetOrderUserID(orderUserID).
 				SetGoodCoinTypeID(statement.CoinTypeID).
 				SetUnits(statement.UnitsV1).
 				SetGoodValueUsd(statement.UsdAmount).
