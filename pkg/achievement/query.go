@@ -329,7 +329,7 @@ func (h *queryHandler) getRequiredGoods(ctx context.Context) (err error) {
 
 	for {
 		requireds, _, err := requiredgoodmwcli.GetRequireds(ctx, &requiredgoodmwpb.Conds{
-			GoodIDs: &basetypes.StringSliceVal{Op: cruder.EQ, Value: func() (_goodIDs []string) {
+			GoodIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: func() (_goodIDs []string) {
 				for _, appGood := range h.appGoods {
 					_goodIDs = append(_goodIDs, appGood.GoodID)
 				}
