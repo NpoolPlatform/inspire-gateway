@@ -152,13 +152,14 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 				continue
 			}
 			ioExtra := fmt.Sprintf(
-				`{"PaymentID":"%v","OrderID":"%v","OrderUserID":"%v","InspireAppConfigID":"%v","CommissionConfigID":"%v","CommissionConfigType":"%v"}`,
+				`{"PaymentID":"%v","OrderID":"%v","OrderUserID":"%v","InspireAppConfigID":"%v","CommissionConfigID":"%v","CommissionConfigType":"%v", "PaymentStatementID":"%v"}`,
 				powerRentalOrder.PaymentID,
 				powerRentalOrder.OrderID,
 				powerRentalOrder.UserID,
 				*statement.AppConfigID,
 				*statement.CommissionConfigID,
 				*statement.CommissionConfigType,
+				*paymentStatement.StatementID,
 			)
 
 			ledgerStatementReqs = append(ledgerStatementReqs, &ledgerstatementmwpb.StatementReq{
