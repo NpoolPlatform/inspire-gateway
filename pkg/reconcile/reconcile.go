@@ -201,7 +201,7 @@ func (h *reconcileHandler) reconcilePowerRentalOrders(ctx context.Context) error
 				uint32(ordertypes.OrderState_OrderStateInService),
 				uint32(ordertypes.OrderState_OrderStateExpired),
 			}},
-			Simulate:  &basetypes.BoolVal{Op: cruder.EQ, Value: true},
+			Simulate:  &basetypes.BoolVal{Op: cruder.EQ, Value: false},
 			CreatedAt: &basetypes.Uint32Val{Op: cruder.GT, Value: 1714363200},
 		}, offset, limit)
 		if err != nil {
