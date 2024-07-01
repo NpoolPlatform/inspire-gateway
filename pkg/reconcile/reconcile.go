@@ -21,6 +21,7 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	apppowerrentalmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/powerrental"
+	orderstatementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement/order"
 	appconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/app/config"
 	calculatemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/calculate"
 	ledgerstatementmwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
@@ -35,6 +36,8 @@ import (
 
 type reconcileHandler struct {
 	*Handler
+	orderIDs   []string
+	statements map[string]*orderstatementmwpb.Statement
 }
 
 func (h reconcileHandler) powerRentalOrderGoodValue(ctx context.Context, powerRentalOrder *powerrentalordermwpb.PowerRentalOrder) (decimal.Decimal, error) {
@@ -132,45 +135,47 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 		return nil
 	}
 
-	if err := orderstatementmwcli.CreateStatements(ctx, statementReqs); err != nil {
+	if err := orderstatementmwcli.UpdateStatements(ctx, statementReqs); err != nil {
 		return err
 	}
-
-	// TODO: get payment statements
 
 	ledgerStatementReqs := []*ledgerstatementmwpb.StatementReq{}
 	ioType := ledgertypes.IOType_Incoming
 	ioSubType := ledgertypes.IOSubType_Commission
 
 	for _, statement := range statementReqs {
-		for _, paymentStatement := range statement.PaymentStatements {
-			commission, err := decimal.NewFromString(*paymentStatement.CommissionAmount)
-			if err != nil {
-				return err
-			}
-			if commission.Cmp(decimal.NewFromInt(0)) <= 0 {
-				continue
-			}
-			ioExtra := fmt.Sprintf(
-				`{"PaymentID":"%v","OrderID":"%v","OrderUserID":"%v","InspireAppConfigID":"%v","CommissionConfigID":"%v","CommissionConfigType":"%v", "PaymentStatementID":"%v"}`,
-				powerRentalOrder.PaymentID,
-				powerRentalOrder.OrderID,
-				powerRentalOrder.UserID,
-				*statement.AppConfigID,
-				*statement.CommissionConfigID,
-				*statement.CommissionConfigType,
-				*statement.EntID,
-			)
+		key := fmt.Sprintf("%v-%v", statement.OrderID, statement.UserID)
+		orderStatement, ok := h.statements[key]
+		if ok {
+			for _, paymentStatement := range statement.PaymentStatements {
+				commission, err := decimal.NewFromString(*paymentStatement.CommissionAmount)
+				if err != nil {
+					return err
+				}
+				if commission.Cmp(decimal.NewFromInt(0)) <= 0 {
+					continue
+				}
+				ioExtra := fmt.Sprintf(
+					`{"PaymentID":"%v","OrderID":"%v","OrderUserID":"%v","InspireAppConfigID":"%v","CommissionConfigID":"%v","CommissionConfigType":"%v", "PaymentStatementID":"%v"}`,
+					powerRentalOrder.PaymentID,
+					powerRentalOrder.OrderID,
+					powerRentalOrder.UserID,
+					*statement.AppConfigID,
+					*statement.CommissionConfigID,
+					*statement.CommissionConfigType,
+					orderStatement.EntID,
+				)
 
-			ledgerStatementReqs = append(ledgerStatementReqs, &ledgerstatementmwpb.StatementReq{
-				AppID:      &powerRentalOrder.AppID,
-				UserID:     statement.UserID,
-				CoinTypeID: paymentStatement.PaymentCoinTypeID,
-				IOType:     &ioType,
-				IOSubType:  &ioSubType,
-				Amount:     paymentStatement.CommissionAmount,
-				IOExtra:    &ioExtra,
-			})
+				ledgerStatementReqs = append(ledgerStatementReqs, &ledgerstatementmwpb.StatementReq{
+					AppID:      &powerRentalOrder.AppID,
+					UserID:     statement.UserID,
+					CoinTypeID: paymentStatement.PaymentCoinTypeID,
+					IOType:     &ioType,
+					IOSubType:  &ioSubType,
+					Amount:     paymentStatement.CommissionAmount,
+					IOExtra:    &ioExtra,
+				})
+			}
 		}
 	}
 
@@ -188,6 +193,7 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 func (h *reconcileHandler) reconcilePowerRentalOrders(ctx context.Context) error {
 	offset := int32(0)
 	limit := constant.DefaultRowLimit
+	powerRentalOrders := []*powerrentalordermwpb.PowerRentalOrder{}
 	for {
 		orders, _, err := powerrentalordermwcli.GetPowerRentalOrders(ctx, &powerrentalordermwpb.Conds{
 			AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
@@ -212,17 +218,43 @@ func (h *reconcileHandler) reconcilePowerRentalOrders(ctx context.Context) error
 		}
 
 		for _, order := range orders {
-			if err := h.reconcilePowerRentalOrder(ctx, order); err != nil {
-				logger.Sugar().Errorw(
-					"reconcileOrders",
-					"AppID", *h.AppID,
-					"AppGoodID", *h.AppGoodID,
-					"OrderID", order.EntID,
-					"Err", err,
-				)
-			}
+			powerRentalOrders = append(powerRentalOrders, order)
+			h.orderIDs = append(h.orderIDs, order.OrderID)
+		}
+
+		offset += limit
+	}
+
+	offset = 0
+	for {
+		statements, _, err := orderstatementmwcli.GetStatements(ctx, &orderstatementmwpb.Conds{
+			AppID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+			OrderIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.orderIDs},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(statements) == 0 {
+			break
+		}
+
+		for _, statement := range statements {
+			key := fmt.Sprintf("%v-%v", statement.OrderID, statement.UserID)
+			h.statements[key] = statement
 		}
 		offset += limit
+	}
+
+	for _, order := range powerRentalOrders {
+		if err := h.reconcilePowerRentalOrder(ctx, order); err != nil {
+			logger.Sugar().Errorw(
+				"reconcileOrders",
+				"AppID", *h.AppID,
+				"AppGoodID", *h.AppGoodID,
+				"OrderID", order.EntID,
+				"Err", err,
+			)
+		}
 	}
 	return nil
 }
@@ -264,7 +296,9 @@ func (h *reconcileHandler) checkAppGoodType(ctx context.Context) error {
 
 func (h *Handler) Reconcile(ctx context.Context) error {
 	handler := &reconcileHandler{
-		Handler: h,
+		Handler:    h,
+		statements: map[string]*orderstatementmwpb.Statement{},
+		orderIDs:   []string{},
 	}
 	if err := handler.checkAppCommissionType(ctx); err != nil {
 		return err
