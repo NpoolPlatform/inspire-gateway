@@ -4,15 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	coinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
-	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
 	commconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/app/good/commission/config"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
-	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
-	goodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/app/good/commission/config"
 	commconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/app/good/commission/config"
 
@@ -22,8 +18,6 @@ import (
 type queryHandler struct {
 	*Handler
 	appGoods map[string]*appgoodmwpb.Good
-	goods    map[string]*goodmwpb.Good
-	coins    map[string]*appcoinmwpb.Coin
 	comms    []*commconfigmwpb.AppGoodCommissionConfig
 	infos    []*npool.AppGoodCommissionConfig
 }
@@ -54,65 +48,9 @@ func (h *queryHandler) getAppGoods(ctx context.Context) error {
 	return nil
 }
 
-func (h *queryHandler) getGoods(ctx context.Context) error {
-	ids := []string{}
-	for _, comm := range h.comms {
-		if _, err := uuid.Parse(comm.GoodID); err != nil {
-			continue
-		}
-		ids = append(ids, comm.GoodID)
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-
-	goods, _, err := goodmwcli.GetGoods(ctx, &goodmwpb.Conds{
-		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: ids},
-	}, int32(0), int32(len(ids)))
-	if err != nil {
-		return err
-	}
-
-	for _, good := range goods {
-		h.goods[good.EntID] = good
-	}
-	return nil
-}
-
-func (h *queryHandler) getCoins(ctx context.Context) error {
-	coinTypeIDs := []string{}
-	for _, good := range h.appGoods {
-		coinTypeIDs = append(coinTypeIDs, good.CoinTypeID)
-	}
-	if len(coinTypeIDs) == 0 {
-		return nil
-	}
-
-	coins, _, err := coinmwcli.GetCoins(ctx, &appcoinmwpb.Conds{
-		AppID:       &basetypes.StringVal{Op: cruder.EQ, Value: h.comms[0].AppID},
-		CoinTypeIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: coinTypeIDs},
-	}, int32(0), int32(len(coinTypeIDs)))
-	if err != nil {
-		return err
-	}
-
-	for _, coin := range coins {
-		h.coins[coin.CoinTypeID] = coin
-	}
-	return nil
-}
-
 func (h *queryHandler) formalize() {
 	for _, comm := range h.comms {
-		good, ok := h.goods[comm.GoodID]
-		if !ok {
-			continue
-		}
-		appgood, ok := h.appGoods[comm.AppGoodID]
-		if !ok {
-			continue
-		}
-		coin, ok := h.coins[appgood.CoinTypeID]
+		appGood, ok := h.appGoods[comm.AppGoodID]
 		if !ok {
 			continue
 		}
@@ -122,16 +60,13 @@ func (h *queryHandler) formalize() {
 			AppID:           comm.AppID,
 			SettleType:      comm.SettleType,
 			GoodID:          comm.GoodID,
-			GoodTitle:       good.Title,
+			GoodName:        appGood.GoodName,
 			AppGoodID:       comm.AppGoodID,
-			GoodName:        appgood.GoodName,
+			AppGoodName:     appGood.AppGoodName,
 			AmountOrPercent: comm.AmountOrPercent,
 			ThresholdAmount: comm.ThresholdAmount,
 			StartAt:         comm.StartAt,
 			EndAt:           comm.EndAt,
-			CoinTypeID:      appgood.CoinTypeID,
-			CoinName:        coin.Name,
-			CoinLogo:        coin.Logo,
 			Invites:         comm.Invites,
 			Disabled:        comm.Disabled,
 			Level:           comm.Level,
@@ -156,20 +91,12 @@ func (h *Handler) GetCommission(ctx context.Context) (*npool.AppGoodCommissionCo
 
 	handler := &queryHandler{
 		Handler:  h,
-		goods:    map[string]*goodmwpb.Good{},
 		appGoods: map[string]*appgoodmwpb.Good{},
-		coins:    map[string]*appcoinmwpb.Coin{},
 		comms:    []*commconfigmwpb.AppGoodCommissionConfig{info},
 		infos:    []*npool.AppGoodCommissionConfig{},
 	}
 
-	if err := handler.getGoods(ctx); err != nil {
-		return nil, err
-	}
 	if err := handler.getAppGoods(ctx); err != nil {
-		return nil, err
-	}
-	if err := handler.getCoins(ctx); err != nil {
 		return nil, err
 	}
 	handler.formalize()
@@ -183,9 +110,7 @@ func (h *Handler) GetCommission(ctx context.Context) (*npool.AppGoodCommissionCo
 func (h *Handler) GetCommissions(ctx context.Context) ([]*npool.AppGoodCommissionConfig, uint32, error) {
 	handler := &queryHandler{
 		Handler:  h,
-		goods:    map[string]*goodmwpb.Good{},
 		appGoods: map[string]*appgoodmwpb.Good{},
-		coins:    map[string]*appcoinmwpb.Coin{},
 		infos:    []*npool.AppGoodCommissionConfig{},
 	}
 
@@ -204,13 +129,7 @@ func (h *Handler) GetCommissions(ctx context.Context) ([]*npool.AppGoodCommissio
 	}
 	handler.comms = infos
 
-	if err := handler.getGoods(ctx); err != nil {
-		return nil, 0, err
-	}
 	if err := handler.getAppGoods(ctx); err != nil {
-		return nil, 0, err
-	}
-	if err := handler.getCoins(ctx); err != nil {
 		return nil, 0, err
 	}
 	handler.formalize()

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 
 	"github.com/google/uuid"
@@ -37,6 +38,13 @@ func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 		}
 		if _, err := uuid.Parse(*id); err != nil {
 			return err
+		}
+		app, err := appmwcli.GetApp(ctx, *id)
+		if err != nil {
+			return err
+		}
+		if app == nil {
+			return fmt.Errorf("invalid app id")
 		}
 		h.AppID = id
 		return nil

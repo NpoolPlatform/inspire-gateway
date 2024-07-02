@@ -48,7 +48,7 @@ func (h *queryHandler) formalize() {
 			ID:                 info.ID,
 			EntID:              info.EntID,
 			GoodID:             info.GoodID,
-			GoodTitle:          good.Title,
+			GoodTitle:          good.Name,
 			CouponID:           info.CouponID,
 			CouponName:         info.CouponName,
 			CouponType:         info.CouponType,
