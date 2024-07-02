@@ -144,7 +144,7 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 	ioSubType := ledgertypes.IOSubType_Commission
 
 	for _, statement := range statementReqs {
-		key := fmt.Sprintf("%v-%v", statement.OrderID, statement.UserID)
+		key := fmt.Sprintf("%v-%v", *statement.OrderID, *statement.UserID)
 		orderStatement, ok := h.statements[key]
 		if ok {
 			for _, paymentStatement := range statement.PaymentStatements {
