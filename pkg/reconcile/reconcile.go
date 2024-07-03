@@ -38,28 +38,16 @@ type reconcileHandler struct {
 	*Handler
 	orderIDs   []string
 	statements map[string]*orderstatementmwpb.Statement
+	feeorders  map[string][]*feeordermwpb.FeeOrder
 }
 
 func (h reconcileHandler) powerRentalOrderGoodValue(ctx context.Context, powerRentalOrder *powerrentalordermwpb.PowerRentalOrder) (decimal.Decimal, error) {
-	offset := int32(0)
-	limit := constant.DefaultRowLimit
-
 	goodValueUSD, err := decimal.NewFromString(powerRentalOrder.GoodValueUSD)
 	if err != nil {
 		return decimal.NewFromInt(0), err
 	}
-
-	for {
-		childs, _, err := feeordermwcli.GetFeeOrders(ctx, &feeordermwpb.Conds{
-			ParentOrderID: &basetypes.StringVal{Op: cruder.EQ, Value: powerRentalOrder.EntID},
-			PaymentType:   &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(ordertypes.PaymentType_PayWithParentOrder)},
-		}, offset, limit)
-		if err != nil {
-			return decimal.NewFromInt(0), err
-		}
-		if len(childs) == 0 {
-			break
-		}
+	childs, ok := h.feeorders[powerRentalOrder.OrderID]
+	if ok {
 		for _, child := range childs {
 			amountUSD, err := decimal.NewFromString(child.GoodValueUSD)
 			if err != nil {
@@ -67,7 +55,6 @@ func (h reconcileHandler) powerRentalOrderGoodValue(ctx context.Context, powerRe
 			}
 			goodValueUSD = goodValueUSD.Add(amountUSD)
 		}
-		offset += limit
 	}
 	return goodValueUSD, nil
 }
@@ -245,13 +232,36 @@ func (h *reconcileHandler) reconcilePowerRentalOrders(ctx context.Context) error
 		offset += limit
 	}
 
+	offset = 0
+	for {
+		childs, _, err := feeordermwcli.GetFeeOrders(ctx, &feeordermwpb.Conds{
+			ParentOrderIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.orderIDs},
+			PaymentType:    &basetypes.Uint32Val{Op: cruder.EQ, Value: uint32(ordertypes.PaymentType_PayWithParentOrder)},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(childs) == 0 {
+			break
+		}
+		for _, child := range childs {
+			feeorders, ok := h.feeorders[child.ParentOrderID]
+			if !ok {
+				feeorders = []*feeordermwpb.FeeOrder{}
+			}
+			feeorders = append(feeorders, child)
+			h.feeorders[child.ParentOrderID] = feeorders
+		}
+		offset += limit
+	}
+
 	for _, order := range powerRentalOrders {
 		if err := h.reconcilePowerRentalOrder(ctx, order); err != nil {
 			logger.Sugar().Errorw(
 				"reconcileOrders",
 				"AppID", *h.AppID,
 				"AppGoodID", *h.AppGoodID,
-				"OrderID", order.EntID,
+				"OrderID", order.OrderID,
 				"Err", err,
 			)
 		}
@@ -299,6 +309,7 @@ func (h *Handler) Reconcile(ctx context.Context) error {
 		Handler:    h,
 		statements: map[string]*orderstatementmwpb.Statement{},
 		orderIDs:   []string{},
+		feeorders:  map[string][]*feeordermwpb.FeeOrder{},
 	}
 	if err := handler.checkAppCommissionType(ctx); err != nil {
 		return err
