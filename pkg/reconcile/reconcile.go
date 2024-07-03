@@ -11,6 +11,7 @@ import (
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	apppowerrentalmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/powerrental"
 	orderstatementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/statement/order"
+	orderpaymentstatementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/statement/order/payment"
 	appconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/app/config"
 	calculatemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/calculate"
 	ledgerstatementmwcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger/statement"
@@ -21,7 +22,7 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	apppowerrentalmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/powerrental"
-	orderstatementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement/order"
+	orderpaymentstatementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement/order/payment"
 	appconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/app/config"
 	calculatemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/calculate"
 	ledgerstatementmwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
@@ -36,9 +37,9 @@ import (
 
 type reconcileHandler struct {
 	*Handler
-	orderIDs   []string
-	statements map[string]*orderstatementmwpb.Statement
-	feeorders  map[string][]*feeordermwpb.FeeOrder
+	orderIDs  []string
+	payments  map[string]*orderpaymentstatementmwpb.Statement
+	feeorders map[string][]*feeordermwpb.FeeOrder
 }
 
 func (h reconcileHandler) powerRentalOrderGoodValue(powerRentalOrder *powerrentalordermwpb.PowerRentalOrder) (decimal.Decimal, error) {
@@ -131,10 +132,10 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 	ioSubType := ledgertypes.IOSubType_Commission
 
 	for _, statement := range statementReqs {
-		key := fmt.Sprintf("%v-%v", *statement.OrderID, *statement.UserID)
-		orderStatement, ok := h.statements[key]
-		if ok {
-			for _, paymentStatement := range statement.PaymentStatements {
+		for _, paymentStatement := range statement.PaymentStatements {
+			key := fmt.Sprintf("%v-%v-%v", *statement.UserID, *statement.OrderID, *paymentStatement.PaymentCoinTypeID)
+			payment, ok := h.payments[key]
+			if ok {
 				commission, err := decimal.NewFromString(*paymentStatement.CommissionAmount)
 				if err != nil {
 					return err
@@ -150,7 +151,7 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 					*statement.AppConfigID,
 					*statement.CommissionConfigID,
 					*statement.CommissionConfigType,
-					orderStatement.EntID,
+					payment.EntID,
 				)
 
 				ledgerStatementReqs = append(ledgerStatementReqs, &ledgerstatementmwpb.StatementReq{
@@ -214,20 +215,20 @@ func (h *reconcileHandler) reconcilePowerRentalOrders(ctx context.Context) error
 
 	offset = 0
 	for {
-		statements, _, err := orderstatementmwcli.GetStatements(ctx, &orderstatementmwpb.Conds{
+		payments, _, err := orderpaymentstatementmwcli.GetStatements(ctx, &orderpaymentstatementmwpb.Conds{
 			AppID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 			OrderIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.orderIDs},
 		}, offset, limit)
 		if err != nil {
 			return err
 		}
-		if len(statements) == 0 {
+		if len(payments) == 0 {
 			break
 		}
 
-		for _, statement := range statements {
-			key := fmt.Sprintf("%v-%v", statement.OrderID, statement.UserID)
-			h.statements[key] = statement
+		for _, payment := range payments {
+			key := fmt.Sprintf("%v-%v-%v", payment.UserID, payment.OrderID, payment.PaymentCoinTypeID)
+			h.payments[key] = payment
 		}
 		offset += limit
 	}
@@ -306,10 +307,10 @@ func (h *reconcileHandler) checkAppGoodType(ctx context.Context) error {
 
 func (h *Handler) Reconcile(ctx context.Context) error {
 	handler := &reconcileHandler{
-		Handler:    h,
-		statements: map[string]*orderstatementmwpb.Statement{},
-		orderIDs:   []string{},
-		feeorders:  map[string][]*feeordermwpb.FeeOrder{},
+		Handler:   h,
+		payments:  map[string]*orderpaymentstatementmwpb.Statement{},
+		orderIDs:  []string{},
+		feeorders: map[string][]*feeordermwpb.FeeOrder{},
 	}
 	if err := handler.checkAppCommissionType(ctx); err != nil {
 		return err
