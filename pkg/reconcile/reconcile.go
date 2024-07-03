@@ -41,7 +41,7 @@ type reconcileHandler struct {
 	feeorders  map[string][]*feeordermwpb.FeeOrder
 }
 
-func (h reconcileHandler) powerRentalOrderGoodValue(ctx context.Context, powerRentalOrder *powerrentalordermwpb.PowerRentalOrder) (decimal.Decimal, error) {
+func (h reconcileHandler) powerRentalOrderGoodValue(powerRentalOrder *powerrentalordermwpb.PowerRentalOrder) (decimal.Decimal, error) {
 	goodValueUSD, err := decimal.NewFromString(powerRentalOrder.GoodValueUSD)
 	if err != nil {
 		return decimal.NewFromInt(0), err
@@ -71,7 +71,7 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 		return fmt.Errorf("invalid apppowerrental")
 	}
 
-	goodValueUSD, err := h.powerRentalOrderGoodValue(ctx, powerRentalOrder)
+	goodValueUSD, err := h.powerRentalOrderGoodValue(powerRentalOrder)
 	if err != nil {
 		return err
 	}
@@ -177,7 +177,7 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 	return nil
 }
 
-func (h *reconcileHandler) reconcilePowerRentalOrders(ctx context.Context) error {
+func (h *reconcileHandler) reconcilePowerRentalOrders(ctx context.Context) error { // nolint:gocyclo
 	offset := int32(0)
 	limit := constant.DefaultRowLimit
 	powerRentalOrders := []*powerrentalordermwpb.PowerRentalOrder{}
