@@ -8,6 +8,7 @@ import (
 	coinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	goodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good"
+	goodcoinmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/good/coin"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	commmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/commission"
 	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
@@ -17,6 +18,7 @@ import (
 	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	goodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/good"
+	goodcoinmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/good/coin"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/commission"
 	commmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/commission"
 	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
@@ -26,13 +28,14 @@ import (
 
 type queryHandler struct {
 	*Handler
-	users    map[string]*usermwpb.User
-	invitees []*registrationmwpb.Registration
-	appGoods map[string]*appgoodmwpb.Good
-	goods    map[string]*goodmwpb.Good
-	coins    map[string]*appcoinmwpb.Coin
-	comms    []*commmwpb.Commission
-	infos    []*npool.Commission
+	users         map[string]*usermwpb.User
+	invitees      []*registrationmwpb.Registration
+	appGoods      map[string]*appgoodmwpb.Good
+	goods         map[string]*goodmwpb.Good
+	goodMainCoins map[string]*goodcoinmwpb.GoodCoin
+	coins         map[string]*appcoinmwpb.Coin
+	comms         []*commmwpb.Commission
+	infos         []*npool.Commission
 }
 
 func (h *queryHandler) getUsers(ctx context.Context) error {
@@ -106,10 +109,39 @@ func (h *queryHandler) getGoods(ctx context.Context) error {
 	return nil
 }
 
+func (h *queryHandler) getGoodCoins(ctx context.Context) (err error) {
+	h.goodMainCoins = map[string]*goodcoinmwpb.GoodCoin{}
+
+	offset := int32(0)
+	limit := constant.DefaultRowLimit
+
+	for {
+		goodCoins, _, err := goodcoinmwcli.GetGoodCoins(ctx, &goodcoinmwpb.Conds{
+			GoodIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: func() (_goodIDs []string) {
+				for _, appGood := range h.appGoods {
+					_goodIDs = append(_goodIDs, appGood.GoodID)
+				}
+				return
+			}()},
+			Main: &basetypes.BoolVal{Op: cruder.EQ, Value: true},
+		}, offset, limit)
+		if err != nil {
+			return err
+		}
+		if len(goodCoins) == 0 {
+			return nil
+		}
+		offset += limit
+		for _, goodCoin := range goodCoins {
+			h.goodMainCoins[goodCoin.GoodID] = goodCoin
+		}
+	}
+}
+
 func (h *queryHandler) getCoins(ctx context.Context) error {
 	coinTypeIDs := []string{}
-	for _, good := range h.appGoods {
-		coinTypeIDs = append(coinTypeIDs, good.CoinTypeID)
+	for _, goodCoin := range h.goodMainCoins {
+		coinTypeIDs = append(coinTypeIDs, goodCoin.CoinTypeID)
 	}
 	if len(coinTypeIDs) == 0 {
 		return nil
@@ -135,15 +167,15 @@ func (h *queryHandler) formalize() {
 		if !ok {
 			continue
 		}
-		good, ok := h.goods[comm.GoodID]
+		appGood, ok := h.appGoods[comm.AppGoodID]
 		if !ok {
 			continue
 		}
-		appgood, ok := h.appGoods[comm.AppGoodID]
+		goodMainCoin, ok := h.goodMainCoins[appGood.GoodID]
 		if !ok {
 			continue
 		}
-		coin, ok := h.coins[appgood.CoinTypeID]
+		coin, ok := h.coins[goodMainCoin.CoinTypeID]
 		if !ok {
 			continue
 		}
@@ -163,14 +195,14 @@ func (h *queryHandler) formalize() {
 			SettleAmountType: comm.SettleAmountType,
 			SettleInterval:   comm.SettleInterval,
 			GoodID:           comm.GoodID,
-			GoodTitle:        good.Title,
+			GoodName:         appGood.GoodName,
 			AppGoodID:        comm.AppGoodID,
-			GoodName:         appgood.GoodName,
+			AppGoodName:      appGood.AppGoodName,
 			AmountOrPercent:  comm.AmountOrPercent,
 			Threshold:        comm.Threshold,
 			StartAt:          comm.StartAt,
 			EndAt:            comm.EndAt,
-			CoinTypeID:       appgood.CoinTypeID,
+			CoinTypeID:       goodMainCoin.CoinTypeID,
 			CoinName:         coin.Name,
 			CoinLogo:         coin.Logo,
 			CreatedAt:        comm.CreatedAt,
@@ -195,8 +227,8 @@ func (h *Handler) GetCommission(ctx context.Context) (*npool.Commission, error) 
 	handler := &queryHandler{
 		Handler:  h,
 		users:    map[string]*usermwpb.User{},
-		goods:    map[string]*goodmwpb.Good{},
 		appGoods: map[string]*appgoodmwpb.Good{},
+		goods:    map[string]*goodmwpb.Good{},
 		coins:    map[string]*appcoinmwpb.Coin{},
 		comms:    []*commmwpb.Commission{info},
 		infos:    []*npool.Commission{},
@@ -208,6 +240,9 @@ func (h *Handler) GetCommission(ctx context.Context) (*npool.Commission, error) 
 		return nil, err
 	}
 	if err := handler.getAppGoods(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getGoodCoins(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.getCoins(ctx); err != nil {
@@ -247,12 +282,29 @@ func (h *queryHandler) getInvitees(ctx context.Context) error {
 	return nil
 }
 
+func (h *Handler) getUser(ctx context.Context) error {
+	if h.UserID == nil {
+		return nil
+	}
+	user, err := usermwcli.GetUser(ctx, *h.AppID, *h.UserID)
+	if err != nil {
+		return err
+	}
+	if user == nil {
+		return fmt.Errorf("invalid user")
+	}
+	return nil
+}
+
 func (h *Handler) GetCommissions(ctx context.Context) ([]*npool.Commission, uint32, error) {
+	if err := h.getUser(ctx); err != nil {
+		return nil, 0, err
+	}
 	handler := &queryHandler{
 		Handler:  h,
 		users:    map[string]*usermwpb.User{},
-		goods:    map[string]*goodmwpb.Good{},
 		appGoods: map[string]*appgoodmwpb.Good{},
+		goods:    map[string]*goodmwpb.Good{},
 		coins:    map[string]*appcoinmwpb.Coin{},
 		infos:    []*npool.Commission{},
 	}
@@ -290,6 +342,9 @@ func (h *Handler) GetCommissions(ctx context.Context) ([]*npool.Commission, uint
 		return nil, 0, err
 	}
 	if err := handler.getAppGoods(ctx); err != nil {
+		return nil, 0, err
+	}
+	if err := handler.getGoodCoins(ctx); err != nil {
 		return nil, 0, err
 	}
 	if err := handler.getCoins(ctx); err != nil {

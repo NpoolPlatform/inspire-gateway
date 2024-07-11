@@ -20,7 +20,7 @@ func (h *createHandler) createCommissionConfig(ctx context.Context) error {
 	h.req = &commissionconfigmwpb.AppGoodCommissionConfigReq{
 		EntID:           h.EntID,
 		AppID:           h.AppID,
-		GoodID:          h.GoodID,
+		GoodID:          &h.appgood.GoodID,
 		AppGoodID:       h.AppGoodID,
 		SettleType:      h.SettleType,
 		Invites:         h.Invites,
