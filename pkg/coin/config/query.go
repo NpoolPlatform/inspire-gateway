@@ -2,9 +2,9 @@ package config
 
 import (
 	"context"
-	"fmt"
 
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	coinconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coin/config"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
@@ -30,7 +30,7 @@ func (h *queryHandler) getAppCoins(ctx context.Context) error {
 		CoinTypeIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: coinTypeIDs},
 	}, 0, int32(len(coinTypeIDs)))
 	if err != nil {
-		return err
+		return wlog.WrapError(err)
 	}
 
 	for _, coin := range coins {
@@ -64,12 +64,12 @@ func (h *queryHandler) formalize() {
 
 func (h *Handler) GetCoinConfig(ctx context.Context) (*npool.CoinConfig, error) {
 	if h.EntID == nil {
-		return nil, fmt.Errorf("invalid entid")
+		return nil, wlog.Errorf("invalid entid")
 	}
 
 	info, err := coinconfigmwcli.GetCoinConfig(ctx, *h.EntID)
 	if err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 	if info == nil {
 		return nil, nil
@@ -80,7 +80,7 @@ func (h *Handler) GetCoinConfig(ctx context.Context) (*npool.CoinConfig, error) 
 		coinConfigs: []*coinconfigmwpb.CoinConfig{info},
 	}
 	if err := handler.getAppCoins(ctx); err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 	handler.formalize()
 	if len(handler.infos) == 0 {
@@ -97,7 +97,7 @@ func (h *Handler) GetCoinConfigs(ctx context.Context) ([]*npool.CoinConfig, uint
 
 	infos, _, err := coinconfigmwcli.GetCoinConfigs(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, wlog.WrapError(err)
 	}
 	handler := &queryHandler{
 		Handler:     h,
@@ -107,7 +107,7 @@ func (h *Handler) GetCoinConfigs(ctx context.Context) ([]*npool.CoinConfig, uint
 
 	handler.coinConfigs = infos
 	if err := handler.getAppCoins(ctx); err != nil {
-		return nil, 0, err
+		return nil, 0, wlog.WrapError(err)
 	}
 	handler.formalize()
 

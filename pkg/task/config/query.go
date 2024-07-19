@@ -2,8 +2,8 @@ package config
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	taskconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/config"
 	taskusermwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/user"
@@ -96,12 +96,12 @@ func (h *queryHandler) formalize() {
 
 func (h *Handler) GetUserTaskConfig(ctx context.Context) (*npool.UserTaskConfig, error) {
 	if h.EntID == nil {
-		return nil, fmt.Errorf("invalid entid")
+		return nil, wlog.Errorf("invalid entid")
 	}
 
 	info, err := taskconfigmwcli.GetTaskConfig(ctx, *h.EntID)
 	if err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 	if info == nil {
 		return nil, nil
@@ -136,7 +136,7 @@ func (h *Handler) GetUserTaskConfigs(ctx context.Context) ([]*npool.UserTaskConf
 
 	infos, total, err := taskconfigmwcli.GetTaskConfigs(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, wlog.WrapError(err)
 	}
 	if len(infos) == 0 {
 		return nil, total, nil
@@ -150,7 +150,7 @@ func (h *Handler) GetUserTaskConfigs(ctx context.Context) ([]*npool.UserTaskConf
 
 	userInfos, _, err := taskusermwcli.GetTaskUsers(ctx, userConds, h.Offset, h.Limit)
 	if err != nil {
-		return nil, total, err
+		return nil, total, wlog.WrapError(err)
 	}
 	handler.taskUsers = userInfos
 
@@ -168,7 +168,7 @@ func (h *queryHandler) getEvents(ctx context.Context) error {
 		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: eventIDs},
 	}, 0, int32(len(eventIDs)))
 	if err != nil {
-		return err
+		return wlog.WrapError(err)
 	}
 
 	for _, event := range events {
@@ -179,13 +179,13 @@ func (h *queryHandler) getEvents(ctx context.Context) error {
 
 func (h *Handler) GetTaskConfig(ctx context.Context, info *taskconfigmwpb.TaskConfig) (*npool.TaskConfig, error) {
 	if h.EntID == nil {
-		return nil, fmt.Errorf("invalid entid")
+		return nil, wlog.Errorf("invalid entid")
 	}
 
 	if info == nil {
 		taskInfo, err := taskconfigmwcli.GetTaskConfig(ctx, *h.EntID)
 		if err != nil {
-			return nil, err
+			return nil, wlog.WrapError(err)
 		}
 		if taskInfo == nil {
 			return nil, nil
@@ -201,7 +201,7 @@ func (h *Handler) GetTaskConfig(ctx context.Context, info *taskconfigmwpb.TaskCo
 	}
 
 	if err := handler.getEvents(ctx); err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 
 	handler.formalize()
@@ -225,7 +225,7 @@ func (h *Handler) GetTaskConfigs(ctx context.Context) ([]*npool.TaskConfig, uint
 
 	infos, total, err := taskconfigmwcli.GetTaskConfigs(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, wlog.WrapError(err)
 	}
 	if len(infos) == 0 {
 		return nil, total, nil
@@ -233,7 +233,7 @@ func (h *Handler) GetTaskConfigs(ctx context.Context) ([]*npool.TaskConfig, uint
 	handler.taskConfigs = infos
 
 	if err := handler.getEvents(ctx); err != nil {
-		return nil, 0, err
+		return nil, 0, wlog.WrapError(err)
 	}
 
 	handler.formalize()

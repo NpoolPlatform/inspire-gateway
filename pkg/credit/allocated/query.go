@@ -2,9 +2,9 @@ package allocated
 
 import (
 	"context"
-	"fmt"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	creditallocatedmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/credit/allocated"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	appusermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
@@ -29,7 +29,7 @@ func (h *queryHandler) getCreditAllocateds(ctx context.Context) error {
 	}
 	infos, _, err := creditallocatedmwcli.GetCreditAllocateds(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
-		return err
+		return wlog.WrapError(err)
 	}
 	h.creditallocateds = infos
 	return nil
@@ -44,7 +44,7 @@ func (h *queryHandler) getUsers(ctx context.Context) error {
 		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
 	}, 0, int32(len(userIDs)))
 	if err != nil {
-		return err
+		return wlog.WrapError(err)
 	}
 
 	for _, user := range users {
@@ -75,12 +75,12 @@ func (h *queryHandler) formalize() {
 
 func (h *Handler) GetCreditAllocated(ctx context.Context) (*npool.CreditAllocated, error) {
 	if h.EntID == nil {
-		return nil, fmt.Errorf("invalid entid")
+		return nil, wlog.Errorf("invalid entid")
 	}
 
 	info, err := creditallocatedmwcli.GetCreditAllocated(ctx, *h.EntID)
 	if err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 	if info == nil {
 		return nil, nil
@@ -93,7 +93,7 @@ func (h *Handler) GetCreditAllocated(ctx context.Context) (*npool.CreditAllocate
 	}
 
 	if err := handler.getUsers(ctx); err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 
 	handler.formalize()
@@ -112,11 +112,11 @@ func (h *Handler) GetCreditAllocateds(ctx context.Context) ([]*npool.CreditAlloc
 	}
 
 	if err := handler.getCreditAllocateds(ctx); err != nil {
-		return nil, 0, err
+		return nil, 0, wlog.WrapError(err)
 	}
 
 	if err := handler.getUsers(ctx); err != nil {
-		return nil, 0, err
+		return nil, 0, wlog.WrapError(err)
 	}
 
 	handler.formalize()

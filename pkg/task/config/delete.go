@@ -2,8 +2,8 @@ package config
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	configmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/config"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
@@ -17,14 +17,14 @@ func (h *Handler) DeleteTaskConfig(ctx context.Context) (*npool.TaskConfig, erro
 		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.EntID},
 	})
 	if err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 	if info == nil {
-		return nil, fmt.Errorf("invalid taskconfig")
+		return nil, wlog.Errorf("invalid taskconfig")
 	}
 
 	if err := configmwcli.DeleteTaskConfig(ctx, h.ID, h.EntID); err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 
 	return h.GetTaskConfig(ctx, info)

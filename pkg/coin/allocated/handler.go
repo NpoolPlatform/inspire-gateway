@@ -2,9 +2,9 @@ package allocated
 
 import (
 	"context"
-	"fmt"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 
 	"github.com/google/uuid"
@@ -33,7 +33,7 @@ func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid id")
+				return wlog.Errorf("invalid id")
 			}
 			return nil
 		}
@@ -46,12 +46,12 @@ func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid entid")
+				return wlog.Errorf("invalid entid")
 			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		h.EntID = id
 		return nil
@@ -62,19 +62,19 @@ func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid appid")
+				return wlog.Errorf("invalid appid")
 			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		exist, err := appmwcli.ExistApp(ctx, *id)
 		if err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		if !exist {
-			return fmt.Errorf("invalid appid")
+			return wlog.Errorf("invalid appid")
 		}
 		h.AppID = id
 		return nil
@@ -85,12 +85,12 @@ func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid userid")
+				return wlog.Errorf("invalid userid")
 			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		h.UserID = id
 		return nil

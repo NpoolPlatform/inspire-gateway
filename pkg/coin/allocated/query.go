@@ -2,10 +2,10 @@ package allocated
 
 import (
 	"context"
-	"fmt"
 
 	usermwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/user"
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	coinallocatedmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coin/allocated"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	appusermwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/user"
@@ -32,7 +32,7 @@ func (h *queryHandler) getCoinAllocateds(ctx context.Context) error {
 	}
 	infos, _, err := coinallocatedmwcli.GetCoinAllocateds(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
-		return err
+		return wlog.WrapError(err)
 	}
 	h.coinallocateds = infos
 	return nil
@@ -47,7 +47,7 @@ func (h *queryHandler) getUsers(ctx context.Context) error {
 		EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: userIDs},
 	}, 0, int32(len(userIDs)))
 	if err != nil {
-		return err
+		return wlog.WrapError(err)
 	}
 
 	for _, user := range users {
@@ -66,7 +66,7 @@ func (h *queryHandler) getAppCoins(ctx context.Context) error {
 		CoinTypeIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: coinTypeIDs},
 	}, 0, int32(len(coinTypeIDs)))
 	if err != nil {
-		return err
+		return wlog.WrapError(err)
 	}
 
 	for _, coin := range coins {
@@ -107,12 +107,12 @@ func (h *queryHandler) formalize() {
 
 func (h *Handler) GetCoinAllocated(ctx context.Context) (*npool.CoinAllocated, error) {
 	if h.EntID == nil {
-		return nil, fmt.Errorf("invalid entid")
+		return nil, wlog.Errorf("invalid entid")
 	}
 
 	info, err := coinallocatedmwcli.GetCoinAllocated(ctx, *h.EntID)
 	if err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 	if info == nil {
 		return nil, nil
@@ -126,11 +126,11 @@ func (h *Handler) GetCoinAllocated(ctx context.Context) (*npool.CoinAllocated, e
 	}
 
 	if err := handler.getUsers(ctx); err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 
 	if err := handler.getAppCoins(ctx); err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 
 	handler.formalize()
@@ -150,15 +150,15 @@ func (h *Handler) GetCoinAllocateds(ctx context.Context) ([]*npool.CoinAllocated
 	}
 
 	if err := handler.getCoinAllocateds(ctx); err != nil {
-		return nil, 0, err
+		return nil, 0, wlog.WrapError(err)
 	}
 
 	if err := handler.getUsers(ctx); err != nil {
-		return nil, 0, err
+		return nil, 0, wlog.WrapError(err)
 	}
 
 	if err := handler.getAppCoins(ctx); err != nil {
-		return nil, 0, err
+		return nil, 0, wlog.WrapError(err)
 	}
 
 	handler.formalize()

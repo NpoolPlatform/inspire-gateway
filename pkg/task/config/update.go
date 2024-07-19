@@ -2,8 +2,8 @@ package config
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	configmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/config"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/task/config"
 	configmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/task/config"
@@ -12,13 +12,13 @@ import (
 func (h *Handler) UpdateTaskConfig(ctx context.Context) (*npool.TaskConfig, error) {
 	info, err := h.GetTaskConfig(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 	if info == nil {
-		return nil, fmt.Errorf("invalid config")
+		return nil, wlog.Errorf("invalid config")
 	}
 	if info.ID != *h.ID || info.EntID != *h.EntID {
-		return nil, fmt.Errorf("permission denied")
+		return nil, wlog.Errorf("permission denied")
 	}
 
 	if err := configmwcli.UpdateTaskConfig(ctx, &configmwpb.TaskConfigReq{
@@ -36,7 +36,7 @@ func (h *Handler) UpdateTaskConfig(ctx context.Context) (*npool.TaskConfig, erro
 		MaxRewardCount:   h.MaxRewardCount,
 		CooldownSecord:   h.CooldownSecord,
 	}); err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 	return h.GetTaskConfig(ctx, nil)
 }

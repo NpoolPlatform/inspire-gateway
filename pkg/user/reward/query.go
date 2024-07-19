@@ -2,8 +2,8 @@ package reward
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	userrewardmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/user/reward"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
@@ -12,12 +12,12 @@ import (
 
 func (h *Handler) GetUserReward(ctx context.Context) (*userrewardmwpb.UserReward, error) {
 	if h.EntID == nil {
-		return nil, fmt.Errorf("invalid entid")
+		return nil, wlog.Errorf("invalid entid")
 	}
 
 	info, err := userrewardmwcli.GetUserReward(ctx, *h.EntID)
 	if err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 	if info == nil {
 		return nil, nil

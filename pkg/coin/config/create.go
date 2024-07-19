@@ -2,11 +2,11 @@ package config
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/google/uuid"
 
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	coinconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coin/config"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
@@ -25,10 +25,10 @@ func (h *createHandler) checkAppCoin(ctx context.Context) error {
 		CoinTypeID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.CoinTypeID},
 	})
 	if err != nil {
-		return err
+		return wlog.WrapError(err)
 	}
 	if !exist {
-		return fmt.Errorf("invalid appcoin")
+		return wlog.Errorf("invalid appcoin")
 	}
 	return nil
 }
@@ -38,7 +38,7 @@ func (h *Handler) CreateCoinConfig(ctx context.Context) (*npool.CoinConfig, erro
 		Handler: h,
 	}
 	if err := handler.checkAppCoin(ctx); err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 
 	id := uuid.NewString()
@@ -53,7 +53,7 @@ func (h *Handler) CreateCoinConfig(ctx context.Context) (*npool.CoinConfig, erro
 		MaxValue:   h.MaxValue,
 		Allocated:  h.Allocated,
 	}); err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 
 	return h.GetCoinConfig(ctx)

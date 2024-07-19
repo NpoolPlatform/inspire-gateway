@@ -2,9 +2,9 @@ package config
 
 import (
 	"context"
-	"fmt"
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	constant "github.com/NpoolPlatform/inspire-gateway/pkg/const"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 
@@ -44,7 +44,7 @@ func WithID(id *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid id")
+				return wlog.Errorf("invalid id")
 			}
 			return nil
 		}
@@ -57,12 +57,12 @@ func WithEntID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid entid")
+				return wlog.Errorf("invalid entid")
 			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		h.EntID = id
 		return nil
@@ -73,19 +73,19 @@ func WithAppID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid appid")
+				return wlog.Errorf("invalid appid")
 			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		exist, err := appmwcli.ExistApp(ctx, *id)
 		if err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		if !exist {
-			return fmt.Errorf("invalid appid")
+			return wlog.Errorf("invalid appid")
 		}
 		h.AppID = id
 		return nil
@@ -96,12 +96,12 @@ func WithEventID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid eventid")
+				return wlog.Errorf("invalid eventid")
 			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		h.EventID = id
 		return nil
@@ -112,7 +112,7 @@ func WithTaskType(taskType *types.TaskType, must bool) func(context.Context, *Ha
 	return func(ctx context.Context, h *Handler) error {
 		if taskType == nil {
 			if must {
-				return fmt.Errorf("invalid tasktype")
+				return wlog.Errorf("invalid tasktype")
 			}
 			return nil
 		}
@@ -121,7 +121,7 @@ func WithTaskType(taskType *types.TaskType, must bool) func(context.Context, *Ha
 		case types.TaskType_DailyTask:
 		case types.TaskType_GrowthTask:
 		default:
-			return fmt.Errorf("invalid tasktype")
+			return wlog.Errorf("invalid tasktype")
 		}
 		h.TaskType = taskType
 		return nil
@@ -160,7 +160,7 @@ func WithIndex(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
 			if must {
-				return fmt.Errorf("invalid index")
+				return wlog.Errorf("invalid index")
 			}
 			return nil
 		}
@@ -173,12 +173,12 @@ func WithLastTaskID(id *string, must bool) func(context.Context, *Handler) error
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid lasttaskid")
+				return wlog.Errorf("invalid lasttaskid")
 			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		h.LastTaskID = id
 		return nil
@@ -189,12 +189,12 @@ func WithUserID(id *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if id == nil {
 			if must {
-				return fmt.Errorf("invalid userid")
+				return wlog.Errorf("invalid userid")
 			}
 			return nil
 		}
 		if _, err := uuid.Parse(*id); err != nil {
-			return err
+			return wlog.WrapError(err)
 		}
 		h.UserID = id
 		return nil
@@ -205,7 +205,7 @@ func WithMaxRewardCount(value *uint32, must bool) func(context.Context, *Handler
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
 			if must {
-				return fmt.Errorf("invalid maxrewardcount")
+				return wlog.Errorf("invalid maxrewardcount")
 			}
 			return nil
 		}
@@ -218,7 +218,7 @@ func WithCooldownSecord(value *uint32, must bool) func(context.Context, *Handler
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
 			if must {
-				return fmt.Errorf("invalid cooldownsecord")
+				return wlog.Errorf("invalid cooldownsecord")
 			}
 			return nil
 		}

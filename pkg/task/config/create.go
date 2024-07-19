@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/uuid"
 
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	taskconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/config"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/task/config"
 	taskconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/task/config"
@@ -30,7 +31,7 @@ func (h *Handler) CreateTaskConfig(ctx context.Context) (*npool.TaskConfig, erro
 		CooldownSecord:   h.CooldownSecord,
 		LastTaskID:       h.LastTaskID,
 	}); err != nil {
-		return nil, err
+		return nil, wlog.WrapError(err)
 	}
 
 	return h.GetTaskConfig(ctx, nil)
