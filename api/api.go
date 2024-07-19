@@ -17,6 +17,7 @@ import (
 	cashcontrol "github.com/NpoolPlatform/inspire-gateway/api/coupon/app/cashcontrol"
 	appgoodscope "github.com/NpoolPlatform/inspire-gateway/api/coupon/app/scope"
 	"github.com/NpoolPlatform/inspire-gateway/api/coupon/scope"
+	creditallocated "github.com/NpoolPlatform/inspire-gateway/api/credit/allocated"
 	"github.com/NpoolPlatform/inspire-gateway/api/event"
 	"github.com/NpoolPlatform/inspire-gateway/api/invitation/invitationcode"
 	"github.com/NpoolPlatform/inspire-gateway/api/invitation/registration"
@@ -52,6 +53,7 @@ func Register(server grpc.ServiceRegistrar) {
 	taskconfig.Register(server)
 	coinconfig.Register(server)
 	coinallocated.Register(server)
+	creditallocated.Register(server)
 	userreward.Register(server)
 	usercoinreward.Register(server)
 }
@@ -110,6 +112,9 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 		return err
 	}
 	if err := coinallocated.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := creditallocated.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	if err := userreward.RegisterGateway(mux, endpoint, opts); err != nil {
