@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) UserGetCreditAllocateds(ctx context.Context, in *npool.UserGetCreditAllocatedsRequest) (*npool.UserGetCreditAllocatedsResponse, error) {
+func (s *Server) GetMyCreditAllocateds(ctx context.Context, in *npool.GetMyCreditAllocatedsRequest) (*npool.GetMyCreditAllocatedsResponse, error) {
 	handler, err := allocated1.NewHandler(
 		ctx,
 		allocated1.WithAppID(&in.AppID, true),
@@ -22,30 +22,30 @@ func (s *Server) UserGetCreditAllocateds(ctx context.Context, in *npool.UserGetC
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UserGetCreditAllocateds",
+			"GetMyCreditAllocateds",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.UserGetCreditAllocatedsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.GetMyCreditAllocatedsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	infos, total, err := handler.GetCreditAllocateds(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UserGetCreditAllocateds",
+			"GetMyCreditAllocateds",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.UserGetCreditAllocatedsResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.GetMyCreditAllocatedsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.UserGetCreditAllocatedsResponse{
+	return &npool.GetMyCreditAllocatedsResponse{
 		Infos: infos,
 		Total: total,
 	}, nil
 }
 
-func (s *Server) AdminGetAppCreditAllocateds(ctx context.Context, in *npool.AdminGetAppCreditAllocatedsRequest) (*npool.AdminGetAppCreditAllocatedsResponse, error) {
+func (s *Server) AdminGetCreditAllocateds(ctx context.Context, in *npool.AdminGetCreditAllocatedsRequest) (*npool.AdminGetCreditAllocatedsResponse, error) {
 	handler, err := allocated1.NewHandler(
 		ctx,
 		allocated1.WithAppID(&in.TargetAppID, true),
@@ -54,24 +54,24 @@ func (s *Server) AdminGetAppCreditAllocateds(ctx context.Context, in *npool.Admi
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"AdminGetAppCreditAllocateds",
+			"AdminGetCreditAllocateds",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.AdminGetAppCreditAllocatedsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.AdminGetCreditAllocatedsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	infos, total, err := handler.GetCreditAllocateds(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"AdminGetAppCreditAllocateds",
+			"AdminGetCreditAllocateds",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.AdminGetAppCreditAllocatedsResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.AdminGetCreditAllocatedsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.AdminGetAppCreditAllocatedsResponse{
+	return &npool.AdminGetCreditAllocatedsResponse{
 		Infos: infos,
 		Total: total,
 	}, nil

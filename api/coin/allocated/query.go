@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) UserGetCoinAllocateds(ctx context.Context, in *npool.UserGetCoinAllocatedsRequest) (*npool.UserGetCoinAllocatedsResponse, error) {
+func (s *Server) GetMyCoinAllocateds(ctx context.Context, in *npool.GetMyCoinAllocatedsRequest) (*npool.GetMyCoinAllocatedsResponse, error) {
 	handler, err := allocated1.NewHandler(
 		ctx,
 		allocated1.WithAppID(&in.AppID, true),
@@ -22,30 +22,30 @@ func (s *Server) UserGetCoinAllocateds(ctx context.Context, in *npool.UserGetCoi
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UserGetCoinAllocateds",
+			"GetMyCoinAllocateds",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.UserGetCoinAllocatedsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.GetMyCoinAllocatedsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	infos, total, err := handler.GetCoinAllocateds(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"UserGetCoinAllocateds",
+			"GetMyCoinAllocateds",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.UserGetCoinAllocatedsResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.GetMyCoinAllocatedsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.UserGetCoinAllocatedsResponse{
+	return &npool.GetMyCoinAllocatedsResponse{
 		Infos: infos,
 		Total: total,
 	}, nil
 }
 
-func (s *Server) AdminGetAppCoinAllocateds(ctx context.Context, in *npool.AdminGetAppCoinAllocatedsRequest) (*npool.AdminGetAppCoinAllocatedsResponse, error) {
+func (s *Server) AdminGetCoinAllocateds(ctx context.Context, in *npool.AdminGetCoinAllocatedsRequest) (*npool.AdminGetCoinAllocatedsResponse, error) {
 	handler, err := allocated1.NewHandler(
 		ctx,
 		allocated1.WithAppID(&in.TargetAppID, true),
@@ -54,24 +54,24 @@ func (s *Server) AdminGetAppCoinAllocateds(ctx context.Context, in *npool.AdminG
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"AdminGetAppCoinAllocateds",
+			"AdminGetCoinAllocateds",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.AdminGetAppCoinAllocatedsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.AdminGetCoinAllocatedsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	infos, total, err := handler.GetCoinAllocateds(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"AdminGetAppCoinAllocateds",
+			"AdminGetCoinAllocateds",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.AdminGetAppCoinAllocatedsResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.AdminGetCoinAllocatedsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.AdminGetAppCoinAllocatedsResponse{
+	return &npool.AdminGetCoinAllocatedsResponse{
 		Infos: infos,
 		Total: total,
 	}, nil
