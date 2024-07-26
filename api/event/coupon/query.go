@@ -13,33 +13,33 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) AdminGetEventCoupons(ctx context.Context, in *npool.AdminGetEventCouponsRequest) (*npool.AdminGetEventCouponsResponse, error) {
+func (s *Server) GetEventCoupons(ctx context.Context, in *npool.GetEventCouponsRequest) (*npool.GetEventCouponsResponse, error) {
 	handler, err := coupon1.NewHandler(
 		ctx,
-		coupon1.WithAppID(&in.TargetAppID, true),
+		coupon1.WithAppID(&in.AppID, true),
 		coupon1.WithOffset(in.GetOffset()),
 		coupon1.WithLimit(in.GetLimit()),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"AdminGetEventCoupons",
+			"GetEventCoupons",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.AdminGetEventCouponsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.GetEventCouponsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	infos, total, err := handler.GetEventCoupons(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"AdminGetEventCoupons",
+			"GetEventCoupons",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.AdminGetEventCouponsResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.GetEventCouponsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.AdminGetEventCouponsResponse{
+	return &npool.GetEventCouponsResponse{
 		Infos: infos,
 		Total: total,
 	}, nil

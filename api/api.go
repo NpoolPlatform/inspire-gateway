@@ -19,6 +19,8 @@ import (
 	"github.com/NpoolPlatform/inspire-gateway/api/coupon/scope"
 	creditallocated "github.com/NpoolPlatform/inspire-gateway/api/credit/allocated"
 	"github.com/NpoolPlatform/inspire-gateway/api/event"
+	eventcoin "github.com/NpoolPlatform/inspire-gateway/api/event/coin"
+	eventcoupon "github.com/NpoolPlatform/inspire-gateway/api/event/coupon"
 	"github.com/NpoolPlatform/inspire-gateway/api/invitation/invitationcode"
 	"github.com/NpoolPlatform/inspire-gateway/api/invitation/registration"
 	"github.com/NpoolPlatform/inspire-gateway/api/reconcile"
@@ -56,6 +58,8 @@ func Register(server grpc.ServiceRegistrar) {
 	creditallocated.Register(server)
 	userreward.Register(server)
 	usercoinreward.Register(server)
+	eventcoin.Register(server)
+	eventcoupon.Register(server)
 }
 
 //nolint:gocyclo
@@ -121,6 +125,12 @@ func RegisterGateway(mux *runtime.ServeMux, endpoint string, opts []grpc.DialOpt
 		return err
 	}
 	if err := usercoinreward.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := eventcoin.RegisterGateway(mux, endpoint, opts); err != nil {
+		return err
+	}
+	if err := eventcoupon.RegisterGateway(mux, endpoint, opts); err != nil {
 		return err
 	}
 	return nil

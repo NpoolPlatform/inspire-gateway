@@ -13,10 +13,10 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) AdminCreateEventCoin(ctx context.Context, in *npool.AdminCreateEventCoinRequest) (*npool.AdminCreateEventCoinResponse, error) {
+func (s *Server) CreateEventCoin(ctx context.Context, in *npool.CreateEventCoinRequest) (*npool.CreateEventCoinResponse, error) {
 	handler, err := coin1.NewHandler(
 		ctx,
-		coin1.WithAppID(&in.TargetAppID, true),
+		coin1.WithAppID(&in.AppID, true),
 		coin1.WithEventID(&in.EventID, true),
 		coin1.WithCoinConfigID(&in.CoinConfigID, true),
 		coin1.WithCoinValue(&in.CoinValue, true),
@@ -24,24 +24,24 @@ func (s *Server) AdminCreateEventCoin(ctx context.Context, in *npool.AdminCreate
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"AdminCreateEventCoin",
+			"CreateEventCoin",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.AdminCreateEventCoinResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.CreateEventCoinResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	info, err := handler.CreateEvent(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"AdminCreateEventCoin",
+			"CreateEventCoin",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.AdminCreateEventCoinResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.CreateEventCoinResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.AdminCreateEventCoinResponse{
+	return &npool.CreateEventCoinResponse{
 		Info: info,
 	}, nil
 }
