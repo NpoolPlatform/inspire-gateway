@@ -9,7 +9,7 @@ require (
 	github.com/NpoolPlatform/g11n-middleware v0.0.0-20231026021135-ec3cd368fc24
 	github.com/NpoolPlatform/go-service-framework v0.0.0-20240510075442-89278cb5cf47
 	github.com/NpoolPlatform/good-middleware v0.0.0-20240711084810-89bd6b946526
-	github.com/NpoolPlatform/inspire-middleware v0.0.0-20240724100133-2c492963b524
+	github.com/NpoolPlatform/inspire-middleware v0.0.0-20240726072147-2c93e639534d
 	github.com/NpoolPlatform/ledger-middleware v0.0.0-20240711091502-eaf1d4c83d6d
 	github.com/NpoolPlatform/libent-cruder v0.0.0-20240514082633-598d5fc7b1e3
 	github.com/NpoolPlatform/message v0.0.0-20240724095832-17844800507e
@@ -128,7 +128,3 @@ replace entgo.io/ent => entgo.io/ent v0.11.2
 replace ariga.io/atlas => ariga.io/atlas v0.5.1-0.20220717122844-8593d7eb1a8e
 
 replace github.com/ugorji/go => github.com/ugorji/go v0.0.0-20190204201341-e444a5086c43
-
-replace github.com/NpoolPlatform/message v0.0.0-20240724095832-17844800507e => ../message
-
-replace github.com/NpoolPlatform/inspire-middleware v0.0.0-20240724100133-2c492963b524 => ../inspire-middleware
