@@ -118,9 +118,13 @@ func (h *Handler) GetEventCouponExt(ctx context.Context, info *eventcouponmwpb.E
 }
 
 func (h *Handler) GetEventCoupons(ctx context.Context) ([]*npool.EventCoupon, uint32, error) {
-	infos, total, err := eventcouponmwcli.GetEventCoupons(ctx, &eventcouponmwpb.Conds{
+	conds := &eventcouponmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-	}, h.Offset, h.Limit)
+	}
+	if h.EventID != nil {
+		conds.EventID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.EventID}
+	}
+	infos, total, err := eventcouponmwcli.GetEventCoupons(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
 		return nil, 0, err
 	}

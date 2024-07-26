@@ -17,6 +17,7 @@ func (s *Server) AdminGetEventCoupons(ctx context.Context, in *npool.AdminGetEve
 	handler, err := coupon1.NewHandler(
 		ctx,
 		coupon1.WithAppID(&in.TargetAppID, true),
+		coupon1.WithEventID(in.EventID, false),
 		coupon1.WithOffset(in.GetOffset()),
 		coupon1.WithLimit(in.GetLimit()),
 	)

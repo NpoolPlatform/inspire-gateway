@@ -16,6 +16,7 @@ func (s *Server) GetEventCoins(ctx context.Context, in *npool.GetEventCoinsReque
 	handler, err := coin1.NewHandler(
 		ctx,
 		coin1.WithAppID(&in.AppID, true),
+		coin1.WithEventID(in.EventID, false),
 		coin1.WithOffset(in.GetOffset()),
 		coin1.WithLimit(in.GetLimit()),
 	)

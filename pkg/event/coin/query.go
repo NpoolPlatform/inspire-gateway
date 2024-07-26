@@ -113,9 +113,13 @@ func (h *Handler) GetEventCoinExt(ctx context.Context, info *eventcoinmwpb.Event
 }
 
 func (h *Handler) GetEventCoins(ctx context.Context) ([]*npool.EventCoin, uint32, error) {
-	infos, total, err := eventcoinmwcli.GetEventCoins(ctx, &eventcoinmwpb.Conds{
+	conds := &eventcoinmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-	}, h.Offset, h.Limit)
+	}
+	if h.EventID != nil {
+		conds.EventID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.EventID}
+	}
+	infos, total, err := eventcoinmwcli.GetEventCoins(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
 		return nil, 0, err
 	}

@@ -16,6 +16,7 @@ func (s *Server) AdminGetEventCoins(ctx context.Context, in *npool.AdminGetEvent
 	handler, err := coin1.NewHandler(
 		ctx,
 		coin1.WithAppID(&in.TargetAppID, true),
+		coin1.WithEventID(in.EventID, false),
 		coin1.WithOffset(in.GetOffset()),
 		coin1.WithLimit(in.GetLimit()),
 	)
