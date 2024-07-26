@@ -17,7 +17,7 @@ func (h *Handler) UpdateEvent(ctx context.Context) (*npool.Event, error) {
 	if info == nil {
 		return nil, fmt.Errorf("invalid event")
 	}
-	if info.ID != *h.ID || info.EntID != *h.EntID {
+	if info.ID != *h.ID || info.EntID != *h.EntID || info.AppID != *h.AppID {
 		return nil, fmt.Errorf("permission denied")
 	}
 
@@ -25,7 +25,6 @@ func (h *Handler) UpdateEvent(ctx context.Context) (*npool.Event, error) {
 		ID:             h.ID,
 		EntID:          h.EntID,
 		AppID:          h.AppID,
-		CouponIDs:      h.CouponIDs,
 		Credits:        h.Credits,
 		CreditsPerUSD:  h.CreditsPerUSD,
 		MaxConsecutive: h.MaxConsecutive,

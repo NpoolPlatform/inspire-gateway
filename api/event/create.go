@@ -1,3 +1,4 @@
+//nolint:dupl
 package event
 
 import (
@@ -17,7 +18,6 @@ func (s *Server) CreateEvent(ctx context.Context, in *npool.CreateEventRequest) 
 		ctx,
 		event1.WithAppID(&in.AppID, true),
 		event1.WithEventType(&in.EventType, true),
-		event1.WithCouponIDs(in.GetCouponIDs(), false),
 		event1.WithCredits(in.Credits, false),
 		event1.WithCreditsPerUSD(in.CreditsPerUSD, false),
 		event1.WithAppGoodID(in.AppGoodID, false),

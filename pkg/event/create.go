@@ -56,7 +56,6 @@ func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
 		EntID:          h.EntID,
 		AppID:          h.AppID,
 		EventType:      h.EventType,
-		CouponIDs:      h.CouponIDs,
 		Credits:        h.Credits,
 		CreditsPerUSD:  h.CreditsPerUSD,
 		MaxConsecutive: h.MaxConsecutive,
