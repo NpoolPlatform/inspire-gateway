@@ -166,11 +166,11 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/update/couponpool
+          - path: /api/inspire/v1/get/my/coinrewards
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/update/couponpool
+          - path: /api/inspire/v1/get/my/rewards
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
