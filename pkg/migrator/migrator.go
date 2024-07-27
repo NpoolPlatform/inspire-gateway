@@ -1,4 +1,4 @@
-//nolint
+//nolint:funlen
 package migrator
 
 import (
@@ -8,13 +8,11 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	servicename "github.com/NpoolPlatform/inspire-gateway/pkg/servicename"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db/ent"
-	entgoodachievement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/goodachievement"
-	entgoodcoinachievement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/goodcoinachievement"
 	entorderpaymentstatement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/orderpaymentstatement"
-	entorderstatement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/orderstatement"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -30,7 +28,37 @@ func lockKey() string {
 }
 
 func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
-	rows, err := tx.QueryContext(ctx, "select ent_id,app_id,user_id,good_id,app_good_id,coin_type_id,total_units_v1,self_units_v1,total_amount,self_amount,total_commission,self_commission,created_at,updated_at from archivement_generals where deleted_at = 0")
+	type MyAchievement struct {
+		EntID uuid.UUID `json:"ent_id"`
+	}
+
+	rows, err := tx.QueryContext(ctx, "select ent_id from good_achievements")
+	if err != nil {
+		return wlog.WrapError(err)
+	}
+	goodAchievements := map[uuid.UUID]bool{}
+	for rows.Next() {
+		goodAchievement := &MyAchievement{}
+		if err := rows.Scan(&goodAchievement.EntID); err != nil {
+			return wlog.WrapError(err)
+		}
+		goodAchievements[goodAchievement.EntID] = true
+	}
+
+	rows, err = tx.QueryContext(ctx, "select ent_id from good_coin_achievements")
+	if err != nil {
+		return wlog.WrapError(err)
+	}
+	goodCoinAchievements := map[uuid.UUID]bool{}
+	for rows.Next() {
+		goodCoinAchievement := &MyAchievement{}
+		if err := rows.Scan(&goodCoinAchievement.EntID); err != nil {
+			return wlog.WrapError(err)
+		}
+		goodCoinAchievements[goodCoinAchievement.EntID] = true
+	}
+
+	rows, err = tx.QueryContext(ctx, "select ent_id,app_id,user_id,good_id,app_good_id,coin_type_id,total_units_v1,self_units_v1,total_amount,self_amount,total_commission,self_commission,created_at,updated_at from archivement_generals where deleted_at = 0") //nolint
 	if err != nil {
 		return err
 	}
@@ -76,20 +104,8 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 	}
 
 	for _, achievement := range achievements {
-		exist, err := tx.
-			GoodAchievement.
-			Query().
-			Where(
-				entgoodachievement.AppID(achievement.AppID),
-				entgoodachievement.UserID(achievement.UserID),
-				entgoodachievement.GoodID(achievement.GoodID),
-				entgoodachievement.AppGoodID(achievement.AppGoodID),
-				entgoodachievement.DeletedAt(0),
-			).Exist(ctx)
-		if err != nil {
-			return err
-		}
-		if !exist {
+		_, ok := goodAchievements[achievement.EntID]
+		if !ok {
 			if _, err := tx.
 				GoodAchievement.
 				Create().
@@ -110,19 +126,8 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 				return err
 			}
 		}
-		exist, err = tx.
-			GoodCoinAchievement.
-			Query().
-			Where(
-				entgoodcoinachievement.AppID(achievement.AppID),
-				entgoodcoinachievement.UserID(achievement.UserID),
-				entgoodcoinachievement.GoodCoinTypeID(achievement.CoinTypeID),
-				entgoodcoinachievement.DeletedAt(0),
-			).Exist(ctx)
-		if err != nil {
-			return err
-		}
-		if !exist {
+		_, ok = goodCoinAchievements[achievement.EntID]
+		if !ok {
 			if _, err := tx.
 				GoodCoinAchievement.
 				Create().
@@ -147,7 +152,24 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 }
 
 func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
-	rows, err := tx.QueryContext(ctx, "select ent_id,app_id,user_id,good_id,app_good_id,order_id,self_order,direct_contributor_id,coin_type_id,units_v1,usd_amount,app_config_id,commission_config_id,commission_config_type,payment_coin_type_id,amount,commission,payment_coin_usd_currency,created_at,updated_at from archivement_details where deleted_at = 0")
+	type OrderStatement struct {
+		EntID uuid.UUID `json:"ent_id"`
+	}
+
+	rows, err := tx.QueryContext(ctx, "select ent_id from order_statements")
+	if err != nil {
+		return wlog.WrapError(err)
+	}
+	orderStatements := map[uuid.UUID]bool{}
+	for rows.Next() {
+		orderStatement := &OrderStatement{}
+		if err := rows.Scan(&orderStatement.EntID); err != nil {
+			return wlog.WrapError(err)
+		}
+		orderStatements[orderStatement.EntID] = true
+	}
+
+	rows, err = tx.QueryContext(ctx, "select ent_id,app_id,user_id,good_id,app_good_id,order_id,self_order,direct_contributor_id,coin_type_id,units_v1,usd_amount,app_config_id,commission_config_id,commission_config_type,payment_coin_type_id,amount,commission,payment_coin_usd_currency,created_at,updated_at from archivement_details where deleted_at = 0") //nolint
 	if err != nil {
 		return err
 	}
@@ -206,19 +228,8 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 	}
 	for _, statement := range statements {
 		commissionAmountUSD := statement.Commission.Mul(statement.PaymentCoinUsdCurrency)
-		exist, err := tx.
-			OrderStatement.
-			Query().
-			Where(
-				entorderstatement.AppID(statement.AppID),
-				entorderstatement.UserID(statement.UserID),
-				entorderstatement.OrderID(statement.OrderID),
-				entorderstatement.DeletedAt(0),
-			).Exist(ctx)
-		if err != nil {
-			return err
-		}
-		if !exist {
+		_, ok := orderStatements[statement.EntID]
+		if !ok {
 			orderUserID := statement.UserID
 			if !statement.SelfOrder {
 				orderUserID = statement.DirectContributorID
@@ -247,7 +258,7 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 				return err
 			}
 		}
-		exist, err = tx.
+		exist, err := tx.
 			OrderPaymentStatement.
 			Query().
 			Where(
@@ -295,7 +306,7 @@ func Migrate(ctx context.Context) error {
 			logger.Sugar().Errorw("Migrate", "error", err)
 			return err
 		}
-		logger.Sugar().Infow("Migrate", "Done", "success")
+		logger.Sugar().Warnf("Migrate", "Done", "success")
 		return nil
 	})
 }
