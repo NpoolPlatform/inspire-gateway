@@ -31,7 +31,6 @@ import (
 	feeordermwcli "github.com/NpoolPlatform/order-middleware/pkg/client/fee"
 	powerrentalordermwcli "github.com/NpoolPlatform/order-middleware/pkg/client/powerrental"
 
-	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
@@ -42,25 +41,7 @@ type reconcileHandler struct {
 	feeorders map[string][]*feeordermwpb.FeeOrder
 }
 
-func (h reconcileHandler) powerRentalOrderGoodValue(powerRentalOrder *powerrentalordermwpb.PowerRentalOrder) (decimal.Decimal, error) {
-	goodValueUSD, err := decimal.NewFromString(powerRentalOrder.GoodValueUSD)
-	if err != nil {
-		return decimal.NewFromInt(0), err
-	}
-	childs, ok := h.feeorders[powerRentalOrder.OrderID]
-	if ok {
-		for _, child := range childs {
-			amountUSD, err := decimal.NewFromString(child.GoodValueUSD)
-			if err != nil {
-				return decimal.NewFromInt(0), err
-			}
-			goodValueUSD = goodValueUSD.Add(amountUSD)
-		}
-	}
-	return goodValueUSD, nil
-}
-
-func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerRentalOrder *powerrentalordermwpb.PowerRentalOrder) error { //nolint
+func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerRentalOrder *powerrentalordermwpb.PowerRentalOrder) error {
 	appPowerRental, err := apppowerrentalmwcli.GetPowerRentalOnly(ctx, &apppowerrentalmwpb.Conds{
 		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: powerRentalOrder.AppID},
 		AppGoodID: &basetypes.StringVal{Op: cruder.EQ, Value: powerRentalOrder.AppGoodID},
@@ -72,48 +53,12 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 		return fmt.Errorf("invalid apppowerrental")
 	}
 
-	goodValueUSD, err := h.powerRentalOrderGoodValue(powerRentalOrder)
-	if err != nil {
-		return err
-	}
-
-	statementReqs, err := calculatemwcli.Calculate(ctx, &calculatemwpb.CalculateRequest{
-		AppID:     powerRentalOrder.AppID,
-		UserID:    powerRentalOrder.UserID,
-		GoodID:    powerRentalOrder.GoodID,
-		AppGoodID: powerRentalOrder.AppGoodID,
-		OrderID:   powerRentalOrder.OrderID,
-		GoodCoinTypeID: func() string {
-			uid := uuid.Nil.String()
-			for _, goodCoin := range appPowerRental.GoodCoins {
-				if goodCoin.Main {
-					uid = goodCoin.CoinTypeID
-					break
-				}
-			}
-			return uid
-		}(),
-		Units:            powerRentalOrder.Units,
-		PaymentAmountUSD: powerRentalOrder.PaymentAmountUSD,
-		GoodValueUSD:     goodValueUSD.String(),
-		SettleType:       types.SettleType_GoodOrderPayment,
-		HasCommission:    powerRentalOrder.OrderType == ordertypes.OrderType_Normal,
-		OrderCreatedAt:   powerRentalOrder.CreatedAt,
-		Payments: func() (payments []*calculatemwpb.Payment) {
-			for _, payment := range powerRentalOrder.PaymentBalances {
-				payments = append(payments, &calculatemwpb.Payment{
-					CoinTypeID: payment.CoinTypeID,
-					Amount:     payment.Amount,
-				})
-			}
-			for _, payment := range powerRentalOrder.PaymentTransfers {
-				payments = append(payments, &calculatemwpb.Payment{
-					CoinTypeID: payment.CoinTypeID,
-					Amount:     payment.Amount,
-				})
-			}
-			return
-		}(),
+	statementReqs, err := calculatemwcli.ReconcileCalculate(ctx, &calculatemwpb.ReconcileCalculateRequest{
+		AppID:          powerRentalOrder.AppID,
+		UserID:         powerRentalOrder.UserID,
+		OrderID:        powerRentalOrder.OrderID,
+		SettleType:     types.SettleType_GoodOrderPayment,
+		OrderCreatedAt: powerRentalOrder.CreatedAt,
 	})
 	if err != nil {
 		return err
