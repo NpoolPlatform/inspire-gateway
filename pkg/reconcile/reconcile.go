@@ -54,11 +54,7 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 	}
 
 	statementReqs, err := calculatemwcli.ReconcileCalculate(ctx, &calculatemwpb.ReconcileCalculateRequest{
-		AppID:          powerRentalOrder.AppID,
-		UserID:         powerRentalOrder.UserID,
-		OrderID:        powerRentalOrder.OrderID,
-		SettleType:     types.SettleType_GoodOrderPayment,
-		OrderCreatedAt: powerRentalOrder.CreatedAt,
+		OrderID: powerRentalOrder.OrderID,
 	})
 	if err != nil {
 		return err
