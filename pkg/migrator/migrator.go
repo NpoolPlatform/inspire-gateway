@@ -151,7 +151,17 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 	return nil
 }
 
+//nolint:gocyclo
 func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
+	registrations, err := tx.Registration.Query().All(ctx)
+	if err != nil {
+		return wlog.WrapError(err)
+	}
+	userRegistrations := map[uuid.UUID]*ent.Registration{}
+	for _, registration := range registrations {
+		userRegistrations[registration.InviterID] = registration
+	}
+
 	type OrderStatement struct {
 		EntID uuid.UUID `json:"ent_id"`
 	}
@@ -226,14 +236,32 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 		}
 		statements = append(statements, statement)
 	}
+
+	orderUser := map[uuid.UUID]uuid.UUID{}
+	for _, statement := range statements {
+		if !statement.SelfOrder {
+			continue
+		}
+		if _, ok := orderUser[statement.OrderID]; ok {
+			return wlog.Errorf("one order with two users found")
+		}
+		orderUser[statement.OrderID] = statement.UserID
+	}
+
 	for _, statement := range statements {
 		commissionAmountUSD := statement.Commission.Mul(statement.PaymentCoinUsdCurrency)
 		_, ok := orderStatements[statement.EntID]
 		if !ok {
-			orderUserID := statement.UserID
-			if !statement.SelfOrder {
-				orderUserID = statement.DirectContributorID
+			directContributorID := statement.DirectContributorID
+			if statement.SelfOrder {
+				directContributorID = statement.UserID
 			}
+
+			orderUserID, ok := orderUser[statement.OrderID]
+			if !ok {
+				orderUserID = uuid.Nil
+			}
+
 			if _, err := tx.
 				OrderStatement.
 				Create().
@@ -244,6 +272,7 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 				SetAppGoodID(statement.AppGoodID).
 				SetOrderID(statement.OrderID).
 				SetOrderUserID(orderUserID).
+				SetDirectContributorID(directContributorID).
 				SetGoodCoinTypeID(statement.CoinTypeID).
 				SetUnits(statement.UnitsV1).
 				SetGoodValueUsd(statement.UsdAmount).
