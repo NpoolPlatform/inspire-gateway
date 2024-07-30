@@ -12,6 +12,7 @@ import (
 	servicename "github.com/NpoolPlatform/inspire-gateway/pkg/servicename"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db/ent"
+	entgoodcoinachievement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/goodcoinachievement"
 	entorderpaymentstatement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/orderpaymentstatement"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	"github.com/google/uuid"
@@ -27,6 +28,7 @@ func lockKey() string {
 	return fmt.Sprintf("%v:%v", basetypes.Prefix_PrefixMigrate, serviceID)
 }
 
+//nolint:gocyclo
 func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 	type MyAchievement struct {
 		EntID uuid.UUID `json:"ent_id"`
@@ -128,6 +130,42 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 		}
 		_, ok = goodCoinAchievements[achievement.EntID]
 		if !ok {
+			// need merge multi records into one exist record if cointypeid & userid is same
+			goodCoinAchievement, err := tx.
+				GoodCoinAchievement.
+				Query().
+				Where(
+					entgoodcoinachievement.UserID(achievement.UserID),
+					entgoodcoinachievement.GoodCoinTypeID(achievement.CoinTypeID),
+				).
+				Only(ctx)
+			if err != nil {
+				if !ent.IsNotFound(err) {
+					return err
+				}
+			}
+			if goodCoinAchievement != nil { // update
+				totalUnit := goodCoinAchievement.TotalUnits.Add(achievement.TotalUnitsV1)
+				selfUnits := goodCoinAchievement.SelfUnits.Add(achievement.SelfUnitsV1)
+				totalAmountUsd := goodCoinAchievement.TotalAmountUsd.Add(achievement.TotalAmount)
+				selfAmountUsd := goodCoinAchievement.SelfAmountUsd.Add(achievement.SelfAmount)
+				totalCommissionUsd := goodCoinAchievement.TotalCommissionUsd.Add(achievement.TotalCommission)
+				selfCommissionUsd := goodCoinAchievement.SelfCommissionUsd.Add(achievement.SelfCommission)
+				if _, err := tx.
+					GoodCoinAchievement.
+					UpdateOneID(goodCoinAchievement.ID).
+					SetTotalUnits(totalUnit).
+					SetSelfUnits(selfUnits).
+					SetTotalAmountUsd(totalAmountUsd).
+					SetSelfAmountUsd(selfAmountUsd).
+					SetTotalCommissionUsd(totalCommissionUsd).
+					SetSelfCommissionUsd(selfCommissionUsd).
+					Save(ctx); err != nil {
+					return wlog.WrapError(err)
+				}
+				continue
+			}
+
 			if _, err := tx.
 				GoodCoinAchievement.
 				Create().
