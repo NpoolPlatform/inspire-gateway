@@ -153,15 +153,6 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 
 //nolint:gocyclo
 func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
-	registrations, err := tx.Registration.Query().All(ctx)
-	if err != nil {
-		return wlog.WrapError(err)
-	}
-	userRegistrations := map[uuid.UUID]*ent.Registration{}
-	for _, registration := range registrations {
-		userRegistrations[registration.InviterID] = registration
-	}
-
 	type OrderStatement struct {
 		EntID uuid.UUID `json:"ent_id"`
 	}
@@ -242,8 +233,8 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 		if !statement.SelfOrder {
 			continue
 		}
-		if _, ok := orderUser[statement.OrderID]; ok {
-			return wlog.Errorf("one order with two users found")
+		if statement.DirectContributorID != uuid.Nil {
+			continue
 		}
 		orderUser[statement.OrderID] = statement.UserID
 	}
