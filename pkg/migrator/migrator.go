@@ -4,6 +4,7 @@ package migrator
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -12,6 +13,7 @@ import (
 	servicename "github.com/NpoolPlatform/inspire-gateway/pkg/servicename"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db/ent"
+	entgoodcoinachievement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/goodcoinachievement"
 	entorderpaymentstatement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/orderpaymentstatement"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	"github.com/google/uuid"
@@ -27,6 +29,7 @@ func lockKey() string {
 	return fmt.Sprintf("%v:%v", basetypes.Prefix_PrefixMigrate, serviceID)
 }
 
+//nolint:gocyclo
 func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 	type MyAchievement struct {
 		EntID uuid.UUID `json:"ent_id"`
@@ -126,8 +129,48 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 				return err
 			}
 		}
+
 		_, ok = goodCoinAchievements[achievement.EntID]
 		if !ok {
+			// need merge multi records into one exist record if cointypeid & userid is same
+			goodCoinAchievement, err := tx.
+				GoodCoinAchievement.
+				Query().
+				Where(
+					entgoodcoinachievement.UserID(achievement.UserID),
+					entgoodcoinachievement.GoodCoinTypeID(achievement.CoinTypeID),
+				).
+				Only(ctx)
+			if err != nil {
+				if !ent.IsNotFound(err) {
+					return err
+				}
+			}
+
+			deletedAt := uint32(0)
+			if goodCoinAchievement != nil { // update
+				totalUnit := goodCoinAchievement.TotalUnits.Add(achievement.TotalUnitsV1)
+				selfUnits := goodCoinAchievement.SelfUnits.Add(achievement.SelfUnitsV1)
+				totalAmountUsd := goodCoinAchievement.TotalAmountUsd.Add(achievement.TotalAmount)
+				selfAmountUsd := goodCoinAchievement.SelfAmountUsd.Add(achievement.SelfAmount)
+				totalCommissionUsd := goodCoinAchievement.TotalCommissionUsd.Add(achievement.TotalCommission)
+				selfCommissionUsd := goodCoinAchievement.SelfCommissionUsd.Add(achievement.SelfCommission)
+				if _, err := tx.
+					GoodCoinAchievement.
+					UpdateOneID(goodCoinAchievement.ID).
+					SetTotalUnits(totalUnit).
+					SetSelfUnits(selfUnits).
+					SetTotalAmountUsd(totalAmountUsd).
+					SetSelfAmountUsd(selfAmountUsd).
+					SetTotalCommissionUsd(totalCommissionUsd).
+					SetSelfCommissionUsd(selfCommissionUsd).
+					Save(ctx); err != nil {
+					return wlog.WrapError(err)
+				}
+				// when update exist record, we also need to migrate old one to new table, but set deleted_at = current time
+				deletedAt = uint32(time.Now().Unix())
+			}
+
 			if _, err := tx.
 				GoodCoinAchievement.
 				Create().
@@ -143,6 +186,7 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 				SetSelfCommissionUsd(achievement.SelfCommission).
 				SetCreatedAt(achievement.CreatedAt).
 				SetUpdatedAt(achievement.UpdatedAt).
+				SetDeletedAt(deletedAt).
 				Save(ctx); err != nil {
 				return err
 			}
@@ -151,6 +195,7 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 	return nil
 }
 
+//nolint:gocyclo
 func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 	type OrderStatement struct {
 		EntID uuid.UUID `json:"ent_id"`
@@ -226,14 +271,32 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 		}
 		statements = append(statements, statement)
 	}
+
+	orderUser := map[uuid.UUID]uuid.UUID{}
+	for _, statement := range statements {
+		if !statement.SelfOrder {
+			continue
+		}
+		if statement.DirectContributorID != uuid.Nil {
+			continue
+		}
+		orderUser[statement.OrderID] = statement.UserID
+	}
+
 	for _, statement := range statements {
 		commissionAmountUSD := statement.Commission.Mul(statement.PaymentCoinUsdCurrency)
 		_, ok := orderStatements[statement.EntID]
 		if !ok {
-			orderUserID := statement.UserID
-			if !statement.SelfOrder {
-				orderUserID = statement.DirectContributorID
+			directContributorID := statement.DirectContributorID
+			if statement.SelfOrder {
+				directContributorID = statement.UserID
 			}
+
+			orderUserID, ok := orderUser[statement.OrderID]
+			if !ok {
+				orderUserID = uuid.Nil
+			}
+
 			if _, err := tx.
 				OrderStatement.
 				Create().
@@ -244,6 +307,7 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 				SetAppGoodID(statement.AppGoodID).
 				SetOrderID(statement.OrderID).
 				SetOrderUserID(orderUserID).
+				SetDirectContributorID(directContributorID).
 				SetGoodCoinTypeID(statement.CoinTypeID).
 				SetUnits(statement.UnitsV1).
 				SetGoodValueUsd(statement.UsdAmount).

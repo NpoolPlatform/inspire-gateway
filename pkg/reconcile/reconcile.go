@@ -11,7 +11,6 @@ import (
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
 	apppowerrentalmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/powerrental"
 	orderstatementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/statement/order"
-	orderpaymentstatementmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/achievement/statement/order/payment"
 	appconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/app/config"
 	calculatemwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/calculate"
 	ledgerstatementmwcli "github.com/NpoolPlatform/ledger-middleware/pkg/client/ledger/statement"
@@ -22,7 +21,6 @@ import (
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	apppowerrentalmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/powerrental"
-	orderpaymentstatementmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/achievement/statement/order/payment"
 	appconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/app/config"
 	calculatemwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/calculate"
 	ledgerstatementmwpb "github.com/NpoolPlatform/message/npool/ledger/mw/v2/ledger/statement"
@@ -31,36 +29,16 @@ import (
 	feeordermwcli "github.com/NpoolPlatform/order-middleware/pkg/client/fee"
 	powerrentalordermwcli "github.com/NpoolPlatform/order-middleware/pkg/client/powerrental"
 
-	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 type reconcileHandler struct {
 	*Handler
 	orderIDs  []string
-	payments  map[string]*orderpaymentstatementmwpb.Statement
 	feeorders map[string][]*feeordermwpb.FeeOrder
 }
 
-func (h reconcileHandler) powerRentalOrderGoodValue(powerRentalOrder *powerrentalordermwpb.PowerRentalOrder) (decimal.Decimal, error) {
-	goodValueUSD, err := decimal.NewFromString(powerRentalOrder.GoodValueUSD)
-	if err != nil {
-		return decimal.NewFromInt(0), err
-	}
-	childs, ok := h.feeorders[powerRentalOrder.OrderID]
-	if ok {
-		for _, child := range childs {
-			amountUSD, err := decimal.NewFromString(child.GoodValueUSD)
-			if err != nil {
-				return decimal.NewFromInt(0), err
-			}
-			goodValueUSD = goodValueUSD.Add(amountUSD)
-		}
-	}
-	return goodValueUSD, nil
-}
-
-func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerRentalOrder *powerrentalordermwpb.PowerRentalOrder) error { //nolint
+func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerRentalOrder *powerrentalordermwpb.PowerRentalOrder) error {
 	appPowerRental, err := apppowerrentalmwcli.GetPowerRentalOnly(ctx, &apppowerrentalmwpb.Conds{
 		AppID:     &basetypes.StringVal{Op: cruder.EQ, Value: powerRentalOrder.AppID},
 		AppGoodID: &basetypes.StringVal{Op: cruder.EQ, Value: powerRentalOrder.AppGoodID},
@@ -72,48 +50,8 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 		return fmt.Errorf("invalid apppowerrental")
 	}
 
-	goodValueUSD, err := h.powerRentalOrderGoodValue(powerRentalOrder)
-	if err != nil {
-		return err
-	}
-
-	statementReqs, err := calculatemwcli.Calculate(ctx, &calculatemwpb.CalculateRequest{
-		AppID:     powerRentalOrder.AppID,
-		UserID:    powerRentalOrder.UserID,
-		GoodID:    powerRentalOrder.GoodID,
-		AppGoodID: powerRentalOrder.AppGoodID,
-		OrderID:   powerRentalOrder.OrderID,
-		GoodCoinTypeID: func() string {
-			uid := uuid.Nil.String()
-			for _, goodCoin := range appPowerRental.GoodCoins {
-				if goodCoin.Main {
-					uid = goodCoin.CoinTypeID
-					break
-				}
-			}
-			return uid
-		}(),
-		Units:            powerRentalOrder.Units,
-		PaymentAmountUSD: powerRentalOrder.PaymentAmountUSD,
-		GoodValueUSD:     goodValueUSD.String(),
-		SettleType:       types.SettleType_GoodOrderPayment,
-		HasCommission:    powerRentalOrder.OrderType == ordertypes.OrderType_Normal,
-		OrderCreatedAt:   powerRentalOrder.CreatedAt,
-		Payments: func() (payments []*calculatemwpb.Payment) {
-			for _, payment := range powerRentalOrder.PaymentBalances {
-				payments = append(payments, &calculatemwpb.Payment{
-					CoinTypeID: payment.CoinTypeID,
-					Amount:     payment.Amount,
-				})
-			}
-			for _, payment := range powerRentalOrder.PaymentTransfers {
-				payments = append(payments, &calculatemwpb.Payment{
-					CoinTypeID: payment.CoinTypeID,
-					Amount:     payment.Amount,
-				})
-			}
-			return
-		}(),
+	statementReqs, err := calculatemwcli.ReconcileCalculate(ctx, &calculatemwpb.ReconcileCalculateRequest{
+		OrderID: powerRentalOrder.OrderID,
 	})
 	if err != nil {
 		return err
@@ -133,37 +71,33 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 
 	for _, statement := range statementReqs {
 		for _, paymentStatement := range statement.PaymentStatements {
-			key := fmt.Sprintf("%v-%v-%v", *statement.UserID, *statement.OrderID, *paymentStatement.PaymentCoinTypeID)
-			payment, ok := h.payments[key]
-			if ok {
-				commission, err := decimal.NewFromString(*paymentStatement.CommissionAmount)
-				if err != nil {
-					return err
-				}
-				if commission.Cmp(decimal.NewFromInt(0)) <= 0 {
-					continue
-				}
-				ioExtra := fmt.Sprintf(
-					`{"PaymentID":"%v","OrderID":"%v","OrderUserID":"%v","InspireAppConfigID":"%v","CommissionConfigID":"%v","CommissionConfigType":"%v","PaymentStatementID":"%v"}`,
-					powerRentalOrder.PaymentID,
-					powerRentalOrder.OrderID,
-					powerRentalOrder.UserID,
-					*statement.AppConfigID,
-					*statement.CommissionConfigID,
-					*statement.CommissionConfigType,
-					payment.EntID,
-				)
-
-				ledgerStatementReqs = append(ledgerStatementReqs, &ledgerstatementmwpb.StatementReq{
-					AppID:      &powerRentalOrder.AppID,
-					UserID:     statement.UserID,
-					CoinTypeID: paymentStatement.PaymentCoinTypeID,
-					IOType:     &ioType,
-					IOSubType:  &ioSubType,
-					Amount:     paymentStatement.CommissionAmount,
-					IOExtra:    &ioExtra,
-				})
+			commission, err := decimal.NewFromString(*paymentStatement.CommissionAmount)
+			if err != nil {
+				return err
 			}
+			if commission.Cmp(decimal.NewFromInt(0)) <= 0 {
+				continue
+			}
+			ioExtra := fmt.Sprintf(
+				`{"PaymentID":"%v","OrderID":"%v","OrderUserID":"%v","InspireAppConfigID":"%v","CommissionConfigID":"%v","CommissionConfigType":"%v","PaymentStatementID":"%v"}`,
+				powerRentalOrder.PaymentID,
+				powerRentalOrder.OrderID,
+				powerRentalOrder.UserID,
+				*statement.AppConfigID,
+				*statement.CommissionConfigID,
+				*statement.CommissionConfigType,
+				*paymentStatement.EntID,
+			)
+
+			ledgerStatementReqs = append(ledgerStatementReqs, &ledgerstatementmwpb.StatementReq{
+				AppID:      &powerRentalOrder.AppID,
+				UserID:     statement.UserID,
+				CoinTypeID: paymentStatement.PaymentCoinTypeID,
+				IOType:     &ioType,
+				IOSubType:  &ioSubType,
+				Amount:     paymentStatement.CommissionAmount,
+				IOExtra:    &ioExtra,
+			})
 		}
 	}
 
@@ -178,7 +112,7 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 	return nil
 }
 
-func (h *reconcileHandler) reconcilePowerRentalOrders(ctx context.Context) error { // nolint:gocyclo
+func (h *reconcileHandler) reconcilePowerRentalOrders(ctx context.Context) error {
 	offset := int32(0)
 	limit := constant.DefaultRowLimit
 	powerRentalOrders := []*powerrentalordermwpb.PowerRentalOrder{}
@@ -210,26 +144,6 @@ func (h *reconcileHandler) reconcilePowerRentalOrders(ctx context.Context) error
 			h.orderIDs = append(h.orderIDs, order.OrderID)
 		}
 
-		offset += limit
-	}
-
-	offset = 0
-	for {
-		payments, _, err := orderpaymentstatementmwcli.GetStatements(ctx, &orderpaymentstatementmwpb.Conds{
-			AppID:    &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			OrderIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: h.orderIDs},
-		}, offset, limit)
-		if err != nil {
-			return err
-		}
-		if len(payments) == 0 {
-			break
-		}
-
-		for _, payment := range payments {
-			key := fmt.Sprintf("%v-%v-%v", payment.UserID, payment.OrderID, payment.PaymentCoinTypeID)
-			h.payments[key] = payment
-		}
 		offset += limit
 	}
 
@@ -308,7 +222,6 @@ func (h *reconcileHandler) checkAppGoodType(ctx context.Context) error {
 func (h *Handler) Reconcile(ctx context.Context) error {
 	handler := &reconcileHandler{
 		Handler:   h,
-		payments:  map[string]*orderpaymentstatementmwpb.Statement{},
 		orderIDs:  []string{},
 		feeorders: map[string][]*feeordermwpb.FeeOrder{},
 	}
