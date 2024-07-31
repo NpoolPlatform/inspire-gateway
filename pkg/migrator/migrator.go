@@ -167,6 +167,7 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 					Save(ctx); err != nil {
 					return wlog.WrapError(err)
 				}
+				// when update exist record, we also need to migrate old one to new table, but set deleted_at = current time
 				deletedAt = uint32(time.Now().Unix())
 			}
 
