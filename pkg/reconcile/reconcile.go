@@ -86,7 +86,7 @@ func (h *reconcileHandler) reconcilePowerRentalOrder(ctx context.Context, powerR
 				*statement.AppConfigID,
 				*statement.CommissionConfigID,
 				*statement.CommissionConfigType,
-				paymentStatement.EntID,
+				*paymentStatement.EntID,
 			)
 
 			ledgerStatementReqs = append(ledgerStatementReqs, &ledgerstatementmwpb.StatementReq{
