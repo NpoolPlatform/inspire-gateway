@@ -4,6 +4,7 @@ package migrator
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
@@ -128,6 +129,7 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 				return err
 			}
 		}
+
 		_, ok = goodCoinAchievements[achievement.EntID]
 		if !ok {
 			// need merge multi records into one exist record if cointypeid & userid is same
@@ -144,6 +146,8 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 					return err
 				}
 			}
+
+			deletedAt := uint32(0)
 			if goodCoinAchievement != nil { // update
 				totalUnit := goodCoinAchievement.TotalUnits.Add(achievement.TotalUnitsV1)
 				selfUnits := goodCoinAchievement.SelfUnits.Add(achievement.SelfUnitsV1)
@@ -163,7 +167,7 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 					Save(ctx); err != nil {
 					return wlog.WrapError(err)
 				}
-				continue
+				deletedAt = uint32(time.Now().Unix())
 			}
 
 			if _, err := tx.
@@ -181,6 +185,7 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 				SetSelfCommissionUsd(achievement.SelfCommission).
 				SetCreatedAt(achievement.CreatedAt).
 				SetUpdatedAt(achievement.UpdatedAt).
+				SetDeletedAt(deletedAt).
 				Save(ctx); err != nil {
 				return err
 			}
