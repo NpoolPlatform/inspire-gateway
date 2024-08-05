@@ -39,6 +39,8 @@ spec:
       http: *http_rules
     - host: api.procyon.xpool.top
       http: *http_rules
+    - host: api.lpsb.xpool.top
+      http: *http_rules
     - host: api.lpsecretbase.com
       http: *http_rules
     - host: api.jh-testing.npool.top
@@ -328,6 +330,8 @@ spec:
     - host: api.ohhash.com
       http: *http_rules
     - host: api.procyon.xpool.top
+      http: *http_rules
+    - host: api.lpsb.xpool.top
       http: *http_rules
     - host: api.lpsecretbase.com
       http: *http_rules
