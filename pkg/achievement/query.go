@@ -683,7 +683,7 @@ func (h *queryHandler) formalizeDirectContribution(ctx context.Context) error {
 		return err
 	}
 	for _, statement := range h.statements {
-		info, ok := h.infoMap[statement.OrderUserID]
+		info, ok := h.infoMap[statement.DirectContributorID]
 		if !ok {
 			continue
 		}
