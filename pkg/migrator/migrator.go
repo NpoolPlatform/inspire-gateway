@@ -274,9 +274,6 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 
 	orderUser := map[uuid.UUID]uuid.UUID{}
 	for _, statement := range statements {
-		if !statement.SelfOrder {
-			continue
-		}
 		if statement.DirectContributorID != uuid.Nil {
 			continue
 		}
@@ -288,13 +285,12 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 		_, ok := orderStatements[statement.EntID]
 		if !ok {
 			directContributorID := statement.DirectContributorID
-			if statement.SelfOrder {
-				directContributorID = statement.UserID
-			}
-
 			orderUserID, ok := orderUser[statement.OrderID]
 			if !ok {
 				orderUserID = uuid.Nil
+			}
+			if statement.UserID == orderUserID {
+				directContributorID = statement.UserID
 			}
 
 			if _, err := tx.
