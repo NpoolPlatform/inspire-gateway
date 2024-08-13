@@ -15,7 +15,12 @@ import (
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db/ent"
 	entgoodcoinachievement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/goodcoinachievement"
 	entorderpaymentstatement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/orderpaymentstatement"
+	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
+	ordertypes "github.com/NpoolPlatform/message/npool/basetypes/order/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	powerrentalordermwpb "github.com/NpoolPlatform/message/npool/order/mw/v1/powerrental"
+
+	powerrentalordermwcli "github.com/NpoolPlatform/order-middleware/pkg/client/powerrental"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -274,13 +279,28 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 
 	orderUser := map[uuid.UUID]uuid.UUID{}
 	for _, statement := range statements {
-		if !statement.SelfOrder {
-			continue
-		}
 		if statement.DirectContributorID != uuid.Nil {
 			continue
 		}
 		orderUser[statement.OrderID] = statement.UserID
+	}
+
+	orderIDs := []string{}
+	for _, statement := range statements {
+		if statement.Amount.Cmp(decimal.NewFromInt(0)) > 0 && statement.UsdAmount.Cmp(decimal.NewFromInt(0)) == 0 {
+			orderIDs = append(orderIDs, statement.OrderID.String())
+		}
+	}
+
+	infos, _, err := powerrentalordermwcli.GetPowerRentalOrders(ctx, &powerrentalordermwpb.Conds{
+		OrderIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: orderIDs},
+	}, 0, int32(len(orderIDs)))
+	if err != nil {
+		return wlog.WrapError(err)
+	}
+	orders := map[string]*powerrentalordermwpb.PowerRentalOrder{}
+	for _, info := range infos {
+		orders[info.OrderID] = info
 	}
 
 	for _, statement := range statements {
@@ -288,15 +308,28 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 		_, ok := orderStatements[statement.EntID]
 		if !ok {
 			directContributorID := statement.DirectContributorID
-			if statement.SelfOrder {
-				directContributorID = statement.UserID
-			}
-
 			orderUserID, ok := orderUser[statement.OrderID]
 			if !ok {
 				orderUserID = uuid.Nil
 			}
+			if statement.UserID == orderUserID {
+				directContributorID = statement.UserID
+			}
 
+			goodValueUsd := statement.UsdAmount
+			paymentAmountUsd := statement.UsdAmount
+			if statement.Amount.Cmp(decimal.NewFromInt(0)) > 0 && statement.UsdAmount.Cmp(decimal.NewFromInt(0)) == 0 {
+				order, ok := orders[statement.OrderID.String()]
+				if ok {
+					switch order.OrderType {
+					case ordertypes.OrderType_Offline:
+						fallthrough //nolint
+					case ordertypes.OrderType_Airdrop:
+						goodValueUsd = statement.Amount
+						paymentAmountUsd = statement.Amount
+					}
+				}
+			}
 			if _, err := tx.
 				OrderStatement.
 				Create().
@@ -310,8 +343,8 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 				SetDirectContributorID(directContributorID).
 				SetGoodCoinTypeID(statement.CoinTypeID).
 				SetUnits(statement.UnitsV1).
-				SetGoodValueUsd(statement.UsdAmount).
-				SetPaymentAmountUsd(statement.UsdAmount).
+				SetGoodValueUsd(goodValueUsd).
+				SetPaymentAmountUsd(paymentAmountUsd).
 				SetCommissionAmountUsd(commissionAmountUSD).
 				SetAppConfigID(statement.AppConfigID).
 				SetCommissionConfigID(statement.CommissionConfigID).
@@ -355,7 +388,7 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 func Migrate(ctx context.Context) error {
 	logger.Sugar().Infow("Migrate inspire", "Start", "...")
 	if err := redis2.TryLock(lockKey(), 0); err != nil {
-		return err
+		return wlog.WrapError(err)
 	}
 	defer func() {
 		_ = redis2.Unlock(lockKey())
