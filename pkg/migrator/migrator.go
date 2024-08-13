@@ -388,7 +388,7 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 func Migrate(ctx context.Context) error {
 	logger.Sugar().Infow("Migrate inspire", "Start", "...")
 	if err := redis2.TryLock(lockKey(), 0); err != nil {
-		return err
+		return wlog.WrapError(err)
 	}
 	defer func() {
 		_ = redis2.Unlock(lockKey())
