@@ -10,6 +10,7 @@ import (
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
 	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	servicename "github.com/NpoolPlatform/inspire-gateway/pkg/servicename"
+	registrationmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/invitation/registration"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db/ent"
 	entgoodcoinachievement "github.com/NpoolPlatform/inspire-middleware/pkg/db/ent/goodcoinachievement"
@@ -17,9 +18,10 @@ import (
 	"github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	ordertypes "github.com/NpoolPlatform/message/npool/basetypes/order/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
+	registrationmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/invitation/registration"
 	powerrentalordermwpb "github.com/NpoolPlatform/message/npool/order/mw/v1/powerrental"
-
 	powerrentalordermwcli "github.com/NpoolPlatform/order-middleware/pkg/client/powerrental"
+
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -311,6 +313,20 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 			}
 			if statement.UserID == orderUserID {
 				directContributorID = statement.UserID
+			}
+			if directContributorID == uuid.Nil {
+				registrations, _, err := registrationmwcli.GetSuperiores(ctx, &registrationmwpb.Conds{
+					InviteeID: &basetypes.StringVal{Op: cruder.EQ, Value: orderUserID.String()},
+				}, 0, 100) //nolint
+				if err != nil {
+					return wlog.WrapError(err)
+				}
+				for _, registration := range registrations {
+					if registration.InviterID == statement.UserID.String() {
+						directContributorID = uuid.MustParse(registration.InviteeID)
+						break
+					}
+				}
 			}
 
 			goodValueUsd := statement.UsdAmount
