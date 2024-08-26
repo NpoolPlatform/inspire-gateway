@@ -18,7 +18,7 @@ type Handler struct {
 	EventID      *string
 	CoinConfigID *string
 	CoinValue    *string
-	CoinPreUSD   *string
+	CoinPerUSD   *string
 	Offset       int32
 	Limit        int32
 }
@@ -136,7 +136,7 @@ func WithCoinValue(amount *string, must bool) func(context.Context, *Handler) er
 }
 
 //nolint:dupl
-func WithCoinPreUSD(value *string, must bool) func(context.Context, *Handler) error {
+func WithCoinPerUSD(value *string, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
 			if must {
@@ -144,14 +144,14 @@ func WithCoinPreUSD(value *string, must bool) func(context.Context, *Handler) er
 			}
 			return nil
 		}
-		coinPreUSD, err := decimal.NewFromString(*value)
+		coinPerUSD, err := decimal.NewFromString(*value)
 		if err != nil {
 			return err
 		}
-		if coinPreUSD.Cmp(decimal.NewFromInt(0)) < 0 {
+		if coinPerUSD.Cmp(decimal.NewFromInt(0)) < 0 {
 			return fmt.Errorf("invalid coinpreusd")
 		}
-		h.CoinPreUSD = value
+		h.CoinPerUSD = value
 		return nil
 	}
 }

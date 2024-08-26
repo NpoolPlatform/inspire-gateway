@@ -72,7 +72,7 @@ func (h *Handler) CreateEvent(ctx context.Context) (*npool.EventCoin, error) {
 		EventID:      h.EventID,
 		CoinConfigID: h.CoinConfigID,
 		CoinValue:    h.CoinValue,
-		CoinPreUSD:   h.CoinPreUSD,
+		CoinPerUSD:   h.CoinPerUSD,
 	}
 
 	if err := eventcoinmwcli.CreateEventCoin(ctx, req); err != nil {

@@ -28,7 +28,7 @@ func (h *Handler) CreateTaskConfig(ctx context.Context) (*npool.TaskConfig, erro
 		RecommendMessage: h.RecommendMessage,
 		Index:            h.Index,
 		MaxRewardCount:   h.MaxRewardCount,
-		CooldownSecord:   h.CooldownSecord,
+		CooldownSecond:   h.CooldownSecond,
 		LastTaskID:       h.LastTaskID,
 	}); err != nil {
 		return nil, wlog.WrapError(err)

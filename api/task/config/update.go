@@ -25,7 +25,7 @@ func (s *Server) AdminUpdateTaskConfig(ctx context.Context, in *npool.AdminUpdat
 		config1.WithRecommendMessage(in.RecommendMessage, false),
 		config1.WithIndex(in.Index, false),
 		config1.WithMaxRewardCount(in.MaxRewardCount, false),
-		config1.WithCooldownSecord(in.CooldownSecord, false),
+		config1.WithCooldownSecond(in.CooldownSecond, false),
 		config1.WithLastTaskID(in.LastTaskID, false),
 	)
 	if err != nil {

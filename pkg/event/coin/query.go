@@ -53,7 +53,7 @@ func (h *queryHandler) formalize() {
 			CoinConfigID: eventCoin.CoinConfigID,
 			CoinTypeID:   eventCoin.CoinTypeID,
 			CoinValue:    eventCoin.CoinValue,
-			CoinPreUSD:   eventCoin.CoinPreUSD,
+			CoinPerUSD:   eventCoin.CoinPerUSD,
 			CoinName:     appcoin.CoinName,
 			DisplayNames: appcoin.DisplayNames,
 			CoinLogo:     appcoin.Logo,

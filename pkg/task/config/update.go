@@ -34,7 +34,7 @@ func (h *Handler) UpdateTaskConfig(ctx context.Context) (*npool.TaskConfig, erro
 		Index:            h.Index,
 		LastTaskID:       h.LastTaskID,
 		MaxRewardCount:   h.MaxRewardCount,
-		CooldownSecord:   h.CooldownSecord,
+		CooldownSecond:   h.CooldownSecond,
 	}); err != nil {
 		return nil, wlog.WrapError(err)
 	}

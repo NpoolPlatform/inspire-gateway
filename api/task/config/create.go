@@ -24,7 +24,7 @@ func (s *Server) AdminCreateTaskConfig(ctx context.Context, in *npool.AdminCreat
 		config1.WithRecommendMessage(&in.RecommendMessage, true),
 		config1.WithIndex(&in.Index, true),
 		config1.WithMaxRewardCount(&in.MaxRewardCount, true),
-		config1.WithCooldownSecord(&in.CooldownSecord, true),
+		config1.WithCooldownSecond(&in.CooldownSecond, true),
 		config1.WithLastTaskID(in.LastTaskID, false),
 	)
 	if err != nil {

@@ -18,7 +18,6 @@ func (s *Server) AdminCreateCoinConfig(ctx context.Context, in *npool.AdminCreat
 		config1.WithAppID(&in.TargetAppID, true),
 		config1.WithCoinTypeID(&in.CoinTypeID, true),
 		config1.WithMaxValue(&in.MaxValue, true),
-		config1.WithAllocated(&in.Allocated, true),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

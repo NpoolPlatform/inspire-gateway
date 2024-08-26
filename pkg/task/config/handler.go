@@ -25,7 +25,7 @@ type Handler struct {
 	LastTaskID       *string
 	UserID           *string
 	MaxRewardCount   *uint32
-	CooldownSecord   *uint32
+	CooldownSecond   *uint32
 	Offset           int32
 	Limit            int32
 }
@@ -214,7 +214,7 @@ func WithMaxRewardCount(value *uint32, must bool) func(context.Context, *Handler
 	}
 }
 
-func WithCooldownSecord(value *uint32, must bool) func(context.Context, *Handler) error {
+func WithCooldownSecond(value *uint32, must bool) func(context.Context, *Handler) error {
 	return func(ctx context.Context, h *Handler) error {
 		if value == nil {
 			if must {
@@ -222,7 +222,7 @@ func WithCooldownSecord(value *uint32, must bool) func(context.Context, *Handler
 			}
 			return nil
 		}
-		h.CooldownSecord = value
+		h.CooldownSecond = value
 		return nil
 	}
 }

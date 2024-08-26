@@ -26,7 +26,7 @@ func (h *Handler) UpdateEventCoin(ctx context.Context) (*npool.EventCoin, error)
 		EntID:      h.EntID,
 		AppID:      h.AppID,
 		CoinValue:  h.CoinValue,
-		CoinPreUSD: h.CoinPreUSD,
+		CoinPerUSD: h.CoinPerUSD,
 	}); err != nil {
 		return nil, err
 	}

@@ -19,7 +19,6 @@ func (s *Server) AdminUpdateCoinConfig(ctx context.Context, in *npool.AdminUpdat
 		config1.WithEntID(&in.EntID, true),
 		config1.WithAppID(&in.TargetAppID, true),
 		config1.WithMaxValue(in.MaxValue, false),
-		config1.WithAllocated(in.Allocated, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(

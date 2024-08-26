@@ -53,7 +53,7 @@ func (h *queryHandler) formalizeUserTask() {
 			Index:            comm.Index,
 			LastTaskID:       comm.LastTaskID,
 			MaxRewardCount:   comm.MaxRewardCount,
-			CooldownSecord:   comm.CooldownSecord,
+			CooldownSecond:   comm.CooldownSecond,
 			CompletionTimes:  taskUserCount,
 			TaskState:        taskState,
 			RewardState:      rewardState,

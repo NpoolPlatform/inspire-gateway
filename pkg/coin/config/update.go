@@ -27,7 +27,6 @@ func (h *Handler) UpdateCoinConfig(ctx context.Context) (*npool.CoinConfig, erro
 		AppID:      h.AppID,
 		CoinTypeID: h.CoinTypeID,
 		MaxValue:   h.MaxValue,
-		Allocated:  h.Allocated,
 	}); err != nil {
 		return nil, wlog.WrapError(err)
 	}

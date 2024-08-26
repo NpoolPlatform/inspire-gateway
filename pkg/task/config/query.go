@@ -35,7 +35,7 @@ func (h *queryHandler) formalize() {
 			Index:            val.Index,
 			LastTaskID:       val.LastTaskID,
 			MaxRewardCount:   val.MaxRewardCount,
-			CooldownSecord:   val.CooldownSecord,
+			CooldownSecond:   val.CooldownSecond,
 			CreatedAt:        val.CreatedAt,
 			UpdatedAt:        val.UpdatedAt,
 		}
