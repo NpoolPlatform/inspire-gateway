@@ -54,19 +54,6 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 		goodAchievements[goodAchievement.EntID] = true
 	}
 
-	rows, err = tx.QueryContext(ctx, "select ent_id from good_coin_achievements")
-	if err != nil {
-		return wlog.WrapError(err)
-	}
-	goodCoinAchievements := map[uuid.UUID]bool{}
-	for rows.Next() {
-		goodCoinAchievement := &MyAchievement{}
-		if err := rows.Scan(&goodCoinAchievement.EntID); err != nil {
-			return wlog.WrapError(err)
-		}
-		goodCoinAchievements[goodCoinAchievement.EntID] = true
-	}
-
 	rows, err = tx.QueryContext(ctx, "select ent_id,app_id,user_id,good_id,app_good_id,coin_type_id,total_units_v1,self_units_v1,total_amount,self_amount,total_commission,self_commission,created_at,updated_at from archivement_generals where deleted_at = 0") //nolint
 	if err != nil {
 		return err
@@ -112,6 +99,8 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 		achievements = append(achievements, achievement)
 	}
 
+	_userCoinAchievements := map[uuid.UUID]map[uuid.UUID]struct{}{}
+
 	for _, achievement := range achievements {
 		_, ok := goodAchievements[achievement.EntID]
 		if !ok {
@@ -136,64 +125,77 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 			}
 		}
 
-		_, ok = goodCoinAchievements[achievement.EntID]
-		if !ok {
-			// need merge multi records into one exist record if cointypeid & userid is same
-			goodCoinAchievement, err := tx.
-				GoodCoinAchievement.
-				Query().
-				Where(
-					entgoodcoinachievement.UserID(achievement.UserID),
-					entgoodcoinachievement.GoodCoinTypeID(achievement.CoinTypeID),
-				).
-				Only(ctx)
-			if err != nil {
-				if !ent.IsNotFound(err) {
-					return err
-				}
-			}
+		__userCoinAchievements, ok := _userCoinAchievements[achievement.UserID]
+		if ok {
+			_, ok = __userCoinAchievements[achievement.CoinTypeID]
+		}
 
-			if goodCoinAchievement != nil { // update
-				totalUnit := goodCoinAchievement.TotalUnits.Add(achievement.TotalUnitsV1)
-				selfUnits := goodCoinAchievement.SelfUnits.Add(achievement.SelfUnitsV1)
-				totalAmountUsd := goodCoinAchievement.TotalAmountUsd.Add(achievement.TotalAmount)
-				selfAmountUsd := goodCoinAchievement.SelfAmountUsd.Add(achievement.SelfAmount)
-				totalCommissionUsd := goodCoinAchievement.TotalCommissionUsd.Add(achievement.TotalCommission)
-				selfCommissionUsd := goodCoinAchievement.SelfCommissionUsd.Add(achievement.SelfCommission)
-				if _, err := tx.
-					GoodCoinAchievement.
-					UpdateOneID(goodCoinAchievement.ID).
-					SetTotalUnits(totalUnit).
-					SetSelfUnits(selfUnits).
-					SetTotalAmountUsd(totalAmountUsd).
-					SetSelfAmountUsd(selfAmountUsd).
-					SetTotalCommissionUsd(totalCommissionUsd).
-					SetSelfCommissionUsd(selfCommissionUsd).
-					Save(ctx); err != nil {
-					return wlog.WrapError(err)
-				}
-				// when update exist record, we also need to migrate old one to new table, but set deleted_at = current time
-				continue
-			}
-
-			if _, err := tx.
-				GoodCoinAchievement.
-				Create().
-				SetEntID(achievement.EntID).
-				SetAppID(achievement.AppID).
-				SetUserID(achievement.UserID).
-				SetGoodCoinTypeID(achievement.CoinTypeID).
-				SetTotalUnits(achievement.TotalUnitsV1).
-				SetSelfUnits(achievement.SelfUnitsV1).
-				SetTotalAmountUsd(achievement.TotalAmount).
-				SetSelfAmountUsd(achievement.SelfAmount).
-				SetTotalCommissionUsd(achievement.TotalCommission).
-				SetSelfCommissionUsd(achievement.SelfCommission).
-				SetCreatedAt(achievement.CreatedAt).
-				SetUpdatedAt(achievement.UpdatedAt).
-				Save(ctx); err != nil {
+		// need merge multi records into one exist record if cointypeid & userid is same
+		goodCoinAchievement, err := tx.
+			GoodCoinAchievement.
+			Query().
+			Where(
+				entgoodcoinachievement.UserID(achievement.UserID),
+				entgoodcoinachievement.GoodCoinTypeID(achievement.CoinTypeID),
+			).
+			Only(ctx)
+		if err != nil {
+			if !ent.IsNotFound(err) {
 				return err
 			}
+		}
+
+		if goodCoinAchievement != nil && !ok {
+			continue
+		}
+
+		__userCoinAchievements, ok = _userCoinAchievements[achievement.UserID]
+		if !ok {
+			__userCoinAchievements = map[uuid.UUID]struct{}{}
+		}
+		__userCoinAchievements[achievement.CoinTypeID] = struct{}{}
+		_userCoinAchievements[achievement.UserID] = __userCoinAchievements
+
+		if goodCoinAchievement != nil { // update
+			totalUnit := goodCoinAchievement.TotalUnits.Add(achievement.TotalUnitsV1)
+			selfUnits := goodCoinAchievement.SelfUnits.Add(achievement.SelfUnitsV1)
+			totalAmountUsd := goodCoinAchievement.TotalAmountUsd.Add(achievement.TotalAmount)
+			selfAmountUsd := goodCoinAchievement.SelfAmountUsd.Add(achievement.SelfAmount)
+			totalCommissionUsd := goodCoinAchievement.TotalCommissionUsd.Add(achievement.TotalCommission)
+			selfCommissionUsd := goodCoinAchievement.SelfCommissionUsd.Add(achievement.SelfCommission)
+			if _, err := tx.
+				GoodCoinAchievement.
+				UpdateOneID(goodCoinAchievement.ID).
+				SetTotalUnits(totalUnit).
+				SetSelfUnits(selfUnits).
+				SetTotalAmountUsd(totalAmountUsd).
+				SetSelfAmountUsd(selfAmountUsd).
+				SetTotalCommissionUsd(totalCommissionUsd).
+				SetSelfCommissionUsd(selfCommissionUsd).
+				Save(ctx); err != nil {
+				return wlog.WrapError(err)
+			}
+			// when update exist record, we also need to migrate old one to new table, but set deleted_at = current time
+			continue
+		}
+
+		if _, err := tx.
+			GoodCoinAchievement.
+			Create().
+			SetEntID(achievement.EntID).
+			SetAppID(achievement.AppID).
+			SetUserID(achievement.UserID).
+			SetGoodCoinTypeID(achievement.CoinTypeID).
+			SetTotalUnits(achievement.TotalUnitsV1).
+			SetSelfUnits(achievement.SelfUnitsV1).
+			SetTotalAmountUsd(achievement.TotalAmount).
+			SetSelfAmountUsd(achievement.SelfAmount).
+			SetTotalCommissionUsd(achievement.TotalCommission).
+			SetSelfCommissionUsd(achievement.SelfCommission).
+			SetCreatedAt(achievement.CreatedAt).
+			SetUpdatedAt(achievement.UpdatedAt).
+			Save(ctx); err != nil {
+			return err
 		}
 	}
 	return nil
