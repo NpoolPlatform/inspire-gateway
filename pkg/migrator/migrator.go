@@ -201,6 +201,75 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 	return nil
 }
 
+func validFieldExist(ctx context.Context, tx *ent.Tx, tableName, fieldName string) (bool, error) {
+	checkFieldSQL := fmt.Sprintf("show columns from inspire_manager.%v like '%v'", tableName, fieldName)
+	logger.Sugar().Warnw(
+		"validFieldExist",
+		"checkFieldSQL",
+		checkFieldSQL,
+	)
+	checkRows, err := tx.QueryContext(ctx, checkFieldSQL)
+	if err != nil {
+		return false, err
+	}
+	count := 0
+	for checkRows.Next() {
+		count++
+	}
+	if count == 0 {
+		return false, nil
+	}
+	return true, nil
+}
+
+func migrateAchievementUser(ctx context.Context, tx *ent.Tx) error {
+	exist, err := validFieldExist(ctx, tx, "achievement_users", "direct_invites")
+	if err != nil {
+		return wlog.WrapError(err)
+	}
+	if !exist {
+		return nil
+	}
+	type AchievementUser struct {
+		ID               uint32    `json:"id"`
+		EntID            uuid.UUID `json:"ent_id"`
+		DirectInvites    uint32    `json:"direct_invites"`
+		IndirectInvites  uint32    `json:"indirect_invites"`
+		DirectInvitees   uint32    `json:"direct_invitees"`
+		IndirectInvitees uint32    `json:"indirect_invitees"`
+	}
+	rows, err := tx.QueryContext(ctx, "select id, ent_id, direct_invites, indirect_invites, direct_invitees, indirect_invitees from achievement_users")
+	if err != nil {
+		return wlog.WrapError(err)
+	}
+	achievementUsers := map[uuid.UUID]*AchievementUser{}
+	for rows.Next() {
+		achievementUser := &AchievementUser{}
+		if err := rows.Scan(&achievementUser.ID, &achievementUser.EntID,
+			&achievementUser.DirectInvites, &achievementUser.IndirectInvites,
+			&achievementUser.DirectInvitees, &achievementUser.IndirectInvitees); err != nil {
+			return wlog.WrapError(err)
+		}
+		achievementUsers[achievementUser.EntID] = achievementUser
+	}
+
+	for _, achievementUser := range achievementUsers {
+		if achievementUser.DirectInvitees != 0 || achievementUser.IndirectInvitees != 0 {
+			continue
+		}
+		if _, err := tx.
+			AchievementUser.
+			UpdateOneID(achievementUser.ID).
+			SetDirectInvitees(achievementUser.DirectInvites).
+			SetIndirectInvitees(achievementUser.IndirectInvites).
+			Save(ctx); err != nil {
+			return wlog.WrapError(err)
+		}
+	}
+
+	return nil
+}
+
 //nolint:gocyclo
 func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 	type OrderStatement struct {
@@ -410,6 +479,10 @@ func Migrate(ctx context.Context) error {
 	}()
 
 	return db.WithTx(ctx, func(_ctx context.Context, tx *ent.Tx) error {
+		if err := migrateAchievementUser(_ctx, tx); err != nil {
+			logger.Sugar().Errorw("Migrate", "error", err)
+			return err
+		}
 		if err := migrateAchievementStatement(_ctx, tx); err != nil {
 			logger.Sugar().Errorw("Migrate", "error", err)
 			return err

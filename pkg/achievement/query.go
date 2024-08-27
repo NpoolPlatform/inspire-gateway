@@ -503,8 +503,8 @@ func (h *queryHandler) formalizeUsers() {
 		if ok {
 			info.TotalCommission = achievementUser.TotalCommission
 			info.SelfCommission = achievementUser.SelfCommission
-			info.DirectInvites = achievementUser.DirectInvites
-			info.IndirectInvites = achievementUser.IndirectInvites
+			info.DirectInvitees = achievementUser.DirectInvitees
+			info.IndirectInvitees = achievementUser.IndirectInvitees
 			info.DirectConsumeAmount = achievementUser.DirectConsumeAmount
 			info.InviteeConsumeAmount = achievementUser.InviteeConsumeAmount
 		}
