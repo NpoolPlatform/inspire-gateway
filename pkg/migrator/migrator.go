@@ -231,25 +231,32 @@ func migrateAchievementUser(ctx context.Context, tx *ent.Tx) error {
 		return nil
 	}
 	type AchievementUser struct {
-		ID              uint32    `json:"id"`
-		EntID           uuid.UUID `json:"ent_id"`
-		DirectInvites   uint32    `json:"direct_invites"`
-		IndirectInvites uint32    `json:"indirect_invites"`
+		ID               uint32    `json:"id"`
+		EntID            uuid.UUID `json:"ent_id"`
+		DirectInvites    uint32    `json:"direct_invites"`
+		IndirectInvites  uint32    `json:"indirect_invites"`
+		DirectInvitees   uint32    `json:"direct_invitees"`
+		IndirectInvitees uint32    `json:"indirect_invitees"`
 	}
-	rows, err := tx.QueryContext(ctx, "select id, ent_id, direct_invites, indirect_invites from achievement_users")
+	rows, err := tx.QueryContext(ctx, "select id, ent_id, direct_invites, indirect_invites, direct_invitees, indirect_invitees from achievement_users")
 	if err != nil {
 		return wlog.WrapError(err)
 	}
 	achievementUsers := map[uuid.UUID]*AchievementUser{}
 	for rows.Next() {
 		achievementUser := &AchievementUser{}
-		if err := rows.Scan(&achievementUser.ID, &achievementUser.EntID, &achievementUser.DirectInvites, &achievementUser.IndirectInvites); err != nil {
+		if err := rows.Scan(&achievementUser.ID, &achievementUser.EntID,
+			&achievementUser.DirectInvites, &achievementUser.IndirectInvites,
+			&achievementUser.DirectInvitees, &achievementUser.IndirectInvitees); err != nil {
 			return wlog.WrapError(err)
 		}
 		achievementUsers[achievementUser.EntID] = achievementUser
 	}
 
 	for _, achievementUser := range achievementUsers {
+		if achievementUser.DirectInvitees != 0 || achievementUser.IndirectInvitees != 0 {
+			continue
+		}
 		if _, err := tx.
 			AchievementUser.
 			UpdateOneID(achievementUser.ID).
