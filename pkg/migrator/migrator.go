@@ -125,7 +125,7 @@ func migrateAchievement(ctx context.Context, tx *ent.Tx) error {
 			}
 		}
 
-		__userCoinAchievements, ok := _userCoinAchievements[achievement.UserID]
+		__userCoinAchievements, ok := _userCoinAchievements[achievement.UserID] //nolint
 		if ok {
 			_, ok = __userCoinAchievements[achievement.CoinTypeID]
 		}
