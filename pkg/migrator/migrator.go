@@ -387,7 +387,7 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 			}
 			if directContributorID == uuid.Nil {
 				registrations, _, err := registrationmwcli.GetSuperiores(ctx, &registrationmwpb.Conds{
-					InviteeID: &basetypes.StringVal{Op: cruder.EQ, Value: orderUserID.String()},
+					InviteeIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: []string{orderUserID.String()}},
 				}, 0, 100) //nolint
 				if err != nil {
 					return wlog.WrapError(err)
