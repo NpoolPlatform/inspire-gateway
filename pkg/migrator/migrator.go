@@ -347,19 +347,9 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 		statements = append(statements, statement)
 	}
 
-	orderUser := map[uuid.UUID]uuid.UUID{}
-	for _, statement := range statements {
-		if statement.DirectContributorID != uuid.Nil {
-			continue
-		}
-		orderUser[statement.OrderID] = statement.UserID
-	}
-
 	orderIDs := []string{}
 	for _, statement := range statements {
-		if statement.Amount.Cmp(decimal.NewFromInt(0)) > 0 && statement.UsdAmount.Cmp(decimal.NewFromInt(0)) == 0 {
-			orderIDs = append(orderIDs, statement.OrderID.String())
-		}
+		orderIDs = append(orderIDs, statement.OrderID.String())
 	}
 
 	infos, _, err := powerrentalordermwcli.GetPowerRentalOrders(ctx, &powerrentalordermwpb.Conds{
@@ -371,6 +361,15 @@ func migrateAchievementStatement(ctx context.Context, tx *ent.Tx) error {
 	orders := map[string]*powerrentalordermwpb.PowerRentalOrder{}
 	for _, info := range infos {
 		orders[info.OrderID] = info
+	}
+
+	orderUser := map[uuid.UUID]uuid.UUID{}
+	for _, statement := range statements {
+		order, ok := orders[statement.OrderID.String()]
+		if !ok {
+			continue
+		}
+		orderUser[statement.OrderID] = uuid.MustParse(order.UserID)
 	}
 
 	for _, statement := range statements {
