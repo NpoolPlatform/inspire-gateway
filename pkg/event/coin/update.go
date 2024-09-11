@@ -15,7 +15,7 @@ func (h *Handler) UpdateEventCoin(ctx context.Context) (*npool.EventCoin, error)
 		return nil, err
 	}
 	if info == nil {
-		return nil, fmt.Errorf("invalid event")
+		return nil, fmt.Errorf("invalid eventcoin")
 	}
 	if info.ID != *h.ID || info.EntID != *h.EntID || info.AppID != *h.AppID {
 		return nil, fmt.Errorf("permission denied")
