@@ -10,14 +10,14 @@ import (
 )
 
 func (h *Handler) UpdateCoinConfig(ctx context.Context) (*npool.CoinConfig, error) {
-	info, err := h.GetCoinConfig(ctx)
+	info, err := configmwcli.GetCoinConfig(ctx, *h.EntID)
 	if err != nil {
 		return nil, wlog.WrapError(err)
 	}
 	if info == nil {
 		return nil, wlog.Errorf("invalid config")
 	}
-	if info.ID != *h.ID || info.EntID != *h.EntID {
+	if info.ID != *h.ID || info.EntID != *h.EntID || info.AppID != *h.AppID {
 		return nil, wlog.Errorf("permission denied")
 	}
 

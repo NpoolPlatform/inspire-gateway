@@ -90,6 +90,30 @@ func (h *Handler) GetCoinConfig(ctx context.Context) (*npool.CoinConfig, error) 
 	return handler.infos[0], nil
 }
 
+func (h *Handler) GetCoinConfigExt(ctx context.Context, info *coinconfigmwpb.CoinConfig) (*npool.CoinConfig, error) {
+	if h.EntID == nil {
+		return nil, wlog.Errorf("invalid entid")
+	}
+
+	if info == nil {
+		return nil, nil
+	}
+	handler := &queryHandler{
+		Handler:     h,
+		appcoin:     map[string]*appcoinmwpb.Coin{},
+		coinConfigs: []*coinconfigmwpb.CoinConfig{info},
+	}
+	if err := handler.getAppCoins(ctx); err != nil {
+		return nil, wlog.WrapError(err)
+	}
+	handler.formalize()
+	if len(handler.infos) == 0 {
+		return nil, nil
+	}
+
+	return handler.infos[0], nil
+}
+
 func (h *Handler) GetCoinConfigs(ctx context.Context) ([]*npool.CoinConfig, uint32, error) {
 	conds := &coinconfigmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},

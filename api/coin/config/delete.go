@@ -27,7 +27,7 @@ func (s *Server) AdminDeleteCoinConfig(ctx context.Context, in *npool.AdminDelet
 		return &npool.AdminDeleteCoinConfigResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	info, err := handler.UpdateCoinConfig(ctx)
+	info, err := handler.DeleteCoinConfig(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
 			"AdminDeleteCoinConfig",

@@ -27,5 +27,5 @@ func (h *Handler) DeleteCoinConfig(ctx context.Context) (*npool.CoinConfig, erro
 		return nil, wlog.WrapError(err)
 	}
 
-	return h.GetCoinConfig(ctx)
+	return h.GetCoinConfigExt(ctx, info)
 }
