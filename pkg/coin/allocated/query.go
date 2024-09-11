@@ -102,6 +102,7 @@ func (h *queryHandler) formalize() {
 			UserID:       user.EntID,
 			PhoneNO:      user.PhoneNO,
 			EmailAddress: user.EmailAddress,
+			Extra:        info.Extra,
 			CreatedAt:    info.CreatedAt,
 			UpdatedAt:    info.UpdatedAt,
 		})
