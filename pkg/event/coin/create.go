@@ -14,6 +14,7 @@ import (
 	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 	eventcoinmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event/coin"
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type createHandler struct {
@@ -21,15 +22,36 @@ type createHandler struct {
 }
 
 func (h *createHandler) checkCoinConfig(ctx context.Context) error {
-	exist, err := coinconfigmwcli.ExistCoinConfigConds(ctx, &coinconfigmwpb.Conds{
+	info, err := coinconfigmwcli.GetCoinConfigOnly(ctx, &coinconfigmwpb.Conds{
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 		EntID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.CoinConfigID},
 	})
 	if err != nil {
 		return err
 	}
-	if !exist {
+	if info == nil {
 		return fmt.Errorf("invalid coin")
+	}
+
+	maxValue, err := decimal.NewFromString(info.MaxValue)
+	if err != nil {
+		return err
+	}
+	coinValue, err := decimal.NewFromString(*h.CoinValue)
+	if err != nil {
+		return err
+	}
+	if coinValue.Cmp(maxValue) > 0 {
+		return fmt.Errorf("invalid coinvalue")
+	}
+	if h.CoinPerUSD != nil {
+		coinPerUSD, err := decimal.NewFromString(*h.CoinPerUSD)
+		if err != nil {
+			return err
+		}
+		if coinPerUSD.Cmp(maxValue) > 0 {
+			return fmt.Errorf("invalid coinperusd")
+		}
 	}
 
 	return nil
