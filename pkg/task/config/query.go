@@ -89,6 +89,9 @@ func (h *Handler) GetTaskConfig(ctx context.Context, info *taskconfigmwpb.TaskCo
 		taskInfos:   []*npool.TaskConfig{},
 	}
 
+	if h.AppID == nil {
+		handler.AppID = &info.AppID
+	}
 	if err := handler.getEvents(ctx); err != nil {
 		return nil, wlog.WrapError(err)
 	}

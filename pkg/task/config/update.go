@@ -10,14 +10,14 @@ import (
 )
 
 func (h *Handler) UpdateTaskConfig(ctx context.Context) (*npool.TaskConfig, error) {
-	info, err := h.GetTaskConfig(ctx, nil)
+	info, err := configmwcli.GetTaskConfig(ctx, *h.EntID)
 	if err != nil {
 		return nil, wlog.WrapError(err)
 	}
 	if info == nil {
 		return nil, wlog.Errorf("invalid config")
 	}
-	if info.ID != *h.ID || info.EntID != *h.EntID {
+	if info.ID != *h.ID || info.EntID != *h.EntID || info.AppID != *h.AppID {
 		return nil, wlog.Errorf("permission denied")
 	}
 
