@@ -23,6 +23,16 @@ func (h *Handler) DeleteTaskConfig(ctx context.Context) (*npool.TaskConfig, erro
 		return nil, wlog.Errorf("invalid taskconfig")
 	}
 	h.AppID = &info.AppID
+	exist, err := configmwcli.ExistTaskConfigConds(ctx, &configmwpb.Conds{
+		AppID:      &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+		LastTaskID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.EntID},
+	})
+	if err != nil {
+		return nil, wlog.WrapError(err)
+	}
+	if exist {
+		return nil, wlog.Errorf("invalid lasttaskid")
+	}
 
 	if err := configmwcli.DeleteTaskConfig(ctx, h.ID, h.EntID); err != nil {
 		return nil, wlog.WrapError(err)
