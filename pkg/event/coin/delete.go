@@ -22,6 +22,7 @@ func (h *Handler) DeleteEventCoin(ctx context.Context) (*npool.EventCoin, error)
 	if info == nil {
 		return nil, fmt.Errorf("invalid eventcoin")
 	}
+	h.AppID = &info.AppID
 
 	if err := eventcoinmwcli.DeleteEventCoin(ctx, h.ID, h.EntID); err != nil {
 		return nil, err

@@ -81,7 +81,9 @@ func (h *Handler) GetEventCoin(ctx context.Context) (*npool.EventCoin, error) {
 		eventCoins: []*eventcoinmwpb.EventCoin{info},
 		appcoin:    map[string]*appcoinmwpb.Coin{},
 	}
-	handler.AppID = &info.AppID
+	if h.AppID == nil {
+		handler.AppID = &info.AppID
+	}
 	if err := handler.getAppCoins(ctx); err != nil {
 		return nil, err
 	}
@@ -102,7 +104,6 @@ func (h *Handler) GetEventCoinExt(ctx context.Context, info *eventcoinmwpb.Event
 		eventCoins: []*eventcoinmwpb.EventCoin{info},
 		appcoin:    map[string]*appcoinmwpb.Coin{},
 	}
-	handler.AppID = &info.AppID
 	if err := handler.getAppCoins(ctx); err != nil {
 		return nil, err
 	}
