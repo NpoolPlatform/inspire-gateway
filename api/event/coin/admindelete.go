@@ -27,7 +27,7 @@ func (s *Server) AdminDeleteEventCoin(ctx context.Context, in *npool.AdminDelete
 		return &npool.AdminDeleteEventCoinResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	info, err := handler.UpdateEventCoin(ctx)
+	info, err := handler.DeleteEventCoin(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
 			"AdminDeleteEventCoin",
