@@ -27,7 +27,7 @@ func (s *Server) AdminDeleteEvent(ctx context.Context, in *npool.AdminDeleteEven
 		return &npool.AdminDeleteEventResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	info, err := handler.UpdateEvent(ctx)
+	info, err := handler.DeleteEvent(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
 			"AdminDeleteEvent",
