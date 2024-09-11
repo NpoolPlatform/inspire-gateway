@@ -76,6 +76,7 @@ func (h *queryHandler) formalize() {
 				info.GoodID = *event.GoodID
 				info.AppGoodID = *event.AppGoodID
 				info.GoodName = good.GoodName
+				info.AppGoodName = good.AppGoodName
 			}
 		}
 
