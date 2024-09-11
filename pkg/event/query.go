@@ -102,7 +102,9 @@ func (h *Handler) GetEvent(ctx context.Context) (*npool.Event, error) {
 		events:   []*eventmwpb.Event{info},
 		appGoods: map[string]*appgoodmwpb.Good{},
 	}
-	handler.AppID = &info.AppID
+	if h.AppID == nil {
+		handler.AppID = &info.AppID
+	}
 	if err := handler.getApp(ctx); err != nil {
 		return nil, err
 	}
