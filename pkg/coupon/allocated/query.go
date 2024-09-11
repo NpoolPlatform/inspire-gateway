@@ -76,6 +76,7 @@ func (h *queryHandler) formalize() {
 			CouponScope:         info.CouponScope,
 			CouponScopeStr:      info.CouponScopeStr,
 			Cashable:            info.Cashable,
+			Extra:               info.Extra,
 			CreatedAt:           info.CreatedAt,
 			UpdatedAt:           info.UpdatedAt,
 		})
