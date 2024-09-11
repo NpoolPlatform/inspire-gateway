@@ -119,7 +119,7 @@ func (h *Handler) GetCoinConfigs(ctx context.Context) ([]*npool.CoinConfig, uint
 		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
 	}
 
-	infos, _, err := coinconfigmwcli.GetCoinConfigs(ctx, conds, h.Offset, h.Limit)
+	infos, total, err := coinconfigmwcli.GetCoinConfigs(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
 		return nil, 0, wlog.WrapError(err)
 	}
@@ -135,5 +135,5 @@ func (h *Handler) GetCoinConfigs(ctx context.Context) ([]*npool.CoinConfig, uint
 	}
 	handler.formalize()
 
-	return handler.infos, uint32(len(handler.infos)), nil
+	return handler.infos, total, nil
 }
