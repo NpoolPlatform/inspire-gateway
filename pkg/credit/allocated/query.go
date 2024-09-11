@@ -18,6 +18,7 @@ type queryHandler struct {
 	creditallocateds []*creditallocatedmwpb.CreditAllocated
 	appuser          map[string]*appusermwpb.User
 	infos            []*npool.CreditAllocated
+	total            uint32
 }
 
 func (h *queryHandler) getCreditAllocateds(ctx context.Context) error {
@@ -27,11 +28,12 @@ func (h *queryHandler) getCreditAllocateds(ctx context.Context) error {
 	if h.UserID != nil {
 		conds.UserID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID}
 	}
-	infos, _, err := creditallocatedmwcli.GetCreditAllocateds(ctx, conds, h.Offset, h.Limit)
+	infos, total, err := creditallocatedmwcli.GetCreditAllocateds(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
 		return wlog.WrapError(err)
 	}
 	h.creditallocateds = infos
+	h.total = total
 	return nil
 }
 
@@ -110,6 +112,7 @@ func (h *Handler) GetCreditAllocateds(ctx context.Context) ([]*npool.CreditAlloc
 		Handler:          h,
 		creditallocateds: []*creditallocatedmwpb.CreditAllocated{},
 		appuser:          map[string]*appusermwpb.User{},
+		total:            uint32(0),
 	}
 
 	if err := handler.getCreditAllocateds(ctx); err != nil {
@@ -121,5 +124,5 @@ func (h *Handler) GetCreditAllocateds(ctx context.Context) ([]*npool.CreditAlloc
 	}
 
 	handler.formalize()
-	return handler.infos, uint32(len(handler.infos)), nil
+	return handler.infos, handler.total, nil
 }
