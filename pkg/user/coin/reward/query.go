@@ -99,7 +99,7 @@ func (h *Handler) GetUserCoinRewards(ctx context.Context) ([]*npool.UserCoinRewa
 	if h.UserID != nil {
 		conds.UserID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID}
 	}
-	infos, _, err := usercoinrewardmwcli.GetUserCoinRewards(ctx, conds, h.Offset, h.Limit)
+	infos, total, err := usercoinrewardmwcli.GetUserCoinRewards(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
 		return nil, 0, wlog.WrapError(err)
 	}
@@ -117,5 +117,5 @@ func (h *Handler) GetUserCoinRewards(ctx context.Context) ([]*npool.UserCoinRewa
 
 	handler.formalize()
 
-	return handler.infos, uint32(len(handler.infos)), nil
+	return handler.infos, total, nil
 }

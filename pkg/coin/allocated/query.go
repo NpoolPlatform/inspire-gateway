@@ -150,6 +150,7 @@ func (h *Handler) GetCoinAllocateds(ctx context.Context) ([]*npool.CoinAllocated
 		coinallocateds: []*coinallocatedmwpb.CoinAllocated{},
 		appcoin:        map[string]*appcoinmwpb.Coin{},
 		appuser:        map[string]*appusermwpb.User{},
+		total:          uint32(0),
 	}
 
 	if err := handler.getCoinAllocateds(ctx); err != nil {
