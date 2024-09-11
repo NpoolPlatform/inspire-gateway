@@ -21,6 +21,7 @@ type queryHandler struct {
 	appcoin        map[string]*appcoinmwpb.Coin
 	appuser        map[string]*appusermwpb.User
 	infos          []*npool.CoinAllocated
+	total          uint32
 }
 
 func (h *queryHandler) getCoinAllocateds(ctx context.Context) error {
@@ -30,10 +31,11 @@ func (h *queryHandler) getCoinAllocateds(ctx context.Context) error {
 	if h.UserID != nil {
 		conds.UserID = &basetypes.StringVal{Op: cruder.EQ, Value: *h.UserID}
 	}
-	infos, _, err := coinallocatedmwcli.GetCoinAllocateds(ctx, conds, h.Offset, h.Limit)
+	infos, total, err := coinallocatedmwcli.GetCoinAllocateds(ctx, conds, h.Offset, h.Limit)
 	if err != nil {
 		return wlog.WrapError(err)
 	}
+	h.total = total
 	h.coinallocateds = infos
 	return nil
 }
@@ -163,5 +165,5 @@ func (h *Handler) GetCoinAllocateds(ctx context.Context) ([]*npool.CoinAllocated
 	}
 
 	handler.formalize()
-	return handler.infos, uint32(len(handler.infos)), nil
+	return handler.infos, handler.total, nil
 }
