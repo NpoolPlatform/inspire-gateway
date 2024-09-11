@@ -97,10 +97,11 @@ func (h *queryHandler) formalize() {
 			CoinLogo:     coin.Logo,
 			CoinUnit:     coin.Unit,
 			CoinAmount:   info.Value,
-			CreatedAt:    info.CreatedAt,
 			UserID:       user.EntID,
 			PhoneNO:      user.PhoneNO,
 			EmailAddress: user.EmailAddress,
+			CreatedAt:    info.CreatedAt,
+			UpdatedAt:    info.UpdatedAt,
 		})
 	}
 }
