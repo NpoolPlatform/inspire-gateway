@@ -22,6 +22,7 @@ func (h *Handler) DeleteTaskConfig(ctx context.Context) (*npool.TaskConfig, erro
 	if info == nil {
 		return nil, wlog.Errorf("invalid taskconfig")
 	}
+	h.AppID = &info.AppID
 
 	if err := configmwcli.DeleteTaskConfig(ctx, h.ID, h.EntID); err != nil {
 		return nil, wlog.WrapError(err)
