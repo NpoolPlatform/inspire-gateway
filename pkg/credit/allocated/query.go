@@ -65,10 +65,11 @@ func (h *queryHandler) formalize() {
 			EntID:        info.EntID,
 			AppID:        info.AppID,
 			Credits:      info.Value,
-			CreatedAt:    info.CreatedAt,
 			UserID:       user.EntID,
 			PhoneNO:      user.PhoneNO,
 			EmailAddress: user.EmailAddress,
+			CreatedAt:    info.CreatedAt,
+			UpdatedAt:    info.UpdatedAt,
 		})
 	}
 }
