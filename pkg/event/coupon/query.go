@@ -52,6 +52,7 @@ func (h *queryHandler) formalize() {
 		}
 
 		h.infos = append(h.infos, &npool.EventCoupon{
+			ID:           eventCoupon.ID,
 			EntID:        eventCoupon.EntID,
 			AppID:        eventCoupon.AppID,
 			EventID:      eventCoupon.EventID,
