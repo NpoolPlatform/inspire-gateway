@@ -21,6 +21,10 @@ func (h *Handler) UpdateTaskConfig(ctx context.Context) (*npool.TaskConfig, erro
 		return nil, wlog.Errorf("permission denied")
 	}
 
+	if h.LastTaskID != nil && *h.EntID == *h.LastTaskID {
+		return nil, wlog.Errorf("invalid lasttaskid")
+	}
+
 	if err := configmwcli.UpdateTaskConfig(ctx, &configmwpb.TaskConfigReq{
 		ID:               h.ID,
 		EntID:            h.EntID,
