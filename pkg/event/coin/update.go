@@ -10,7 +10,7 @@ import (
 )
 
 func (h *Handler) UpdateEventCoin(ctx context.Context) (*npool.EventCoin, error) {
-	info, err := h.GetEventCoin(ctx)
+	info, err := eventcoinmwcli.GetEventCoin(ctx, *h.EntID)
 	if err != nil {
 		return nil, err
 	}
