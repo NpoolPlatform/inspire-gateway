@@ -22,6 +22,7 @@ func (h *Handler) DeleteCoinConfig(ctx context.Context) (*npool.CoinConfig, erro
 	if info == nil {
 		return nil, wlog.Errorf("invalid coinconfig")
 	}
+	h.AppID = &info.AppID
 
 	if err := configmwcli.DeleteCoinConfig(ctx, h.ID, h.EntID); err != nil {
 		return nil, wlog.WrapError(err)
