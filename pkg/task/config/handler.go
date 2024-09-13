@@ -12,22 +12,25 @@ import (
 )
 
 type Handler struct {
-	ID               *uint32
-	EntID            *string
-	AppID            *string
-	EventID          *string
-	TaskType         *types.TaskType
-	Name             *string
-	TaskDesc         *string
-	StepGuide        *string
-	RecommendMessage *string
-	Index            *uint32
-	LastTaskID       *string
-	UserID           *string
-	MaxRewardCount   *uint32
-	CooldownSecond   *uint32
-	Offset           int32
-	Limit            int32
+	ID                     *uint32
+	EntID                  *string
+	AppID                  *string
+	EventID                *string
+	TaskType               *types.TaskType
+	Name                   *string
+	TaskDesc               *string
+	StepGuide              *string
+	RecommendMessage       *string
+	Index                  *uint32
+	LastTaskID             *string
+	UserID                 *string
+	MaxRewardCount         *uint32
+	CooldownSecond         *uint32
+	IntervalReset          *bool
+	IntervalResetSecond    *uint32
+	MaxIntervalRewardCount *uint32
+	Offset                 int32
+	Limit                  int32
 }
 
 func NewHandler(ctx context.Context, options ...func(context.Context, *Handler) error) (*Handler, error) {
@@ -118,7 +121,6 @@ func WithTaskType(taskType *types.TaskType, must bool) func(context.Context, *Ha
 		}
 		switch *taskType {
 		case types.TaskType_BaseTask:
-		case types.TaskType_DailyTask:
 		case types.TaskType_GrowthTask:
 		default:
 			return wlog.Errorf("invalid tasktype")
@@ -223,6 +225,45 @@ func WithCooldownSecond(value *uint32, must bool) func(context.Context, *Handler
 			return nil
 		}
 		h.CooldownSecond = value
+		return nil
+	}
+}
+
+func WithIntervalReset(value *bool, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			if must {
+				return wlog.Errorf("invalid intervalreset")
+			}
+			return nil
+		}
+		h.IntervalReset = value
+		return nil
+	}
+}
+
+func WithIntervalResetSecond(value *uint32, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			if must {
+				return wlog.Errorf("invalid intervalresetsecond")
+			}
+			return nil
+		}
+		h.IntervalResetSecond = value
+		return nil
+	}
+}
+
+func WithMaxIntervalRewardCount(value *uint32, must bool) func(context.Context, *Handler) error {
+	return func(ctx context.Context, h *Handler) error {
+		if value == nil {
+			if must {
+				return wlog.Errorf("invalid maxintervalrewardcount")
+			}
+			return nil
+		}
+		h.MaxIntervalRewardCount = value
 		return nil
 	}
 }

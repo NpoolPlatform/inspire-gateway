@@ -18,18 +18,21 @@ func (h *Handler) CreateTaskConfig(ctx context.Context) (*npool.TaskConfig, erro
 	}
 
 	if err := taskconfigmwcli.CreateTaskConfig(ctx, &taskconfigmwpb.TaskConfigReq{
-		EntID:            h.EntID,
-		AppID:            h.AppID,
-		EventID:          h.EventID,
-		TaskType:         h.TaskType,
-		Name:             h.Name,
-		TaskDesc:         h.TaskDesc,
-		StepGuide:        h.StepGuide,
-		RecommendMessage: h.RecommendMessage,
-		Index:            h.Index,
-		MaxRewardCount:   h.MaxRewardCount,
-		CooldownSecond:   h.CooldownSecond,
-		LastTaskID:       h.LastTaskID,
+		EntID:                  h.EntID,
+		AppID:                  h.AppID,
+		EventID:                h.EventID,
+		TaskType:               h.TaskType,
+		Name:                   h.Name,
+		TaskDesc:               h.TaskDesc,
+		StepGuide:              h.StepGuide,
+		RecommendMessage:       h.RecommendMessage,
+		Index:                  h.Index,
+		MaxRewardCount:         h.MaxRewardCount,
+		CooldownSecond:         h.CooldownSecond,
+		LastTaskID:             h.LastTaskID,
+		IntervalReset:          h.IntervalReset,
+		IntervalResetSecond:    h.IntervalResetSecond,
+		MaxIntervalRewardCount: h.MaxIntervalRewardCount,
 	}); err != nil {
 		return nil, wlog.WrapError(err)
 	}

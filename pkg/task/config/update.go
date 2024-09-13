@@ -26,19 +26,22 @@ func (h *Handler) UpdateTaskConfig(ctx context.Context) (*npool.TaskConfig, erro
 	}
 
 	if err := configmwcli.UpdateTaskConfig(ctx, &configmwpb.TaskConfigReq{
-		ID:               h.ID,
-		EntID:            h.EntID,
-		AppID:            h.AppID,
-		EventID:          h.EventID,
-		TaskType:         h.TaskType,
-		Name:             h.Name,
-		TaskDesc:         h.TaskDesc,
-		StepGuide:        h.StepGuide,
-		RecommendMessage: h.RecommendMessage,
-		Index:            h.Index,
-		LastTaskID:       h.LastTaskID,
-		MaxRewardCount:   h.MaxRewardCount,
-		CooldownSecond:   h.CooldownSecond,
+		ID:                     h.ID,
+		EntID:                  h.EntID,
+		AppID:                  h.AppID,
+		EventID:                h.EventID,
+		TaskType:               h.TaskType,
+		Name:                   h.Name,
+		TaskDesc:               h.TaskDesc,
+		StepGuide:              h.StepGuide,
+		RecommendMessage:       h.RecommendMessage,
+		Index:                  h.Index,
+		LastTaskID:             h.LastTaskID,
+		MaxRewardCount:         h.MaxRewardCount,
+		CooldownSecond:         h.CooldownSecond,
+		IntervalReset:          h.IntervalReset,
+		IntervalResetSecond:    h.IntervalResetSecond,
+		MaxIntervalRewardCount: h.MaxIntervalRewardCount,
 	}); err != nil {
 		return nil, wlog.WrapError(err)
 	}
