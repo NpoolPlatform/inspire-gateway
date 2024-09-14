@@ -27,6 +27,9 @@ func (s *Server) AdminUpdateTaskConfig(ctx context.Context, in *npool.AdminUpdat
 		config1.WithMaxRewardCount(in.MaxRewardCount, false),
 		config1.WithCooldownSecond(in.CooldownSecond, false),
 		config1.WithLastTaskID(in.LastTaskID, false),
+		config1.WithIntervalReset(in.IntervalReset, false),
+		config1.WithIntervalResetSecond(in.IntervalResetSecond, false),
+		config1.WithMaxIntervalRewardCount(in.MaxIntervalRewardCount, false),
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
