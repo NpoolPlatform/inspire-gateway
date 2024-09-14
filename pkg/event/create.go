@@ -19,6 +19,7 @@ type createHandler struct {
 	appGood *appgoodmwpb.Good
 }
 
+//nolint:dupl
 func (h *createHandler) checkAppGood(ctx context.Context) error {
 	if h.AppGoodID == nil {
 		return nil
