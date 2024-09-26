@@ -37,10 +37,10 @@ var runCmd = &cli.Command{
 }
 
 func run(ctx context.Context) error {
-	if err := migrator.Migrate(ctx); err != nil {
+	if err := db.Init(); err != nil {
 		return err
 	}
-	if err := db.Init(); err != nil {
+	if err := migrator.Migrate(ctx); err != nil {
 		return err
 	}
 	return pubsub.Subscribe(ctx)

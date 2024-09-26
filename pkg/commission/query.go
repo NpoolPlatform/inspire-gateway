@@ -171,15 +171,7 @@ func (h *queryHandler) formalize() {
 		if !ok {
 			continue
 		}
-		goodMainCoin, ok := h.goodMainCoins[appGood.GoodID]
-		if !ok {
-			continue
-		}
-		coin, ok := h.coins[goodMainCoin.CoinTypeID]
-		if !ok {
-			continue
-		}
-		h.infos = append(h.infos, &npool.Commission{
+		info := &npool.Commission{
 			ID:               comm.ID,
 			EntID:            comm.EntID,
 			AppID:            comm.AppID,
@@ -202,12 +194,19 @@ func (h *queryHandler) formalize() {
 			Threshold:        comm.Threshold,
 			StartAt:          comm.StartAt,
 			EndAt:            comm.EndAt,
-			CoinTypeID:       goodMainCoin.CoinTypeID,
-			CoinName:         coin.Name,
-			CoinLogo:         coin.Logo,
 			CreatedAt:        comm.CreatedAt,
 			UpdatedAt:        comm.UpdatedAt,
-		})
+		}
+		goodMainCoin, ok := h.goodMainCoins[appGood.GoodID]
+		if ok {
+			info.CoinTypeID = goodMainCoin.CoinTypeID
+			coin, ok := h.coins[goodMainCoin.CoinTypeID]
+			if ok {
+				info.CoinName = coin.Name
+				info.CoinLogo = coin.Logo
+			}
+		}
+		h.infos = append(h.infos, info)
 	}
 }
 

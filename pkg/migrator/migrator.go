@@ -7,6 +7,7 @@ import (
 	"github.com/NpoolPlatform/go-service-framework/pkg/config"
 	"github.com/NpoolPlatform/go-service-framework/pkg/logger"
 	redis2 "github.com/NpoolPlatform/go-service-framework/pkg/redis"
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	servicename "github.com/NpoolPlatform/inspire-gateway/pkg/servicename"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db"
 	"github.com/NpoolPlatform/inspire-middleware/pkg/db/ent"
@@ -25,7 +26,7 @@ func lockKey() string {
 func Migrate(ctx context.Context) error {
 	logger.Sugar().Infow("Migrate inspire", "Start", "...")
 	if err := redis2.TryLock(lockKey(), 0); err != nil {
-		return err
+		return wlog.WrapError(err)
 	}
 	defer func() {
 		_ = redis2.Unlock(lockKey())
