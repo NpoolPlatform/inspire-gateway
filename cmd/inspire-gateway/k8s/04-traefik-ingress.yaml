@@ -176,7 +176,7 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/get/my/rewards
+          - path: /api/inspire/v1/get/my/userrewards
             backend:
               serviceName: inspire-gateway
               servicePort: 50390

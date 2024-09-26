@@ -12,7 +12,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *Server) GetMyRewards(ctx context.Context, in *npool.GetMyRewardsRequest) (*npool.GetMyRewardsResponse, error) {
+func (s *Server) GetMyUserRewards(ctx context.Context, in *npool.GetMyUserRewardsRequest) (*npool.GetMyUserRewardsResponse, error) {
 	handler, err := allocated1.NewHandler(
 		ctx,
 		allocated1.WithAppID(&in.AppID, true),
@@ -22,24 +22,24 @@ func (s *Server) GetMyRewards(ctx context.Context, in *npool.GetMyRewardsRequest
 	)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"GetMyRewards",
+			"GetMyUserRewards",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.GetMyRewardsResponse{}, status.Error(codes.InvalidArgument, err.Error())
+		return &npool.GetMyUserRewardsResponse{}, status.Error(codes.InvalidArgument, err.Error())
 	}
 
 	infos, total, err := handler.GetUserRewards(ctx)
 	if err != nil {
 		logger.Sugar().Errorw(
-			"GetMyRewards",
+			"GetMyUserRewards",
 			"In", in,
 			"Err", err,
 		)
-		return &npool.GetMyRewardsResponse{}, status.Error(codes.Internal, err.Error())
+		return &npool.GetMyUserRewardsResponse{}, status.Error(codes.Internal, err.Error())
 	}
 
-	return &npool.GetMyRewardsResponse{
+	return &npool.GetMyUserRewardsResponse{
 		Infos: infos,
 		Total: total,
 	}, nil
