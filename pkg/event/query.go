@@ -6,14 +6,12 @@ import (
 
 	appmwcli "github.com/NpoolPlatform/appuser-middleware/pkg/client/app"
 	appgoodmwcli "github.com/NpoolPlatform/good-middleware/pkg/client/app/good"
-	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
 	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	appmwpb "github.com/NpoolPlatform/message/npool/appuser/mw/v1/app"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appgoodmwpb "github.com/NpoolPlatform/message/npool/good/mw/v1/app/good"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event"
-	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
 	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 )
 
@@ -22,7 +20,6 @@ type queryHandler struct {
 	events   []*eventmwpb.Event
 	app      *appmwpb.App
 	appGoods map[string]*appgoodmwpb.Good
-	coupons  map[string]*couponmwpb.Coupon
 	infos    []*npool.Event
 }
 
@@ -58,29 +55,6 @@ func (h *queryHandler) getAppGoods(ctx context.Context) error {
 	return nil
 }
 
-func (h *queryHandler) getCoupons(ctx context.Context) error {
-	couponIDs := []string{}
-	for _, event := range h.events {
-		couponIDs = append(couponIDs, event.CouponIDs...)
-	}
-	coupons, _, err := couponmwcli.GetCoupons(
-		ctx,
-		&couponmwpb.Conds{
-			AppID:  &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
-			EntIDs: &basetypes.StringSliceVal{Op: cruder.IN, Value: couponIDs},
-		},
-		0,
-		int32(len(couponIDs)),
-	)
-	if err != nil {
-		return err
-	}
-	for _, coupon := range coupons {
-		h.coupons[coupon.EntID] = coupon
-	}
-	return nil
-}
-
 func (h *queryHandler) formalize() {
 	for _, event := range h.events {
 		info := &npool.Event{
@@ -102,15 +76,8 @@ func (h *queryHandler) formalize() {
 				info.GoodID = *event.GoodID
 				info.AppGoodID = *event.AppGoodID
 				info.GoodName = good.GoodName
+				info.AppGoodName = good.AppGoodName
 			}
-		}
-
-		for _, couponID := range event.CouponIDs {
-			coupon, ok := h.coupons[couponID]
-			if !ok {
-				continue
-			}
-			info.Coupons = append(info.Coupons, coupon)
 		}
 
 		h.infos = append(h.infos, info)
@@ -134,16 +101,38 @@ func (h *Handler) GetEvent(ctx context.Context) (*npool.Event, error) {
 		Handler:  h,
 		events:   []*eventmwpb.Event{info},
 		appGoods: map[string]*appgoodmwpb.Good{},
-		coupons:  map[string]*couponmwpb.Coupon{},
 	}
-	handler.AppID = &info.AppID
+	if h.AppID == nil {
+		handler.AppID = &info.AppID
+	}
 	if err := handler.getApp(ctx); err != nil {
 		return nil, err
 	}
 	if err := handler.getAppGoods(ctx); err != nil {
 		return nil, err
 	}
-	if err := handler.getCoupons(ctx); err != nil {
+	handler.formalize()
+	if len(handler.infos) == 0 {
+		return nil, nil
+	}
+	return handler.infos[0], nil
+}
+
+func (h *Handler) GetEventExt(ctx context.Context, info *eventmwpb.Event) (*npool.Event, error) {
+	if info == nil {
+		return nil, nil
+	}
+
+	handler := &queryHandler{
+		Handler:  h,
+		events:   []*eventmwpb.Event{info},
+		appGoods: map[string]*appgoodmwpb.Good{},
+	}
+	handler.AppID = &info.AppID
+	if err := handler.getApp(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getAppGoods(ctx); err != nil {
 		return nil, err
 	}
 	handler.formalize()
@@ -168,15 +157,11 @@ func (h *Handler) GetEvents(ctx context.Context) ([]*npool.Event, uint32, error)
 		Handler:  h,
 		events:   infos,
 		appGoods: map[string]*appgoodmwpb.Good{},
-		coupons:  map[string]*couponmwpb.Coupon{},
 	}
 	if err := handler.getApp(ctx); err != nil {
 		return nil, 0, err
 	}
 	if err := handler.getAppGoods(ctx); err != nil {
-		return nil, 0, err
-	}
-	if err := handler.getCoupons(ctx); err != nil {
 		return nil, 0, err
 	}
 	handler.formalize()

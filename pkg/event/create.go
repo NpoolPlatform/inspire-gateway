@@ -19,6 +19,7 @@ type createHandler struct {
 	appGood *appgoodmwpb.Good
 }
 
+//nolint:dupl
 func (h *createHandler) checkAppGood(ctx context.Context) error {
 	if h.AppGoodID == nil {
 		return nil
@@ -56,7 +57,6 @@ func (h *Handler) CreateEvent(ctx context.Context) (*npool.Event, error) {
 		EntID:          h.EntID,
 		AppID:          h.AppID,
 		EventType:      h.EventType,
-		CouponIDs:      h.CouponIDs,
 		Credits:        h.Credits,
 		CreditsPerUSD:  h.CreditsPerUSD,
 		MaxConsecutive: h.MaxConsecutive,
