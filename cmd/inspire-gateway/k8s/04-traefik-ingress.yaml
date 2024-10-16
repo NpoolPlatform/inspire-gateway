@@ -31,6 +31,10 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          - path: /api/inspire/v1/get/my/tasks
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
     - host: api.procyon.vip
       http: *http_rules
     - host: api.xpool.top
@@ -401,6 +405,10 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
+          - path: /api/inspire/v1/admin/get/tasks
+            backend:
+              serviceName: inspire-gateway
+              servicePort: 50390
           - path: /api/inspire/v1/admin/get/usercoinrewards
             backend:
               serviceName: inspire-gateway
@@ -429,15 +437,15 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/create/eventcoininspires
+          - path: /api/inspire/v1/admin/create/eventcoininspire
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/update/eventcoininspires
+          - path: /api/inspire/v1/admin/update/eventcoininspire
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/delete/eventcoininspires
+          - path: /api/inspire/v1/admin/delete/eventcoininspire
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
@@ -445,11 +453,11 @@ spec:
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/create/eventcouponinspires
+          - path: /api/inspire/v1/admin/create/eventcouponinspire
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
-          - path: /api/inspire/v1/admin/delete/eventcouponinspires
+          - path: /api/inspire/v1/admin/delete/eventcouponinspire
             backend:
               serviceName: inspire-gateway
               servicePort: 50390
