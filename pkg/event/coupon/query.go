@@ -5,11 +5,13 @@ import (
 	"fmt"
 
 	couponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/coupon"
+	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	eventcouponmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event/coupon"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event/coupon"
 	couponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/coupon"
+	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 	eventcouponmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event/coupon"
 )
 
@@ -18,6 +20,20 @@ type queryHandler struct {
 	eventCoupons []*eventcouponmwpb.EventCoupon
 	coupons      map[string]*couponmwpb.Coupon
 	infos        []*npool.EventCoupon
+	events       map[string]*eventmwpb.Event
+}
+
+func (h *queryHandler) getEvents(ctx context.Context) error {
+	infos, _, err := eventmwcli.GetEvents(ctx, &eventmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+	}, h.Offset, h.Limit)
+	if err != nil {
+		return err
+	}
+	for _, event := range infos {
+		h.events[event.EntID] = event
+	}
+	return nil
 }
 
 func (h *queryHandler) getAppCoins(ctx context.Context) error {
@@ -47,6 +63,10 @@ func (h *queryHandler) getAppCoins(ctx context.Context) error {
 func (h *queryHandler) formalize() {
 	for _, eventCoupon := range h.eventCoupons {
 		coupon, ok := h.coupons[eventCoupon.CouponID]
+		if !ok {
+			continue
+		}
+		_, ok = h.events[eventCoupon.EventID]
 		if !ok {
 			continue
 		}
@@ -85,9 +105,13 @@ func (h *Handler) GetEventCoupon(ctx context.Context) (*npool.EventCoupon, error
 		Handler:      h,
 		eventCoupons: []*eventcouponmwpb.EventCoupon{info},
 		coupons:      map[string]*couponmwpb.Coupon{},
+		events:       map[string]*eventmwpb.Event{},
 	}
 	handler.AppID = &info.AppID
 	if err := handler.getAppCoins(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getEvents(ctx); err != nil {
 		return nil, err
 	}
 	handler.formalize()
@@ -106,9 +130,13 @@ func (h *Handler) GetEventCouponExt(ctx context.Context, info *eventcouponmwpb.E
 		Handler:      h,
 		eventCoupons: []*eventcouponmwpb.EventCoupon{info},
 		coupons:      map[string]*couponmwpb.Coupon{},
+		events:       map[string]*eventmwpb.Event{},
 	}
 	handler.AppID = &info.AppID
 	if err := handler.getAppCoins(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getEvents(ctx); err != nil {
 		return nil, err
 	}
 	handler.formalize()
@@ -137,8 +165,12 @@ func (h *Handler) GetEventCoupons(ctx context.Context) ([]*npool.EventCoupon, ui
 		Handler:      h,
 		eventCoupons: infos,
 		coupons:      map[string]*couponmwpb.Coupon{},
+		events:       map[string]*eventmwpb.Event{},
 	}
 	if err := handler.getAppCoins(ctx); err != nil {
+		return nil, 0, err
+	}
+	if err := handler.getEvents(ctx); err != nil {
 		return nil, 0, err
 	}
 	handler.formalize()
