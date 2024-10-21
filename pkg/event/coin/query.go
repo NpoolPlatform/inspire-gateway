@@ -5,11 +5,14 @@ import (
 	"fmt"
 
 	appcoinmwcli "github.com/NpoolPlatform/chain-middleware/pkg/client/app/coin"
+	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
+	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	eventcoinmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event/coin"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	appcoinmwpb "github.com/NpoolPlatform/message/npool/chain/mw/v1/app/coin"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/event/coin"
+	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 	eventcoinmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event/coin"
 )
 
@@ -18,6 +21,20 @@ type queryHandler struct {
 	eventCoins []*eventcoinmwpb.EventCoin
 	appcoin    map[string]*appcoinmwpb.Coin
 	infos      []*npool.EventCoin
+	events     map[string]*eventmwpb.Event
+}
+
+func (h *queryHandler) getEvents(ctx context.Context) error {
+	infos, _, err := eventmwcli.GetEvents(ctx, &eventmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+	}, h.Offset, h.Limit)
+	if err != nil {
+		return wlog.WrapError(err)
+	}
+	for _, event := range infos {
+		h.events[event.EntID] = event
+	}
+	return nil
 }
 
 func (h *queryHandler) getAppCoins(ctx context.Context) error {
@@ -42,6 +59,10 @@ func (h *queryHandler) getAppCoins(ctx context.Context) error {
 func (h *queryHandler) formalize() {
 	for _, eventCoin := range h.eventCoins {
 		appcoin, ok := h.appcoin[eventCoin.CoinTypeID]
+		if !ok {
+			continue
+		}
+		_, ok = h.events[eventCoin.EventID]
 		if !ok {
 			continue
 		}
@@ -80,11 +101,15 @@ func (h *Handler) GetEventCoin(ctx context.Context) (*npool.EventCoin, error) {
 		Handler:    h,
 		eventCoins: []*eventcoinmwpb.EventCoin{info},
 		appcoin:    map[string]*appcoinmwpb.Coin{},
+		events:     map[string]*eventmwpb.Event{},
 	}
 	if h.AppID == nil {
 		handler.AppID = &info.AppID
 	}
 	if err := handler.getAppCoins(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getEvents(ctx); err != nil {
 		return nil, err
 	}
 	handler.formalize()
@@ -103,8 +128,12 @@ func (h *Handler) GetEventCoinExt(ctx context.Context, info *eventcoinmwpb.Event
 		Handler:    h,
 		eventCoins: []*eventcoinmwpb.EventCoin{info},
 		appcoin:    map[string]*appcoinmwpb.Coin{},
+		events:     map[string]*eventmwpb.Event{},
 	}
 	if err := handler.getAppCoins(ctx); err != nil {
+		return nil, err
+	}
+	if err := handler.getEvents(ctx); err != nil {
 		return nil, err
 	}
 	handler.formalize()
@@ -133,8 +162,12 @@ func (h *Handler) GetEventCoins(ctx context.Context) ([]*npool.EventCoin, uint32
 		Handler:    h,
 		eventCoins: infos,
 		appcoin:    map[string]*appcoinmwpb.Coin{},
+		events:     map[string]*eventmwpb.Event{},
 	}
 	if err := handler.getAppCoins(ctx); err != nil {
+		return nil, 0, err
+	}
+	if err := handler.getEvents(ctx); err != nil {
 		return nil, 0, err
 	}
 	handler.formalize()
