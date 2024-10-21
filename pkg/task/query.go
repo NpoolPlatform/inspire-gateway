@@ -4,12 +4,14 @@ import (
 	"context"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
+	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
 	taskconfigmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/config"
 	taskusermwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/task/user"
 	cruder "github.com/NpoolPlatform/libent-cruder/pkg/cruder"
 	types "github.com/NpoolPlatform/message/npool/basetypes/inspire/v1"
 	basetypes "github.com/NpoolPlatform/message/npool/basetypes/v1"
 	npool "github.com/NpoolPlatform/message/npool/inspire/gw/v1/task"
+	eventmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/event"
 	taskconfigmwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/task/config"
 	taskusermwpb "github.com/NpoolPlatform/message/npool/inspire/mw/v1/task/user"
 )
@@ -18,7 +20,21 @@ type queryHandler struct {
 	*Handler
 	taskConfigs   []*taskconfigmwpb.TaskConfig
 	taskUsers     []*taskusermwpb.TaskUser
+	events        map[string]*eventmwpb.Event
 	userTaskInfos []*npool.UserTask
+}
+
+func (h *queryHandler) getEvents(ctx context.Context) error {
+	infos, _, err := eventmwcli.GetEvents(ctx, &eventmwpb.Conds{
+		AppID: &basetypes.StringVal{Op: cruder.EQ, Value: *h.AppID},
+	}, h.Offset, h.Limit)
+	if err != nil {
+		return wlog.WrapError(err)
+	}
+	for _, event := range infos {
+		h.events[event.EntID] = event
+	}
+	return nil
 }
 
 func (h *queryHandler) formalizeUserTask() {
@@ -33,6 +49,10 @@ func (h *queryHandler) formalizeUserTask() {
 		taskMap[taskUser.TaskID] = uint32(1)
 	}
 	for _, comm := range h.taskConfigs {
+		_, ok := h.events[comm.EventID]
+		if !ok {
+			continue
+		}
 		taskState := types.TaskState_NotStarted
 		rewardState := types.RewardState_UnIssued
 		taskUserCount, ok := taskMap[comm.EntID]
@@ -81,6 +101,10 @@ func (h *Handler) GetUserTask(ctx context.Context) (*npool.UserTask, error) {
 		taskConfigs:   []*taskconfigmwpb.TaskConfig{info},
 		taskUsers:     []*taskusermwpb.TaskUser{},
 		userTaskInfos: []*npool.UserTask{},
+		events:        map[string]*eventmwpb.Event{},
+	}
+	if err := handler.getEvents(ctx); err != nil {
+		return nil, err
 	}
 
 	handler.formalizeUserTask()
@@ -97,6 +121,7 @@ func (h *Handler) GetUserTasks(ctx context.Context) ([]*npool.UserTask, uint32, 
 		userTaskInfos: []*npool.UserTask{},
 		taskConfigs:   []*taskconfigmwpb.TaskConfig{},
 		taskUsers:     []*taskusermwpb.TaskUser{},
+		events:        map[string]*eventmwpb.Event{},
 	}
 
 	conds := &taskconfigmwpb.Conds{
@@ -122,6 +147,9 @@ func (h *Handler) GetUserTasks(ctx context.Context) ([]*npool.UserTask, uint32, 
 		return nil, total, wlog.WrapError(err)
 	}
 	handler.taskUsers = userInfos
+	if err := handler.getEvents(ctx); err != nil {
+		return nil, 0, err
+	}
 
 	handler.formalizeUserTask()
 	return handler.userTaskInfos, total, nil
