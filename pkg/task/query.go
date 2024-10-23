@@ -44,8 +44,8 @@ func (h *queryHandler) calculateNextStartAt(taskConfig *taskconfigmwpb.TaskConfi
 	}
 	finishedAt := uint32(0)
 	for _, taskUser := range taskUsers {
-		if taskUser.CreatedAt > finishedAt {
-			finishedAt = taskUser.CreatedAt
+		if taskUser.UpdatedAt > finishedAt {
+			finishedAt = taskUser.UpdatedAt
 		}
 	}
 	if !taskConfig.IntervalReset {
