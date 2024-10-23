@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"time"
 
 	"github.com/NpoolPlatform/go-service-framework/pkg/wlog"
 	eventmwcli "github.com/NpoolPlatform/inspire-middleware/pkg/client/event"
@@ -37,16 +38,60 @@ func (h *queryHandler) getEvents(ctx context.Context) error {
 	return nil
 }
 
+func (h *queryHandler) calculateNextStartAt(taskConfig *taskconfigmwpb.TaskConfig, taskUsers []*taskusermwpb.TaskUser) uint32 {
+	if taskConfig.MaxRewardCount == uint32(len(taskUsers)) {
+		return 0
+	}
+	finishedAt := uint32(0)
+	for _, taskUser := range taskUsers {
+		if taskUser.CreatedAt > finishedAt {
+			finishedAt = taskUser.CreatedAt
+		}
+	}
+	if !taskConfig.IntervalReset {
+		return finishedAt + taskConfig.CooldownSecond
+	}
+	now := uint32(time.Now().Unix())
+	intervalTime := int32(now / taskConfig.IntervalResetSecond)
+	startTime := uint32(intervalTime) * taskConfig.IntervalResetSecond
+	intervalTaskCount := uint32(0)
+	for _, taskUser := range taskUsers {
+		if taskUser.CreatedAt > startTime {
+			intervalTaskCount++
+		}
+	}
+	if intervalTaskCount == 0 {
+		return startTime
+	}
+	if intervalTaskCount == taskConfig.MaxIntervalRewardCount {
+		return startTime + taskConfig.IntervalResetSecond
+	}
+	if intervalTaskCount < taskConfig.MaxIntervalRewardCount {
+		return finishedAt + taskConfig.CooldownSecond
+	}
+
+	return 0
+}
+
 func (h *queryHandler) formalizeUserTask() {
-	taskMap := map[string]uint32{}
+	taskCountMap := map[string]uint32{}
+	taskMap := map[string][]*taskusermwpb.TaskUser{}
 	for _, taskUser := range h.taskUsers {
-		taskUserCount, ok := taskMap[taskUser.TaskID]
+		taskUserCount, ok := taskCountMap[taskUser.TaskID]
 		if ok {
 			taskUserCount++
-			taskMap[taskUser.TaskID] = taskUserCount
+			taskCountMap[taskUser.TaskID] = taskUserCount
 			continue
 		}
-		taskMap[taskUser.TaskID] = uint32(1)
+		taskCountMap[taskUser.TaskID] = uint32(1)
+
+		taskUsers, ok := taskMap[taskUser.TaskID]
+		if ok {
+			taskUsers := append(taskUsers, taskUser)
+			taskMap[taskUser.TaskID] = taskUsers
+			continue
+		}
+		taskMap[taskUser.TaskID] = []*taskusermwpb.TaskUser{taskUser}
 	}
 	for _, comm := range h.taskConfigs {
 		_, ok := h.events[comm.EventID]
@@ -55,10 +100,15 @@ func (h *queryHandler) formalizeUserTask() {
 		}
 		taskState := types.TaskState_NotStarted
 		rewardState := types.RewardState_UnIssued
-		taskUserCount, ok := taskMap[comm.EntID]
+		taskUserCount, ok := taskCountMap[comm.EntID]
 		if ok {
 			taskState = types.TaskState_Done
 			rewardState = types.RewardState_Issued
+		}
+		nextStartAt := uint32(0)
+		taskUsers, ok := taskMap[comm.EntID]
+		if ok {
+			nextStartAt = h.calculateNextStartAt(comm, taskUsers)
 		}
 		h.userTaskInfos = append(h.userTaskInfos, &npool.UserTask{
 			ID:               comm.ID,
@@ -77,6 +127,7 @@ func (h *queryHandler) formalizeUserTask() {
 			CompletionTimes:  taskUserCount,
 			TaskState:        taskState,
 			RewardState:      rewardState,
+			NextStartAt:      nextStartAt,
 			CreatedAt:        comm.CreatedAt,
 			UpdatedAt:        comm.UpdatedAt,
 		})
