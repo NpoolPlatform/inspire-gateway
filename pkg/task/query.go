@@ -84,7 +84,8 @@ func (h *queryHandler) formalizeUserTask() {
 			continue
 		}
 		taskCountMap[taskUser.TaskID] = uint32(1)
-
+	}
+	for _, taskUser := range h.taskUsers {
 		taskUsers, ok := taskMap[taskUser.TaskID]
 		if ok {
 			taskUsers := append(taskUsers, taskUser)
