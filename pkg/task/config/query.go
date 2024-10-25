@@ -43,9 +43,10 @@ func (h *queryHandler) formalize() {
 			UpdatedAt:              val.UpdatedAt,
 		}
 		event, ok := h.events[val.EventID]
-		if ok {
-			task.EventType = event.EventType
+		if !ok {
+			continue
 		}
+		task.EventType = event.EventType
 		h.taskInfos = append(h.taskInfos, task)
 	}
 }
